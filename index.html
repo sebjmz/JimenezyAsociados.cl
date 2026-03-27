@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jiménez y Asociados | Gestión Inmobiliaria Disruptiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .reveal { opacity: 0; transform: translateY(30px); }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold tracking-tighter">
+                JIMÉNEZ<span class="text-blue-500">&</span>ASOCIADOS
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium uppercase tracking-widest">
+                <a href="#servicios" class="hover:text-blue-400 transition">Gestión</a>
+                <a href="#club" class="hover:text-pink-400 transition">Club Freelance</a>
+                <a href="#propiedades" class="hover:text-purple-400 transition">Propiedades</a>
+            </div>
+            <a href="https://wa.me/56951134778?text=Hola,%20quisiera%20más%20información%20sobre%20sus%20servicios%20inmobiliarios" 
+               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold transition transform hover:scale-105">
+                CONTACTO DIRECTO
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full filter blur-[100px] animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full filter blur-[100px] animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-6 max-w-5xl">
+            <h1 id="dynamic-title" class="text-5xl md:text-8xl font-extrabold mb-6 leading-tight">
+                Gestionamos el <span class="gradient-text">futuro</span> de tu patrimonio.
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto font-light">
+                Administración experta, tasaciones precisas y el club de referidos más rentable del mercado.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="#club" class="bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition">
+                    Únete al Club Freelance
+                </a>
+                <a href="https://www.portalinmobiliario.com" target="_blank" class="border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition">
+                    Ver Propiedades en PortalInmobiliario
+                </a>
+            </div>
+            
+            <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-500" id="counter-colab">0</div>
+                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Colaboradores Activos</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-purple-500">+500</div>
+                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Gestiones Exitosas</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-pink-500">24h</div>
+                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Respuesta inicial</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-green-500">100%</div>
+                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Transparencia</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Services Grid -->
+    <section id="servicios" class="py-24 px-6 bg-[#050505]">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold mb-16 text-center reveal">Nuestra <span class="text-blue-500">Expertise</span></h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Serv 1 -->
+                <div class="glass-card p-8 rounded-3xl reveal">
+                    <i class="fa-solid fa-house-chimney-user text-3xl text-blue-500 mb-6"></i>
+                    <h3 class="text-xl font-bold mb-4 uppercase">Administración de Arriendos</h3>
+                    <p class="text-gray-400 mb-6">Nos encargamos de todo: desde la recaudación hasta la mantención, para que tú solo recibas tu renta.</p>
+                    <button onclick="contactWhatsApp('Gestión de Arriendos')" class="text-blue-500 font-bold hover:underline">Saber más →</button>
+                </div>
+                <!-- Serv 2 -->
+                <div class="glass-card p-8 rounded-3xl reveal">
+                    <i class="fa-solid fa-chart-line text-3xl text-purple-500 mb-6"></i>
+                    <h3 class="text-xl font-bold mb-4 uppercase">Tasaciones Comerciales</h3>
+                    <p class="text-gray-400 mb-6">Informes técnicos precisos para conocer el valor real de mercado de cualquier propiedad.</p>
+                    <button onclick="contactWhatsApp('Tasaciones Comerciales')" class="text-purple-500 font-bold hover:underline">Solicitar Tasación →</button>
+                </div>
+                <!-- Serv 3 -->
+                <div class="glass-card p-8 rounded-3xl reveal">
+                    <i class="fa-solid fa-scale-balanced text-3xl text-pink-500 mb-6"></i>
+                    <h3 class="text-xl font-bold mb-4 uppercase">Posesiones Efectivas</h3>
+                    <p class="text-gray-400 mb-6">Gestión legal completa para regularizar herencias y propiedades en tiempos récord.</p>
+                    <button onclick="contactWhatsApp('Posesiones Efectivas')" class="text-pink-500 font-bold hover:underline">Asesoría Legal →</button>
+                </div>
+                <!-- Serv 4 -->
+                <div class="glass-card p-8 rounded-3xl reveal">
+                    <i class="fa-solid fa-couch text-3xl text-green-500 mb-6"></i>
+                    <h3 class="text-xl font-bold mb-4 uppercase">Home Staging</h3>
+                    <p class="text-gray-400 mb-6">Preparamos tu vivienda para que se venda o arriende más rápido y a mejor precio.</p>
+                    <button onclick="contactWhatsApp('Home Staging')" class="text-green-500 font-bold hover:underline">Ver Ejemplos →</button>
+                </div>
+                <!-- Serv 5 -->
+                <div class="glass-card p-8 rounded-3xl reveal md:col-span-2 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-2 uppercase">Gestión Inmobiliaria Integral</h3>
+                        <p class="text-gray-400">Venta y arriendo de propiedades con estrategia digital avanzada.</p>
+                    </div>
+                    <button onclick="contactWhatsApp('Gestión Inmobiliaria')" class="bg-white text-black px-6 py-3 rounded-full font-bold">Consúltanos</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Club Freelance / Ojeadores -->
+    <section id="club" class="py-24 px-6 bg-blue-900/10 border-y border-blue-500/20">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <div class="reveal">
+                <span class="text-blue-500 font-bold uppercase tracking-tighter mb-4 block">Oportunidad Única</span>
+                <h2 class="text-5xl font-extrabold mb-8 leading-tight">Únete al <span class="gradient-text">Club Freelance</span> y monetiza tus contactos.</h2>
+                <p class="text-lg text-gray-300 mb-8">
+                    ¿Conoces a alguien que necesite vender, arrendar o gestionar una propiedad? Envíanos el dato y nosotros hacemos el trabajo. Tú ganas una comisión real y transparente.
+                </p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-blue-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h4 class="font-bold text-xl">10% de nuestra comisión</h4>
+                            <p class="text-gray-400 text-sm">Por cada dato propio que cerremos (0,2% venta / 5% arriendo).</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-purple-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-users"></i></div>
+                        <div>
+                            <h4 class="font-bold text-xl">Nivel Escala: 5% Extra</h4>
+                            <p class="text-gray-400 text-sm">Gana por los datos cerrados de los colaboradores que tú invites.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-pink-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-network-wired"></i></div>
+                        <div>
+                            <h4 class="font-bold text-xl">Red Residual: 1%</h4>
+                            <p class="text-gray-400 text-sm">Comisión por los negocios de los invitados de tus invitados.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12">
+                    <button onclick="contactWhatsApp('Club Freelance')" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-10 py-5 rounded-2xl font-black text-xl shadow-xl shadow-green-900/20 transition transform hover:scale-105">
+                        REGISTRARME COMO OJEADOR <i class="fa-brands fa-whatsapp ml-2"></i>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-4 text-center md:text-left italic">* Toda la información de colaboradores es estrictamente confidencial.</p>
+                </div>
+            </div>
+            
+            <div class="glass-card p-10 rounded-[3rem] border-blue-500/30 reveal">
+                <h3 class="text-2xl font-bold mb-8 text-center uppercase tracking-widest">Ejemplos de Comisiones Pagadas</h3>
+                <div class="space-y-6">
+                    <div class="border-b border-white/10 pb-4 flex justify-between items-center">
+                        <div>
+                            <div class="text-sm text-gray-500">Venta Depto. Providencia</div>
+                            <div class="font-bold text-lg text-green-400">$840.000 CLP</div>
+                        </div>
+                        <div class="text-xs bg-white/10 px-3 py-1 rounded-full text-gray-400 uppercase">Pagado</div>
+                    </div>
+                    <div class="border-b border-white/10 pb-4 flex justify-between items-center">
+                        <div>
+                            <div class="text-sm text-gray-500">Arriendo Casa Chicureo</div>
+                            <div class="font-bold text-lg text-green-400">$65.000 CLP</div>
+                        </div>
+                        <div class="text-xs bg-white/10 px-3 py-1 rounded-full text-gray-400 uppercase">Pagado</div>
+                    </div>
+                    <div class="border-b border-white/10 pb-4 flex justify-between items-center">
+                        <div>
+                            <div class="text-sm text-gray-500">Venta Oficina Las Condes</div>
+                            <div class="font-bold text-lg text-green-400">$1.250.000 CLP</div>
+                        </div>
+                        <div class="text-xs bg-white/10 px-3 py-1 rounded-full text-gray-400 uppercase">Pagado</div>
+                    </div>
+                    <div class="pt-4 text-center">
+                        <p class="text-sm text-gray-400">"Monitorea el proceso: te avisamos a las 24h del contacto, firma de contrato y cierre final. Sin comisiones perdidas."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10 bg-black">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+            <div class="mb-4 md:mb-0">
+                © 2024 JIMÉNEZ & ASOCIADOS. Todos los derechos reservados.
+            </div>
+            <div class="flex space-x-6 uppercase tracking-widest font-bold">
+                <a href="#" class="hover:text-white transition">Instagram</a>
+                <a href="#" class="hover:text-white transition">LinkedIn</a>
+                <a href="https://wa.me/56951134778" class="text-green-500 hover:text-green-400 transition">WhatsApp</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Títulos disruptivos dinámicos
+        const titles = [
+            "Gestionamos el <span class='gradient-text'>futuro</span> de tu patrimonio.",
+            "Inmobiliaria <span class='gradient-text'>transparente</span>. Resultados reales.",
+            "Tus contactos valen <span class='gradient-text'>oro</span>. Únete al Club.",
+            "Tasaciones y gestión con <span class='gradient-text'>ética</span> profesional."
+        ];
+
+        window.onload = () => {
+            document.getElementById('dynamic-title').innerHTML = titles[Math.floor(Math.random() * titles.length)];
+            animateCounter('counter-colab', 142); // Simulación de colaboradores activos
+        };
+
+        // Animación de contador
+        function animateCounter(id, target) {
+            let count = 0;
+            const element = document.getElementById(id);
+            const interval = setInterval(() => {
+                count += Math.ceil(target / 50);
+                if (count >= target) {
+                    element.innerText = target;
+                    clearInterval(interval);
+                } else {
+                    element.innerText = count;
+                }
+            }, 30);
+        }
+
+        // Lanzador de WhatsApp según solicitud
+        function contactWhatsApp(tipo) {
+            const phone = "56951134778";
+            let message = "";
+
+            switch(tipo) {
+                case 'Club Freelance':
+                    message = "Hola, quisiera saber más información del club freelance de jimenezyasociados.cl. Me gustaría registrarme como ojeador.";
+                    break;
+                case 'Gestión de Arriendos':
+                    message = "Hola, me interesa saber sobre su servicio de administración de arriendos.";
+                    break;
+                case 'Tasaciones Comerciales':
+                    message = "Hola, necesito solicitar una tasación comercial de una propiedad.";
+                    break;
+                case 'Posesiones Efectivas':
+                    message = "Hola, quisiera asesoría sobre una posesión efectiva.";
+                    break;
+                default:
+                    message = "Hola Jiménez y Asociados, quisiera más información sobre sus servicios.";
+            }
+
+            const encoded = encodeURIComponent(message);
+            window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+        }
+
+        // Animaciones al hacer scroll
+        gsap.registerPlugin(ScrollTrigger);
+        
+        document.querySelectorAll('.reveal').forEach((el) => {
+            gsap.to(el, {
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 85%",
+                    toggleActions: "play none none none"
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: "power4.out"
+            });
+        });
+    </script>
+</body>
+</html>
