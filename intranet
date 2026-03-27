@@ -44,7 +44,7 @@
         </div>
         <div class="flex items-center gap-6">
             <span id="partner-name" class="font-bold text-blue-500 text-sm">--</span>
-            <button onclick="localStorage.clear(); location.href='ingresopartners.html'" class="text-gray-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
+            <button onclick="localStorage.clear(); location.href='ingresopartner.html'" class="text-gray-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
         </div>
     </nav>
 
@@ -100,7 +100,7 @@
 
     <script>
         const partnerName = localStorage.getItem('active_partner');
-        if (!partnerName) location.href = 'ingresopartners.html';
+        if (!partnerName) location.href = 'ingresopartner.html';
         document.getElementById('partner-name').innerText = partnerName;
 
         function openModal() { document.getElementById('modal-nuevo').classList.remove('hidden'); }
