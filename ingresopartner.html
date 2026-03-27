@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet Partners | Jiménez & Asociados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jimenez-intranet-v2';
+
+        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, setDoc };
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --primary: #3b82f6;
+            --bg: #050505;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .login-card {
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.15);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .step-active { color: #3b82f6; }
+        .step-pending { color: #333; }
+        .step-complete { color: #22c55e; }
+
+        input, select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        .hidden-view { display: none !important; }
+
+        .progress-bar {
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="view-login" class="flex-1 flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black">
+        <div class="glass-panel login-card w-full max-w-md p-10 rounded-[2.5rem] text-center">
+            <div class="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/20">
+                <i class="fa-solid fa-shield-halved text-4xl"></i>
+            </div>
+            <h1 class="text-3xl font-black mb-2 uppercase tracking-tighter">Acceso <span class="text-blue-500">Partner</span></h1>
+            <p class="text-gray-500 text-sm mb-10">Ingresa tus credenciales de comisionista</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Nombre de Usuario</label>
+                    <input type="text" id="login-user" placeholder="Tu nombre" class="w-full p-4 rounded-2xl focus:outline-none focus:border-blue-500 transition mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Contraseña / Código</label>
+                    <input type="password" id="login-pass" placeholder="••••••••" class="w-full p-4 rounded-2xl focus:outline-none focus:border-blue-500 transition mt-1">
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition transform active:scale-95 shadow-xl shadow-blue-900/40">
+                    INGRESAR A MI PORTAL
+                </button>
+            </div>
+            <p class="mt-8 text-xs text-gray-600">¿No tienes acceso? <a href="https://wa.me/56951134778" class="text-blue-500 font-bold underline">Solicítalo aquí</a></p>
+        </div>
+    </div>
+
+    <!-- PANTALLA DASHBOARD -->
+    <div id="view-dashboard" class="hidden-view flex-1 flex flex-col">
+        <!-- Navbar Superior -->
+        <nav class="glass-panel border-b border-white/5 py-4 px-8 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black">J</div>
+                <span class="font-black text-sm uppercase tracking-widest hidden md:block">Panel de Gestión Colaborativa</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <div id="display-name" class="font-bold text-sm">--</div>
+                    <div id="display-uid" class="text-[10px] text-gray-500 font-mono">ID: ...</div>
+                </div>
+                <button onclick="logout()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </nav>
+
+        <main class="p-4 md:p-8 max-w-7xl mx-auto w-full">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-black">MIS <span class="text-blue-500">DATOS</span></h2>
+                    <p class="text-gray-500 text-sm">Seguimiento en tiempo real de tus comisiones.</p>
+                </div>
+                <button onclick="openModal('modal-nuevo')" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-900/20 flex items-center gap-3">
+                    <i class="fa-solid fa-plus"></i> NUEVA PROPIEDAD
+                </button>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="grid grid-cols-1 gap-6">
+                <div class="glass-panel rounded-[2rem] overflow-hidden">
+                    <div class="p-6 border-b border-white/5 bg-white/2 flex items-center justify-between">
+                        <h3 class="font-bold uppercase text-xs tracking-widest text-gray-400">Proceso de Negocios Activos</h3>
+                        <span class="text-[10px] bg-green-500/10 text-green-500 px-3 py-1 rounded-full font-bold">LIVE UPDATE</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-500">
+                                <tr>
+                                    <th class="px-6 py-4">Propiedad / Cliente</th>
+                                    <th class="px-6 py-4">Etapa del Proceso</th>
+                                    <th class="px-6 py-4 text-center">Contactado</th>
+                                    <th class="px-6 py-4 text-center">Contrato</th>
+                                    <th class="px-6 py-4 text-center">Visitas</th>
+                                    <th class="px-6 py-4 text-center">Ofertas</th>
+                                    <th class="px-6 py-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-list" class="divide-y divide-white/5">
+                                <!-- Datos inyectados -->
+                                <tr>
+                                    <td colspan="7" class="px-6 py-20 text-center text-gray-600 italic">No hay datos ingresados aún.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL NUEVO DATO -->
+    <div id="modal-nuevo" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-6 hidden-view">
+        <div class="glass-panel w-full max-w-xl p-10 rounded-[3rem] relative">
+            <button onclick="closeModal('modal-nuevo')" class="absolute top-8 right-8 text-gray-500 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-3xl font-black mb-6">Nueva <span class="text-blue-500">Referencia</span></h3>
+            <form id="form-add" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase">Nombre Cliente</label>
+                        <input type="text" id="in-name" required placeholder="Ej: Marcela Soto" class="w-full p-4 rounded-xl mt-1 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase">Teléfono / WA</label>
+                        <input type="tel" id="in-phone" required placeholder="+569..." class="w-full p-4 rounded-xl mt-1 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase">Tipo de Gestión</label>
+                    <select id="in-service" class="w-full p-4 rounded-xl mt-1 focus:outline-none">
+                        <option value="Venta">Venta de Propiedad</option>
+                        <option value="Arriendo">Arriendo Habitacional</option>
+                        <option value="Administración">Administración</option>
+                        <option value="Tasación">Tasación Comercial</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition mt-4">ENVIAR A REVISIÓN</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DE LOGIN ---
+        function handleLogin() {
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+
+            if (user && pass) {
+                localStorage.setItem('partner_name', user);
+                document.getElementById('view-login').classList.add('hidden-view');
+                document.getElementById('view-dashboard').classList.remove('hidden-view');
+                initDashboard();
+            } else {
+                alert("Por favor ingresa nombre y contraseña.");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('partner_name');
+            location.reload();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden-view'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden-view'); }
+
+        // --- LÓGICA DE DATOS ---
+        let unsubscribe = null;
+
+        async function initDashboard() {
+            const user = window.fb.auth.currentUser;
+            if (!user) return;
+
+            const partnerName = localStorage.getItem('partner_name');
+            document.getElementById('display-name').innerText = partnerName;
+            document.getElementById('display-uid').innerText = `PARTNER UID: ${user.uid.substring(0,8)}`;
+
+            const q = window.fb.query(
+                window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos')
+            );
+
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = window.fb.onSnapshot(q, (snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+                renderLeads(list);
+            });
+        }
+
+        function renderLeads(list) {
+            const container = document.getElementById('leads-list');
+            if (list.length === 0) return;
+
+            let html = "";
+            list.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).forEach(item => {
+                // Estados (Simulados - Tú los cambias en la base de datos)
+                const isContactado = item.contactado || false;
+                const isContrato = item.contrato || false;
+                const visitas = item.visitas || 0;
+                const ofertas = item.ofertas || 0;
+                const statusFinal = item.statusFinal || 'En Proceso'; // 'Inscripción', 'Pago Completado'
+
+                // Lógica de color de barra de progreso
+                let progress = 10;
+                if(isContactado) progress += 20;
+                if(isContrato) progress += 20;
+                if(visitas > 0) progress += 20;
+                if(ofertas > 0) progress += 10;
+                if(statusFinal === 'Pago Completado') progress = 100;
+
+                html += `
+                    <tr class="hover:bg-white/2 transition group">
+                        <td class="px-6 py-6">
+                            <div class="font-bold">${item.name}</div>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">${item.service}</div>
+                        </td>
+                        <td class="px-6 py-6 min-w-[200px]">
+                            <div class="text-[10px] font-bold mb-2 flex justify-between">
+                                <span class="${statusFinal === 'Pago Completado' ? 'text-green-500' : 'text-blue-500'}">${statusFinal.toUpperCase()}</span>
+                                <span class="text-gray-600">${progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-6 text-center">
+                            <i class="fa-solid ${isContactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-700'} text-xl"></i>
+                        </td>
+                        <td class="px-6 py-6 text-center">
+                            <i class="fa-solid ${isContrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-800'} text-xl"></i>
+                        </td>
+                        <td class="px-6 py-6 text-center">
+                            <div class="inline-flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full text-xs font-bold">
+                                <i class="fa-solid fa-eye text-gray-500"></i> ${visitas}
+                            </div>
+                        </td>
+                        <td class="px-6 py-6 text-center">
+                            <div class="inline-flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full text-xs font-bold">
+                                <i class="fa-solid fa-hand-holding-dollar text-gray-500"></i> ${ofertas}
+                            </div>
+                        </td>
+                        <td class="px-6 py-6 text-right">
+                            ${statusFinal === 'Pago Completado' 
+                                ? `<button onclick="requestPayment('${item.name}')" class="bg-green-600 text-white text-[10px] font-black px-3 py-2 rounded-lg hover:bg-green-500">SOLICITAR BONO</button>`
+                                : `<button onclick="consultLead('${item.name}')" class="text-gray-500 hover:text-blue-500"><i class="fa-solid fa-comment-dots"></i></button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        document.getElementById('form-add').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = window.fb.auth.currentUser;
+            const name = document.getElementById('in-name').value;
+            const phone = document.getElementById('in-phone').value;
+            const service = document.getElementById('in-service').value;
+
+            try {
+                await window.fb.addDoc(
+                    window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'),
+                    {
+                        name, phone, service,
+                        contactado: false,
+                        contrato: false,
+                        visitas: 0,
+                        ofertas: 0,
+                        statusFinal: 'Validando Dato',
+                        createdAt: window.fb.serverTimestamp()
+                    }
+                );
+                
+                const msg = `¡NUEVA REFERENCIA!\nPartner: ${localStorage.getItem('partner_name')}\nCliente: ${name}\nServicio: ${service}`;
+                window.open(`https://wa.me/56951134778?text=${encodeURIComponent(msg)}`, '_blank');
+                
+                closeModal('modal-nuevo');
+                document.getElementById('form-add').reset();
+            } catch (err) { console.error(err); }
+        });
+
+        function requestPayment(name) {
+            const msg = `Hola! El negocio de "${name}" aparece como PAGO COMPLETADO en mi intranet. Solicito mi bonificación.`;
+            window.open(`https://wa.me/56951134778?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function consultLead(name) {
+            const msg = `Hola, quisiera saber más detalles del avance de "${name}".`;
+            window.open(`https://wa.me/56951134778?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // Auto-login si ya existe el nombre
+        window.onload = () => {
+            if (localStorage.getItem('partner_name')) {
+                document.getElementById('view-login').classList.add('hidden-view');
+                document.getElementById('view-dashboard').classList.remove('hidden-view');
+                setTimeout(initDashboard, 1000);
+            }
+        };
+    </script>
+</body>
+</html>
