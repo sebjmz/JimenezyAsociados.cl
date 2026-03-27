@@ -11,7 +11,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse(__firebase_config);
@@ -20,7 +20,7 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'jimenez-intranet-v2';
 
-        window.fb = { auth, db, appId, doc, setDoc, serverTimestamp };
+        window.fb = { auth, db, appId, doc, setDoc, serverTimestamp, createUserWithEmailAndPassword, updateProfile };
     </script>
 
     <style>
@@ -57,12 +57,18 @@
         input:focus {
             border-color: var(--primary) !important;
             outline: none;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
         }
 
         .prefix-box {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-right: none;
+        }
+
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -77,61 +83,79 @@
 
     <div class="glass-panel login-card w-full max-w-lg p-8 md:p-12 rounded-[2.5rem]">
         <h1 class="text-3xl font-black mb-2 uppercase tracking-tighter italic text-center">Crear <span class="text-blue-500">Cuenta</span></h1>
-        <p class="text-gray-500 text-sm mb-8 text-center">Completa tus datos para empezar a comisionar</p>
+        <p class="text-gray-500 text-sm mb-8 text-center">Completa tus datos para empezar a gestionar tus comisiones</p>
         
         <form id="register-form" class="space-y-5">
             <!-- Nombre -->
             <div>
-                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Nombre Completo</label>
-                <input type="text" id="reg-name" required placeholder="Ej: Juan Pérez" class="w-full p-4 rounded-2xl transition mt-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 tracking-widest">Nombre Completo</label>
+                <input type="text" id="reg-name" required placeholder="Ej: Marcela Soto" class="w-full p-4 rounded-2xl transition mt-1">
             </div>
 
             <div class="grid md:grid-cols-2 gap-5">
-                <!-- RUT -->
+                <!-- RUT con Formato Automático -->
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">RUT</label>
-                    <input type="text" id="reg-rut" required placeholder="12.345.678-9" class="w-full p-4 rounded-2xl transition mt-1">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 tracking-widest">RUT</label>
+                    <input type="text" id="reg-rut" required placeholder="12.345.678-9" maxlength="12" class="w-full p-4 rounded-2xl transition mt-1">
                 </div>
-                <!-- Teléfono con Ayuda -->
+                <!-- Teléfono con Ayuda Visual -->
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Teléfono WhatsApp</label>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 tracking-widest">WhatsApp</label>
                     <div class="flex mt-1">
-                        <span class="prefix-box flex items-center px-4 rounded-l-2xl text-gray-400 font-bold">+56</span>
-                        <input type="tel" id="reg-phone" required placeholder="9 1234 5678" class="w-full p-4 rounded-r-2xl transition">
+                        <span class="prefix-box flex items-center px-4 rounded-l-2xl text-gray-400 font-bold border border-white/10">+56</span>
+                        <input type="tel" id="reg-phone" required placeholder="9 1234 5678" maxlength="9" class="w-full p-4 rounded-r-2xl transition border-l-0">
                     </div>
-                    <p class="text-[9px] text-blue-400 mt-1 ml-2 italic">* No necesitas escribir el +56, ya lo pusimos por ti.</p>
+                    <p class="text-[9px] text-blue-400 mt-1 ml-2 italic tracking-tight">* Solo ingresa los 9 dígitos después del +56.</p>
                 </div>
             </div>
 
             <!-- Email -->
             <div>
-                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Correo Electrónico</label>
-                <input type="email" id="reg-email" required placeholder="correo@ejemplo.com" class="w-full p-4 rounded-2xl transition mt-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 tracking-widest">Correo Electrónico</label>
+                <input type="email" id="reg-email" required placeholder="socio@ejemplo.com" class="w-full p-4 rounded-2xl transition mt-1">
             </div>
 
             <!-- Password -->
             <div>
-                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">Crea una Contraseña</label>
-                <input type="password" id="reg-pass" required placeholder="Mínimo 6 caracteres" class="w-full p-4 rounded-2xl transition mt-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 tracking-widest">Contraseña</label>
+                <input type="password" id="reg-pass" required placeholder="Crea una clave de acceso" minlength="6" class="w-full p-4 rounded-2xl transition mt-1">
+                <p class="text-[9px] text-gray-600 mt-1 ml-2 italic">* Mínimo 6 caracteres para tu seguridad.</p>
             </div>
 
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition transform active:scale-95 shadow-xl shadow-blue-900/40 uppercase italic tracking-wider">
-                REGISTRARME AHORA
+            <button type="submit" id="reg-button" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition transform active:scale-95 shadow-xl shadow-blue-900/40 uppercase italic tracking-wider mt-4">
+                FINALIZAR REGISTRO
             </button>
         </form>
 
         <div class="mt-8 text-center">
-            <p class="text-xs text-gray-500">¿Ya tienes una cuenta? <a href="ingresopartner.html" class="text-blue-500 font-bold underline">Inicia sesión aquí</a></p>
+            <p class="text-xs text-gray-500 italic">¿Ya tienes una cuenta activa? <a href="ingresopartner.html" class="text-blue-500 font-bold underline hover:text-blue-400 transition">Inicia sesión aquí</a></p>
         </div>
     </div>
 
     <script type="module">
+        // --- Formateador de RUT Dinámico ---
+        document.getElementById('reg-rut').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\./g, '').replace('-', '');
+            
+            if (value.length > 1) {
+                let body = value.slice(0, -1);
+                let dv = value.slice(-1).toUpperCase();
+                
+                // Formatear cuerpo con puntos
+                let formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                
+                e.target.value = formattedBody + '-' + dv;
+            }
+        });
+
+        // --- Lógica de Registro ---
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const btn = e.target.querySelector('button');
-            btn.disabled = true;
-            btn.innerText = "PROCESANDO...";
+            const btn = document.getElementById('reg-button');
+            const originalText = btn.innerText;
+            btn.classList.add('btn-loading');
+            btn.innerText = "CREANDO CUENTA...";
 
             const name = document.getElementById('reg-name').value;
             const rut = document.getElementById('reg-rut').value;
@@ -140,45 +164,44 @@
             const pass = document.getElementById('reg-pass').value;
 
             try {
-                // 1. Crear usuario en Auth
-                const userCredential = await window.fb.auth.createUserWithEmailAndPassword(window.fb.auth, email, pass);
+                // 1. Crear usuario en Authentication
+                const userCredential = await window.fb.createUserWithEmailAndPassword(window.fb.auth, email, pass);
                 const user = userCredential.user;
 
-                // 2. Guardar perfil extendido en Firestore
-                // Ruta: /artifacts/{appId}/users/{userId}/profile/data
+                // 2. Actualizar perfil de usuario (Nombre visible)
+                await window.fb.updateProfile(user, { displayName: name });
+
+                // 3. Guardar perfil detallado en Firestore
+                // Ruta estructurada: /artifacts/{appId}/users/{userId}/profile/info
                 await window.fb.setDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'profile', 'info'), {
                     nombre: name,
                     rut: rut,
-                    telefono: "+56" + phone.replace(/\s/g, ''),
+                    telefono: "+56" + phone.trim().replace(/\s/g, ''),
                     email: email,
-                    rol: 'partner',
+                    rol: 'partner_activo',
                     fechaRegistro: window.fb.serverTimestamp(),
                     comisionesPagadas: 0,
-                    comisionesPendientes: 0
+                    comisionesPendientes: 0,
+                    negociosTotales: 0
                 });
 
-                alert("¡Registro exitoso! Bienvenido al Club.");
+                // Guardamos en localStorage para facilitar el primer login
+                localStorage.setItem('partner_name', name);
+
+                alert("¡Bienvenido al Club Partners, " + name + "! Tu cuenta ha sido creada exitosamente.");
                 window.location.href = 'ingresopartners.html';
 
             } catch (error) {
-                console.error(error);
-                let msg = "Ocurrió un error al registrar.";
-                if (error.code === 'auth/email-already-in-use') msg = "Este correo ya está registrado.";
-                if (error.code === 'auth/weak-password') msg = "La contraseña debe tener al menos 6 caracteres.";
+                console.error("Error en registro:", error);
+                let msg = "Hubo un problema al crear tu cuenta.";
+                
+                if (error.code === 'auth/email-already-in-use') msg = "Este correo electrónico ya está registrado.";
+                if (error.code === 'auth/invalid-email') msg = "El formato del correo no es válido.";
+                if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil. Usa al menos 6 caracteres.";
                 
                 alert(msg);
-                btn.disabled = false;
-                btn.innerText = "REGISTRARME AHORA";
-            }
-        });
-
-        // Formateador simple de RUT mientras escriben (opcional para ayuda)
-        document.getElementById('reg-rut').addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\./g, '').replace('-', '');
-            if (value.length > 1) {
-                let body = value.slice(0, -1);
-                let dv = value.slice(-1).toUpperCase();
-                e.target.value = body + '-' + dv;
+                btn.classList.remove('btn-loading');
+                btn.innerText = originalText;
             }
         });
     </script>
