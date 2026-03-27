@@ -10,155 +10,243 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // CONFIGURACIÓN REAL DE SEBASTIÁN
         const firebaseConfig = {
-  apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
-  authDomain: "jimenez-asociados-portal.firebaseapp.com",
-  projectId: "jimenez-asociados-portal",
-  storageBucket: "jimenez-asociados-portal.firebasestorage.app",
-  messagingSenderId: "588021927873",
-  appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
-};
+            apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
+            authDomain: "jimenez-asociados-portal.firebaseapp.com",
+            projectId: "jimenez-asociados-portal",
+            storageBucket: "jimenez-asociados-portal.firebasestorage.app",
+            messagingSenderId: "588021927873",
+            appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jimenez-intranet';
+        const appId = 'jimenez-portal-oficial';
 
-        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp };
-        
-        signInAnonymously(auth).then(() => {
-            initDashboard();
+        // --- IMPORTANTE: CAMBIA ESTO POR TU CORREO REAL ---
+        const ADMIN_EMAIL = "sebjmz@gmail.com"; 
+
+        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, signOut, ADMIN_EMAIL };
+
+        // SEGURIDAD: Control de acceso y visibilidad del Botón Master
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Si no hay sesión, regresa al login
+                window.location.href = 'ingresopartner.html';
+            } else {
+                // Nombre del socio en el Navbar
+                document.getElementById('partner-display').innerText = user.displayName || user.email.split('@')[0];
+                
+                // Botón "Panel Master" solo aparece si eres el administrador
+                if (user.email === window.fb.ADMIN_EMAIL) {
+                    document.getElementById('master-btn').classList.remove('hidden');
+                }
+                
+                // Carga los datos del socio
+                initDashboard(user.uid);
+            }
         });
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: white; }
-        .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .progress-bar { height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #3b82f6; transition: width 0.5s ease; }
-        .hidden-view { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Estilo para notificaciones */
+        #msg-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <nav class="glass-panel border-b border-white/5 py-4 px-8 flex justify-between items-center">
-        <div class="flex items-center gap-4 cursor-pointer" onclick="location.href='index.html'">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black italic text-xl">J</div>
-            <span class="font-bold text-sm uppercase tracking-widest hidden md:block">Estatus de Mis Comisiones</span>
+    <div id="msg-box">¡Dato registrado con éxito!</div>
+
+    <!-- Navbar Superior -->
+    <nav class="glass-panel border-b border-white/5 py-4 px-8 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='index.html'">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black italic text-xl shadow-lg shadow-blue-500/20">J</div>
+            <span class="font-bold text-sm uppercase tracking-widest hidden md:block">Gestión Inmobiliaria</span>
         </div>
-        <div class="flex items-center gap-6">
-            <span id="partner-name" class="font-bold text-blue-500 text-sm">--</span>
-            <button onclick="localStorage.clear(); location.href='ingresopartner.html'" class="text-gray-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
+        
+        <div class="flex items-center gap-4">
+            <!-- Botón Maestro (Oculto por defecto) -->
+            <button id="master-btn" onclick="window.location.href='admin.html'" class="hidden bg-yellow-600/10 text-yellow-500 border border-yellow-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-yellow-600 hover:text-white transition-all">
+                Panel Master
+            </button>
+
+            <div class="h-6 w-[1px] bg-white/10 mx-2 hidden md:block"></div>
+
+            <div class="flex flex-col text-right">
+                <span id="partner-display" class="font-bold text-blue-500 text-sm italic">--</span>
+                <span class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Socio Activo</span>
+            </div>
+
+            <button onclick="window.fb.signOut(window.fb.auth).then(() => window.location.href='ingresopartner.html')" class="text-gray-500 hover:text-white transition-colors p-2">
+                <i class="fa-solid fa-power-off"></i>
+            </button>
         </div>
     </nav>
 
+    <!-- Contenido Principal -->
     <main class="p-6 md:p-12 max-w-7xl mx-auto w-full flex-1">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
             <div>
-                <h2 class="text-4xl font-black uppercase tracking-tighter italic">Mis <span class="text-blue-500">Ingresos</span></h2>
-                <p class="text-gray-500 text-sm">Estado en vivo de tus propiedades referidas.</p>
+                <h1 class="text-4xl font-black uppercase italic tracking-tighter mb-2">Mis <span class="text-blue-500">Gestiones</span></h1>
+                <p class="text-gray-500 text-sm">Estado de tus referidos y comisiones.</p>
             </div>
-            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition">
+            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition shadow-xl shadow-blue-900/40 transform active:scale-95">
                 <i class="fa-solid fa-plus"></i> NUEVO DATO
             </button>
         </div>
 
-        <div class="glass-panel rounded-[2.5rem] overflow-hidden">
+        <!-- Tabla -->
+        <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-500 tracking-[0.2em]">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
                         <tr>
-                            <th class="px-8 py-6">Propiedad</th>
-                            <th class="px-8 py-6">Proceso</th>
-                            <th class="px-8 py-6 text-center">Contactado</th>
-                            <th class="px-8 py-6 text-center">Contrato</th>
-                            <th class="px-8 py-6 text-center">Visitas</th>
-                            <th class="px-8 py-6 text-center">Ofertas</th>
-                            <th class="px-8 py-6 text-right">Bonificación</th>
+                            <th class="px-8 py-6 text-white">Propiedad / Cliente</th>
+                            <th class="px-8 py-6 text-white">Progreso</th>
+                            <th class="px-8 py-6 text-center text-white">Visto</th>
+                            <th class="px-8 py-6 text-center text-white">Firma</th>
+                            <th class="px-8 py-6 text-center text-white">Visitas</th>
+                            <th class="px-8 py-6 text-right text-white">Bonificación</th>
                         </tr>
                     </thead>
-                    <tbody id="leads-container" class="divide-y divide-white/5">
-                        <tr><td colspan="7" class="px-8 py-20 text-center text-gray-600 italic">No hay gestiones activas. Registra tu primer dato arriba.</td></tr>
+                    <tbody id="leads-body" class="divide-y divide-white/5">
+                        <tr><td colspan="6" class="px-8 py-20 text-center text-gray-600 italic">Conectando con la base de datos segura...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- Modal Registro -->
+    <!-- Modal Nuevo Dato -->
     <div id="modal-nuevo" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-6 hidden">
-        <div class="glass-panel w-full max-w-xl p-10 rounded-[3rem] relative">
-            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
-<button id="master-btn" onclick="window.location.href='admin.html'" class="hidden bg-yellow-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase ml-4">
-    Panel Master
-</button>
-            <h3 class="text-3xl font-black mb-6">Nueva Referencia</h3>
+        <div class="glass-panel w-full max-w-xl p-10 rounded-[3rem] relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-3xl font-black mb-6 uppercase italic tracking-tight text-white">Nueva <span class="text-blue-500">Referencia</span></h3>
+            
             <form id="form-add" class="space-y-4">
-                <input type="text" id="in-name" required placeholder="Nombre del Cliente" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none">
-                <input type="tel" id="in-phone" required placeholder="WhatsApp Cliente (+569...)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none">
-                <select id="in-service" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none">
+                <input type="text" id="in-name" required placeholder="Nombre del Cliente" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+                <input type="tel" id="in-phone" required placeholder="WhatsApp del Cliente (+569...)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+                <select id="in-service" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none text-white">
                     <option value="Venta">Venta de Propiedad</option>
                     <option value="Arriendo">Arriendo</option>
+                    <option value="Administración">Administración</option>
                 </select>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition">REGISTRAR Y NOTIFICAR ADMIN</button>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic">REGISTRAR Y NOTIFICAR</button>
             </form>
         </div>
     </div>
 
-    <script>
-        const partnerName = localStorage.getItem('active_partner');
-        if (!partnerName) location.href = 'ingresopartner.html';
-        document.getElementById('partner-name').innerText = partnerName;
-
-        function openModal() { document.getElementById('modal-nuevo').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal-nuevo').classList.add('hidden'); }
-
-        async function initDashboard() {
-            const user = window.fb.auth.currentUser;
-            const q = window.fb.query(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'));
-            
-            window.fb.onSnapshot(q, (snapshot) => {
-                const list = [];
-                snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-                render(list);
-            });
+    <script type="module">
+        function showMsg(text) {
+            const box = document.getElementById('msg-box');
+            box.innerText = text;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
         }
 
-        function render(list) {
-            const container = document.getElementById('leads-container');
-            if (list.length === 0) return;
-            
-            let html = "";
-            list.forEach(item => {
-                let progress = 10;
-                if(item.contactado) progress += 25;
-                if(item.contrato) progress += 25;
-                if(item.visitas > 0) progress += 20;
-                if(item.statusFinal === 'Pago Completado') progress = 100;
+        window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
+        window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
 
-                html += `
-                    <tr class="hover:bg-white/2 transition">
-                        <td class="px-8 py-6 font-bold">${item.name}<br><span class="text-[10px] text-gray-500">${item.service}</span></td>
-                        <td class="px-8 py-6 min-w-[150px]">
-                            <div class="text-[10px] font-bold text-blue-400 mb-1">${progress}% COMPLETADO</div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                        </td>
-                        <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
-                        <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-800'} text-xl"></i></td>
-                        <td class="px-8 py-6 text-center font-bold text-gray-400">${item.visitas || 0}</td>
-                        <td class="px-8 py-6 text-center font-bold text-gray-400">${item.ofertas || 0}</td>
-                        <td class="px-8 py-6 text-right">
-                            ${item.statusFinal === 'Pago Completado' 
-                                ? `<button class="bg-green-600 text-[10px] font-black px-3 py-1 rounded-lg">COBRAR</button>` 
-                                : `<span class="text-[10px] text-gray-600 font-bold uppercase">En Proceso</span>`}
-                        </td>
-                    </tr>
-                `;
+        async function initDashboard(uid) {
+            // Consulta los referidos solo de este usuario específico
+            const q = window.fb.query(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'referidos'));
+            
+            window.fb.onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('leads-body');
+                let html = "";
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<tr><td colspan="6" class="px-8 py-20 text-center text-gray-600 italic">No tienes referidos activos. ¡Envía tu primer dato!</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    let progress = 10;
+                    if(item.contactado) progress += 30;
+                    if(item.contrato) progress += 30;
+                    if(item.visitas > 0) progress += 20;
+                    if(item.statusFinal === 'Pago Completado') progress = 100;
+
+                    html += `
+                        <tr class="hover:bg-white/2 transition group">
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-white text-base">${item.name}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-black tracking-widest">${item.service}</div>
+                            </td>
+                            <td class="px-8 py-6 min-w-[150px]">
+                                <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-blue-400">
+                                    <span>AVANCE</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i>
+                            </td>
+                            <td class="px-8 py-6 text-center font-bold text-gray-400">
+                                ${item.visitas || 0}
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                ${item.statusFinal === 'Pago Completado' 
+                                    ? `<button onclick="window.open('https://wa.me/56951134778')" class="bg-green-600 text-[10px] font-black px-3 py-1.5 rounded-lg text-white">COBRAR</button>` 
+                                    : `<span class="text-[10px] text-gray-600 font-black uppercase italic tracking-widest">${item.statusFinal || 'En Proceso'}</span>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+                container.innerHTML = html;
             });
-            container.innerHTML = html;
         }
 
         document.getElementById('form-add').addEventListener('submit', async (e) => {
@@ -168,13 +256,25 @@
             const phone = document.getElementById('in-phone').value;
             const service = document.getElementById('in-service').value;
 
-            await window.fb.addDoc(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                name, phone, service, contactado: false, contrato: false, visitas: 0, ofertas: 0, statusFinal: 'Recibido', createdAt: window.fb.serverTimestamp()
-            });
+            try {
+                await window.fb.addDoc(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
+                    name, phone, service,
+                    contactado: false,
+                    contrato: false,
+                    visitas: 0,
+                    statusFinal: 'Validando Dato',
+                    createdAt: window.fb.serverTimestamp()
+                });
 
-            window.open(`https://wa.me/56951134778?text=Nueva Referencia de ${partnerName}: ${name} (${service})`);
-            closeModal();
-            document.getElementById('form-add').reset();
+                const partnerAlias = user.displayName || user.email;
+                window.open(`https://wa.me/56951134778?text=Nueva Referencia de ${partnerAlias}: ${name} (${service})`);
+                
+                closeModal();
+                document.getElementById('form-add').reset();
+                showMsg("Referencia enviada con éxito");
+            } catch (err) {
+                console.error("Error al registrar:", err);
+            }
         });
     </script>
 </body>
