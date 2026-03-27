@@ -92,7 +92,7 @@
         // 1. Seguridad de Admin (Solo tú entras)
         onAuthStateChanged(window.fbAdmin.auth, (user) => {
             if (!user) {
-                window.location.href = 'ingresopartners.html';
+                window.location.href = 'ingresopartner.html';
             } else {
                 document.getElementById('admin-user').innerText = "ADMIN: " + user.email;
                 loadAllLeads();
