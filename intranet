@@ -13,7 +13,14 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
+        const firebaseConfig = {
+  apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
+  authDomain: "jimenez-asociados-portal.firebaseapp.com",
+  projectId: "jimenez-asociados-portal",
+  storageBucket: "jimenez-asociados-portal.firebasestorage.app",
+  messagingSenderId: "588021927873",
+  appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
+};
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
