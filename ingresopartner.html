@@ -329,7 +329,17 @@
 
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = window.fb.auth.currentUser;
+            const ADMIN_EMAIL = "sebjmz@gmail.com";
+            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+
+            if (user.email === ADMIN_EMAIL) {
+            // Si eres tú, entras directo al control maestro
+    window.location.href = 'admin.html';
+} else {
+    // Si es un socio, va a su panel de referidos
+    window.location.href = 'intranet.html';
+};
             const name = document.getElementById('in-name').value;
             const phone = document.getElementById('in-phone').value;
             const service = document.getElementById('in-service').value;
