@@ -11,8 +11,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // CONFIGURACIÓN OFICIAL
+import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";        // CONFIGURACIÓN OFICIAL
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
             authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -31,8 +30,7 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
         // Importante: Este appId debe ser EXACTAMENTE el mismo que usas en intranet.html e ingresopartner.html
         const appId = 'jimenez-portal-oficial'; 
 
-        window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, collection, deleteDoc, increment, getDocs, signOut, ADMIN_EMAIL, appId };
-    </script>
+window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, collection, deleteDoc, increment, getDocs, serverTimestamp, signOut, ADMIN_EMAIL, appId };    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -281,28 +279,41 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
-                    const uid = docSnap.ref.parent.parent.id;
-                    
-                    // SUPERVISOR DE PRODUCTIVIDAD
-                    if (!data.email || data.email.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
-                        const refQ = window.fbAdmin.query(window.fbAdmin.collection(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'users', uid, 'referidos'));
-                        window.fbAdmin.getDocs(refQ).then(rSnap => {
-                            let success = false, active = false;
-                            rSnap.forEach(r => {
-                                if (r.data().statusFinal !== 'Perdido') active = true;
-                                if (r.data().contactado && r.data().contrato) success = true;
-                            });
+                    // REEMPLAZAR DENTRO DE snapshot.forEach en loadAllPartners
+const uid = docSnap.ref.parent.parent.id;
+const now = new Date();
 
-                            const age = data.createdAt ? Math.ceil(Math.abs(now - data.createdAt.toDate()) / (1000*60*60*24)) : 31;
-                            const isDirect = (data.sponsorEmail === window.fbAdmin.ADMIN_EMAIL);
+if (!data.email || data.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    const refQ = query(collection(db, 'artifacts', appId, 'users', uid, 'referidos'));
+    getDocs(refQ).then(rSnap => {
+        let tieneFirmaReciente = false; 
+        let tieneDatoActivo = false; 
 
-                            if (!success && !isDirect) {
-                                if (age >= 20 && age <= 30) enviarAlerta(uid, data, "RED", 30 - age);
-                                else if (age > 30) window.downgradePartner(path, data.email, true);
-                            }
-                            if (age > 40 && !success && !active) window.deletePartner(path, true);
-                        });
-                    }
+        rSnap.forEach(r => {
+            const rData = r.data();
+            if (rData.statusFinal !== 'Perdido') tieneDatoActivo = true;
+            if (rData.contactado && rData.contrato && rData.createdAt) {
+                const rDate = rData.createdAt.toDate();
+                if (Math.ceil(Math.abs(now - rDate) / (1000*60*60*24)) <= 30) tieneFirmaReciente = true;
+            }
+        });
+
+        const edadSocio = data.createdAt ? Math.ceil(Math.abs(now - data.createdAt.toDate()) / (1000*60*60*24)) : 31;
+        const esHijoDirecto = (data.sponsorEmail === ADMIN_EMAIL);
+
+        // ESCENARIO 1: Perder la Red (Día 20 aviso, Día 31 degradación)
+        if (!tieneFirmaReciente && !esHijoDirecto) {
+            if (edadSocio >= 20 && edadSocio <= 30) enviarAlertaWA(uid, data, "RED", 30 - edadSocio);
+            else if (edadSocio > 30) window.downgradePartner(path, data.email, true);
+        }
+        
+        // ESCENARIO 2: Eliminar Cuenta (Día 31 aviso, Día 41 eliminación)
+        if (!tieneFirmaReciente && !tieneDatoActivo && edadSocio > 30) {
+            if (edadSocio <= 40) enviarAlertaWA(uid, data, "CUENTA", 40 - edadSocio);
+            else if (edadSocio > 40) window.deletePartner(path, true);
+        }
+    });
+}
 
                     count++;
                     let fecha = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
@@ -328,35 +339,49 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
         }
 
         // --- FUNCIONES AUXILIARES DE GESTIÓN ---
-        window.updateStatus = async (path, field, value) => {
-            await window.fbAdmin.updateDoc(window.fbAdmin.doc(window.fbAdmin.db, path), { [field]: value });
-        };
+        // REEMPLAZAR AL FINAL DEL SCRIPT
+window.updateStatus = async (path, field, value) => {
+    try {
+        await updateDoc(doc(db, path), { [field]: value });
+    } catch (err) { console.error("Error updateStatus:", err); }
+};
 
-        window.downgradePartner = async (path, email, isAuto) => {
-            const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-            await window.fbAdmin.updateDoc(docRef, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
-            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
-            const snap = await window.fbAdmin.getDocs(q);
-            snap.forEach(async p => {
-                if (p.data().sponsorEmail?.toLowerCase() === email.toLowerCase()) {
-                    await window.fbAdmin.updateDoc(p.ref, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
-                }
-            });
-        };
+window.downgradePartner = async (path, email, isAuto = false) => {
+    try {
+        const docRef = doc(db, path);
+        // El socio ahora es hijo directo del Admin
+        await updateDoc(docRef, { sponsorEmail: ADMIN_EMAIL });
+        
+        // Buscamos a sus hijos para que ahora sean hijos del Admin
+        const q = query(collectionGroup(db, 'profile'));
+        const snap = await getDocs(q);
+        snap.forEach(async p => {
+            if (p.data().sponsorEmail?.toLowerCase() === email.toLowerCase()) {
+                await updateDoc(p.ref, { sponsorEmail: ADMIN_EMAIL });
+            }
+        });
+        if(!isAuto) alert("Socio degradado: Perdió su red.");
+    } catch (err) { console.error("Error downgrade:", err); }
+};
 
-        window.deletePartner = async (path, isAuto) => {
-            if (!isAuto && !confirm("¿Eliminar socio?")) return;
-            await window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
-            const sRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
-            await window.fbAdmin.updateDoc(sRef, { totalSocios: window.fbAdmin.increment(-1) });
-        };
+window.deletePartner = async (path, isAuto = false) => {
+    if (!isAuto && !confirm("¿Eliminar socio por completo?")) return;
+    try {
+        await deleteDoc(doc(db, path));
+        const sRef = doc(db, 'artifacts', appId, 'public', 'estadisticas');
+        await updateDoc(sRef, { totalSocios: increment(-1) });
+    } catch (err) { console.error("Error deletePartner:", err); }
+};
 
-        function enviarAlerta(uid, data, tipo, dias) {
-            if (window[`alt_${tipo}_${uid}`]) return;
-            window[`alt_${tipo}_${uid}`] = true;
-            const msg = `*AVISO:* Hola ${data.name}, te quedan ${dias} dias para activar tu red o pasará al administrador.`;
-            window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
+// Función para enviar alertas de WhatsApp
+function enviarAlertaWA(uid, data, tipo, dias) {
+    if (window[`alt_${tipo}_${uid}`]) return;
+    window[`alt_${tipo}_${uid}`] = true;
+    const msg = tipo === "RED" 
+        ? `*AVISO:* Hola ${data.name}, te quedan ${dias} días para activar tu red o tus socios pasarán al administrador.`
+        : `*AVISO:* Hola ${data.name}, te quedan ${dias} días para ingresar un dato o tu cuenta será eliminada por inactividad.`;
+    window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
+}
     </script>
 </body>
 </html>
