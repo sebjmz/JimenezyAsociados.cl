@@ -194,7 +194,7 @@
                         let progress = 10;
                         if(item.contactado) progress += 30;
                         if(item.contrato) progress += 30;
-                        if(item.visitas > 0) progress += 20;
+                        if(item.visitas) progress += 20;                        
                         if(item.statusFinal === 'Pago Completado') progress = 100;
 
                         html += `
@@ -216,8 +216,8 @@
                                 <td class="px-8 py-6 text-center">
                                     <i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i>
                                 </td>
-                                <td class="px-8 py-6 text-center font-bold text-gray-400">
-                                    ${item.visitas || 0}
+                                <td class="px-8 py-6 text-center">
+                                    <i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i>
                                 </td>
                                 <td class="px-8 py-6 text-right">
                                     ${item.statusFinal === 'Pago Completado' 
@@ -261,7 +261,7 @@
                     service: service,
                     contactado: false,
                     contrato: false,
-                    visitas: 0,
+                    visitas: false,
                     statusFinal: 'Validando Dato',
                     createdAt: window.fb.serverTimestamp()
                 });
