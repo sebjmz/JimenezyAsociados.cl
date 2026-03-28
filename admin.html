@@ -208,6 +208,24 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
+                    // --- FILTRO DE LIMPIEZA AUTOMÁTICA MULTINIVEL ---
+                    if (data.createdAt) {
+                        const now = new Date();
+                        const date = data.createdAt.toDate();
+                        const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24)); 
+                        
+                        // Reglas de eliminación
+                        const sinContacto = (diffDays > 7 && !data.contactado);
+                        const sinContrato = (diffDays > 30 && !data.contrato);
+                        const sinVisitas = (diffDays > 60 && !data.visitas);
+                        
+                        // Si cumple CUALQUIERA de las 3 reglas, se elimina
+                        if (sinContacto || sinContrato || sinVisitas) {
+                            window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
+                            return; // Salta este registro para no dibujarlo
+                        }
+                    }
+                    // ------------------------------------------------
                     total++;
                     if (!data.contactado) pending++;
                     if (data.statusFinal === 'Pago Completado') done++;
