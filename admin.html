@@ -64,49 +64,80 @@
     </header>
 
     <main class="max-w-7xl mx-auto">
-        <!-- Banner de Error para Índices o Permisos -->
-        <div id="status-error" class="error-banner">
-            <i class="fa-solid fa-triangle-exclamation mr-2"></i> 
-            <span id="error-text">Error de conexión con la base de datos.</span>
-            <a id="index-link" target="_blank" class="underline font-bold ml-2 hidden">Haz clic aquí para solucionar</a>
+        <!-- ================= VISTA: NEGOCIOS ================= -->
+        <div id="view-negocios" class="block">
+            <!-- Estadísticas de Negocios -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
+                    <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Referidos Totales</div>
+                    <div id="stat-total" class="text-5xl font-black text-white">0</div>
+                </div>
+                <div class="admin-card p-8 rounded-[2rem] text-center border-blue-500/20">
+                    <div class="text-blue-500 text-[10px] font-bold uppercase mb-2">Pendientes de Contacto</div>
+                    <div id="stat-pending" class="text-5xl font-black text-blue-500">0</div>
+                </div>
+                <div class="admin-card p-8 rounded-[2rem] text-center border-green-500/20">
+                    <div class="text-green-500 text-[10px] font-bold uppercase mb-2">Ventas Cerradas</div>
+                    <div id="stat-done" class="text-5xl font-black text-green-500">0</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Negocios -->
+            <div class="admin-card rounded-[2.5rem] overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                            <tr>
+                                <th class="px-8 py-6">Propiedad / Cliente</th>
+                                <th class="px-8 py-6 text-center">Contactado</th>
+                                <th class="px-8 py-6 text-center">Firma</th>
+                                <th class="px-8 py-6 text-center">Visitas</th>
+                                <th class="px-8 py-6 text-right">Estatus Final</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm">
+                            <tr><td colspan="5" class="p-20 text-center italic text-gray-600">Sincronizando base de datos segura...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div id="status-info" class="info-banner">
-            <i class="fa-solid fa-circle-info mr-2"></i> 
-            <span>Conexión establecida. Si no ves datos, asegúrate de que los socios hayan ingresado referidos con el ID: <b id="display-appid"></b></span>
-        </div>
+        <!-- ================= VISTA: PARTNERS (Oculta por defecto) ================= -->
+        <div id="view-partners" class="hidden">
+            <!-- Estadísticas de Partners -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
+                    <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Total Partners Activos</div>
+                    <div id="stat-partners-total" class="text-5xl font-black text-white">0</div>
+                </div>
+                <div class="admin-card p-8 rounded-[2rem] text-center border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                    <div class="text-purple-400 text-[10px] font-bold uppercase mb-2">Nuevos (Últimos 30 Días)</div>
+                    <div id="stat-partners-nuevos" class="text-5xl font-black text-purple-400">0</div>
+                </div>
+                <div class="admin-card p-8 rounded-[2rem] text-center border-pink-500/20 shadow-[0_0_15px_rgba(236,72,153,0.1)]">
+                    <div class="text-pink-500 text-[10px] font-bold uppercase mb-2">Sponsors Únicos Generados</div>
+                    <div id="stat-partners-sponsors" class="text-5xl font-black text-pink-500">0</div>
+                </div>
+            </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
-                <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Referidos Totales</div>
-                <div id="stat-total" class="text-5xl font-black text-white">0</div>
-            </div>
-            <div class="admin-card p-8 rounded-[2rem] text-center border-blue-500/20">
-                <div class="text-blue-500 text-[10px] font-bold uppercase mb-2">Pendientes de Contacto</div>
-                <div id="stat-pending" class="text-5xl font-black text-blue-500">0</div>
-            </div>
-            <div class="admin-card p-8 rounded-[2rem] text-center border-green-500/20">
-                <div class="text-green-500 text-[10px] font-bold uppercase mb-2">Ventas Cerradas</div>
-                <div id="stat-done" class="text-5xl font-black text-green-500">0</div>
-            </div>
-        </div>
-
-        <div class="admin-card rounded-[2.5rem] overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
-                        <tr>
-                            <th class="px-8 py-6">Propiedad / Cliente</th>
-                            <th class="px-8 py-6 text-center">Contactado</th>
-                            <th class="px-8 py-6 text-center">Firma</th>
-                            <th class="px-8 py-6 text-center">Visitas</th>
-                            <th class="px-8 py-6 text-right">Estatus Final</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm">
-                        <tr><td colspan="5" class="p-20 text-center italic text-gray-600">Sincronizando base de datos segura...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Tabla de Partners -->
+            <div class="admin-card rounded-[2.5rem] overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                            <tr>
+                                <th class="px-8 py-6">Datos del Partner</th>
+                                <th class="px-8 py-6 text-center">Sponsor (Invitado por)</th>
+                                <th class="px-8 py-6 text-center">Fecha de Registro</th>
+                                <th class="px-8 py-6 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-partners-body" class="divide-y divide-white/5 text-sm">
+                            <tr><td colspan="4" class="p-20 text-center italic text-gray-600">Sincronizando red de colaboradores...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
