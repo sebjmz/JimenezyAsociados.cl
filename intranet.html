@@ -11,7 +11,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURACIÓN OFICIAL
         const firebaseConfig = {
@@ -30,7 +30,7 @@
         const appId = 'jimenez-portal-oficial';
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
-        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, signOut, ADMIN_EMAIL };
+        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL };
     </script>
 
     <style>
@@ -98,6 +98,7 @@
                         <tr>
                             <th class="px-8 py-6 text-white">Propiedad / Cliente</th>
                             <th class="px-8 py-6 text-white">Progreso</th>
+                            <th class="px-8 py-6 text-center text-white">Comisión</th>
                             <th class="px-8 py-6 text-center text-white">Visto</th>
                             <th class="px-8 py-6 text-center text-white">Firma</th>
                             <th class="px-8 py-6 text-center text-white">Visitas</th>
@@ -105,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody id="leads-body" class="divide-y divide-white/5">
-                        <tr><td colspan="6" class="px-8 py-20 text-center text-gray-500 italic">Conectando con la base de datos segura...</td></tr>
+                        <tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Conectando con la base de datos segura...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -168,34 +169,66 @@
                     document.getElementById('master-btn').classList.remove('hidden');
                 }
                 
-                initDashboard(user.uid);
+                initDashboard(user.uid, user.email);
             }
         });
 
-        // 2. Cargar Referidos del Partner (Con Manejo de Errores)
-        async function initDashboard(uid) {
+        // 2. Cargar Referidos Propios y de la Red (Multinivel)
+        async function initDashboard(uid, userEmail) {
             const container = document.getElementById('leads-body');
             
             try {
-                const q = window.fb.query(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'referidos'));
+                container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados y referidos...</td></tr>';
+
+                // 1. Buscar en toda la base de datos quién invitó a quién
+                const profilesRef = window.fb.collectionGroup(window.fb.db, 'profile');
+                const profilesSnap = await window.fb.getDocs(profilesRef);
                 
-                window.fb.onSnapshot(q, (snapshot) => {
-                    let html = "";
-                    
-                    if (snapshot.empty) {
-                        container.innerHTML = '<tr><td colspan="6" class="px-8 py-20 text-center text-gray-500 italic">No tienes referidos activos. ¡Envía tu primer dato!</td></tr>';
+                let redL1 = []; // UIDs de invitados directos (5%)
+                let redL2 = []; // UIDs de invitados de L1 (1%)
+                let emailsL1 = [];
+                
+                // Determinar quiénes son tus Nivel 1 (Tus invitados)
+                profilesSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
+                        redL1.push(doc.ref.parent.parent.id); // Captura el UID secreto de Firebase
+                        if(data.email) emailsL1.push(data.email.toLowerCase());
+                    }
+                });
+                
+                // Determinar quiénes son tus Nivel 2 (Los invitados de tus invitados)
+                profilesSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
+                        redL2.push(doc.ref.parent.parent.id);
+                    }
+                });
+
+                let todosLosReferidos = []; // Arreglo maestro donde se mezclarán todos
+
+                // 2. Función interna que dibuja la tabla con los datos mezclados
+                const pintarTabla = () => {
+                    if (todosLosReferidos.length === 0) {
+                        container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones en tu red. ¡Ingresa un dato o invita a un socio!</td></tr>';
                         return;
                     }
 
-                    snapshot.forEach(docSnap => {
-                        const item = docSnap.data();
-                        
-                        // Cálculo de barra de progreso
+                    // Ordenar: Los tuyos (10%) arriba, luego los del 5%, luego los del 1%
+                    todosLosReferidos.sort((a, b) => parseInt(b.comision) - parseInt(a.comision));
+
+                    let html = "";
+                    todosLosReferidos.forEach(item => {
                         let progress = 10;
                         if(item.contactado) progress += 30;
                         if(item.contrato) progress += 30;
-                        if(item.visitas) progress += 20;                        
+                        if(item.visitas) progress += 20;
                         if(item.statusFinal === 'Pagado') progress = 100;
+
+                        // Colores de las etiquetas de comisión según el nivel
+                        let badgeColor = "bg-blue-600/20 text-blue-400 border-blue-500/30"; // 10%
+                        if(item.comision.includes('5%')) badgeColor = "bg-purple-600/20 text-purple-400 border-purple-500/30";
+                        if(item.comision.includes('1%')) badgeColor = "bg-pink-600/20 text-pink-400 border-pink-500/30";
 
                         html += `
                             <tr class="hover:bg-white/5 transition group">
@@ -203,12 +236,15 @@
                                     <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
                                     <div class="text-[10px] text-gray-500 uppercase font-black tracking-widest">${item.service || 'Venta'}</div>
                                 </td>
-                                <td class="px-8 py-6 min-w-[150px]">
-                                    <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-blue-400">
+                                <td class="px-8 py-6 min-w-[120px]">
+                                    <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400">
                                         <span>AVANCE</span>
                                         <span>${progress}%</span>
                                     </div>
                                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
                                 </td>
                                 <td class="px-8 py-6 text-center">
                                     <i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i>
@@ -227,20 +263,39 @@
                             </tr>
                         `;
                     });
-                    
                     container.innerHTML = html;
-                    
-                }, (error) => {
-                    // SI HAY ERROR DE REGLAS, LO PINTAMOS AQUÍ EN ROJO
-                    console.error("Error en lectura de datos:", error);
-                    container.innerHTML = `<tr><td colspan="6" class="px-8 py-20 text-center text-red-500 font-bold italic"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Error: Permiso Denegado. Revisa las reglas de seguridad de Firestore.</td></tr>`;
-                });
+                };
+
+                // 3. Función que "escucha" los referidos de un UID específico
+                const escucharColeccion = (targetUid, tipoComision) => {
+                    const q = window.fb.query(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', targetUid, 'referidos'));
+                    window.fb.onSnapshot(q, (snapshot) => {
+                        // Limpiamos los datos viejos de esta persona antes de meter los nuevos
+                        todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
+                        
+                        snapshot.forEach(docSnap => {
+                            const item = docSnap.data();
+                            item.uid = targetUid; 
+                            item.comision = tipoComision; // Se le asigna "10%", "5%" o "1%"
+                            todosLosReferidos.push(item);
+                        });
+                        pintarTabla();
+                    }, (error) => console.error("Error leyendo referidos multinivel:", error));
+                };
+
+                // 4. Disparamos la magia: Escuchamos nuestros datos y los de nuestra red
+                escucharColeccion(uid, '10% (Propio)');
+                redL1.forEach(l1Uid => escucharColeccion(l1Uid, '5% (L1)'));
+                redL2.forEach(l2Uid => escucharColeccion(l2Uid, '1% (L2)'));
                 
+                // (Opcional) Si en 1.5 segundos no cargó nada, dibujamos la tabla vacía
+                setTimeout(() => { if(todosLosReferidos.length === 0) pintarTabla(); }, 1500);
+
             } catch (err) {
                 console.error("Error fatal en initDashboard:", err);
+                container.innerHTML = `<tr><td colspan="7" class="px-8 py-20 text-center text-red-500 font-bold italic"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Error: Permiso Denegado o Error de Red.</td></tr>`;
             }
         }
-
         // 3. Envío de Nuevo Referido
         document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
