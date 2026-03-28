@@ -165,6 +165,88 @@
                 document.getElementById('admin-body').classList.remove('hidden-content');
                 document.getElementById('display-appid').innerText = window.fbAdmin.appId;
                 loadAllLeads();
+                // --- FUNCIÓN PARA CARGAR PARTNERS Y SUS ESTADÍSTICAS ---
+        let partnersListener = null;
+        async function loadAllPartners() {
+            if (partnersListener) return; // Evita recargar innecesariamente
+
+            // Buscamos en toda la colección 'profile'
+            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
+            
+            partnersListener = window.fbAdmin.onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('admin-partners-body');
+                let html = "";
+                let count = 0;
+                let nuevos = 0;
+                let uniqueSponsors = new Set();
+                const now = new Date();
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    count++;
+                    
+                    let fecha = "Desconocida";
+                    if (data.createdAt) {
+                        const date = data.createdAt.toDate();
+                        fecha = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                        // Validar si son de los últimos 30 días
+                        const diffTime = Math.abs(now - date);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        if (diffDays <= 30) nuevos++;
+                    }
+
+                    let sponsorVisual = `<span class="text-gray-600 italic">Administrador</span>`;
+                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
+                        sponsorVisual = `<span class="text-purple-400 font-bold">${data.sponsorEmail}</span>`;
+                        uniqueSponsors.add(data.sponsorEmail);
+                    }
+
+                    html += `
+                        <tr class="hover:bg-white/5 transition">
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-white">${data.name || 'Socio Anónimo'}</div>
+                                <div class="text-[10px] text-gray-500 font-bold tracking-wider">${data.email || 'Sin correo'}</div>
+                            </td>
+                            <td class="px-8 py-6 text-center text-xs">${sponsorVisual}</td>
+                            <td class="px-8 py-6 text-center text-xs text-gray-400">${fecha}</td>
+                            <td class="px-8 py-6 text-right">
+                                <button onclick="deletePartner('${path}')" class="bg-red-900/30 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition">
+                                    <i class="fa-solid fa-trash mr-1"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">Aún no hay Partners registrados en la red.</td></tr>';
+                
+                // Actualizar las tarjetas de métricas
+                document.getElementById('stat-partners-total').innerText = count;
+                document.getElementById('stat-partners-nuevos').innerText = nuevos;
+                document.getElementById('stat-partners-sponsors').innerText = uniqueSponsors.size;
+
+            }, (error) => { console.error("Error cargando partners:", error); });
+        }
+
+        // --- FUNCIÓN PARA ELIMINAR PARTNERS ---
+        window.deletePartner = async (path) => {
+            if (confirm("⚠️ ¿Estás seguro de que deseas eliminar este Partner? Esta acción restará 1 a las estadísticas públicas.")) {
+                try {
+                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                    await window.fbAdmin.deleteDoc(docRef); // Esto requiere que importes deleteDoc arriba
+
+                    // Dispara el decremento en las estadísticas públicas
+                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
+                    await window.fbAdmin.updateDoc(statsRef, {
+                        totalSocios: window.fbAdmin.increment(-1)
+                    });
+                } catch (err) {
+                    console.error("Error al eliminar:", err);
+                    alert("Error al eliminar el partner. Revisa la consola.");
+                }
+            }
+        };
             }
         });
 
