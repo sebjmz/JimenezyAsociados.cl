@@ -340,49 +340,46 @@ const now = new Date();
         }
 
         // --- FUNCIONES AUXILIARES DE GESTIÓN ---
-        // REEMPLAZAR AL FINAL DEL SCRIPT
-window.updateStatus = async (path, field, value) => {
-    try {
-        await updateDoc(doc(db, path), { [field]: value });
-    } catch (err) { console.error("Error updateStatus:", err); }
-};
+        // REEMPLAZAR LAS FUNCIONES AL FINAL DEL ARCHIVO (Línea 255 aprox)
+        window.updateStatus = async (path, field, value) => {
+            try {
+                await window.fbAdmin.updateDoc(window.fbAdmin.doc(window.fbAdmin.db, path), { [field]: value });
+            } catch (err) { console.error("Error updateStatus:", err); }
+        };
 
-window.downgradePartner = async (path, email, isAuto = false) => {
-    try {
-        const docRef = doc(db, path);
-        // El socio ahora es hijo directo del Admin
-        await updateDoc(docRef, { sponsorEmail: ADMIN_EMAIL });
-        
-        // Buscamos a sus hijos para que ahora sean hijos del Admin
-        const q = query(collectionGroup(db, 'profile'));
-        const snap = await getDocs(q);
-        snap.forEach(async p => {
-            if (p.data().sponsorEmail?.toLowerCase() === email.toLowerCase()) {
-                await updateDoc(p.ref, { sponsorEmail: ADMIN_EMAIL });
-            }
-        });
-        if(!isAuto) alert("Socio degradado: Perdió su red.");
-    } catch (err) { console.error("Error downgrade:", err); }
-};
+        window.downgradePartner = async (path, email, isAuto = false) => {
+            try {
+                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                await window.fbAdmin.updateDoc(docRef, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
+                
+                const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
+                const snap = await window.fbAdmin.getDocs(q);
+                snap.forEach(async p => {
+                    if (p.data().sponsorEmail?.toLowerCase() === email.toLowerCase()) {
+                        await window.fbAdmin.updateDoc(p.ref, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
+                    }
+                });
+                if(!isAuto) alert("Socio degradado: Perdió su red.");
+            } catch (err) { console.error("Error downgrade:", err); }
+        };
 
-window.deletePartner = async (path, isAuto = false) => {
-    if (!isAuto && !confirm("¿Eliminar socio por completo?")) return;
-    try {
-        await deleteDoc(doc(db, path));
-        const sRef = doc(db, 'artifacts', appId, 'public', 'estadisticas');
-        await updateDoc(sRef, { totalSocios: increment(-1) });
-    } catch (err) { console.error("Error deletePartner:", err); }
-};
+        window.deletePartner = async (path, isAuto = false) => {
+            if (!isAuto && !confirm("¿Eliminar socio por completo?")) return;
+            try {
+                await window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
+                const sRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
+                await window.fbAdmin.updateDoc(sRef, { totalSocios: window.fbAdmin.increment(-1) });
+            } catch (err) { console.error("Error deletePartner:", err); }
+        };
 
-// Función para enviar alertas de WhatsApp
-function enviarAlertaWA(uid, data, tipo, dias) {
-    if (window[`alt_${tipo}_${uid}`]) return;
-    window[`alt_${tipo}_${uid}`] = true;
-    const msg = tipo === "RED" 
-        ? `*AVISO:* Hola ${data.name}, te quedan ${dias} días para activar tu red o tus socios pasarán al administrador.`
-        : `*AVISO:* Hola ${data.name}, te quedan ${dias} días para ingresar un dato o tu cuenta será eliminada por inactividad.`;
-    window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
-}
+        function enviarAlertaWA(uid, data, tipo, dias) {
+            if (window[`alt_${tipo}_${uid}`]) return;
+            window[`alt_${tipo}_${uid}`] = true;
+            const msg = tipo === "RED" 
+                ? `*AVISO:* Hola ${data.name}, te quedan ${dias} días para activar tu red o tus socios pasarán al administrador.`
+                : `*AVISO:* Hola ${data.name}, te quedan ${dias} días para ingresar un dato o tu cuenta será eliminada por inactividad.`;
+            window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
     </script>
 </body>
 </html>
