@@ -122,9 +122,11 @@
             <form id="form-add" class="space-y-4">
                 <input type="text" id="in-name" required placeholder="Nombre del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                 <input type="tel" id="in-phone" required placeholder="WhatsApp del Cliente (+569...)" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
-                <select id="in-service" class="...">
-    <option value="Venta">Venta de Propiedad</option>
-    <option value="Arriendo">Arriendo</option>
+                <!-- REEMPLAZO PARA EL SELECT EN intranet.html -->
+<select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm appearance-none cursor-pointer">
+    <option value="" disabled selected class="text-gray-500">Tipo de Gestión</option>
+    <option value="Venta" class="bg-[#0f172a]">Venta de Propiedad</option>
+    <option value="Arriendo" class="bg-[#0f172a]">Arriendo</option>
 </select>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
                     REGISTRAR Y NOTIFICAR
