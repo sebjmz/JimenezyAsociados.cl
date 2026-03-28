@@ -356,7 +356,7 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
             window[`alt_${tipo}_${uid}`] = true;
             const msg = `*AVISO:* Hola ${data.name}, te quedan ${dias} dias para activar tu red o pasará al administrador.`;
             window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
-        };
+        }
     </script>
 </body>
 </html>
