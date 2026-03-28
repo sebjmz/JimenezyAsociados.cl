@@ -273,6 +273,27 @@
                 alert("Error al cambiar contador: " + err.message);
             }
         };
+        // --- FUNCIÓN PARA CAMBIAR PESTAÑAS Y ESTADÍSTICAS ---
+        window.switchTab = function(tab) {
+            const vNegocios = document.getElementById('view-negocios');
+            const vPartners = document.getElementById('view-partners');
+            const bNegocios = document.getElementById('btn-tab-negocios');
+            const bPartners = document.getElementById('btn-tab-partners');
+
+            if (tab === 'negocios') {
+                vNegocios.classList.remove('hidden');
+                vPartners.classList.add('hidden');
+                if (bNegocios) bNegocios.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                if (bPartners) bPartners.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+            } else {
+                vNegocios.classList.add('hidden');
+                vPartners.classList.remove('hidden');
+                if (bPartners) bPartners.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                if (bNegocios) bNegocios.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                
+                loadAllPartners(); // Carga los partners solo cuando entras a la pestaña
+            }
+        };
     </script>
 </body>
 </html>
