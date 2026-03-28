@@ -195,7 +195,7 @@
                         if(item.contactado) progress += 30;
                         if(item.contrato) progress += 30;
                         if(item.visitas) progress += 20;                        
-                        if(item.statusFinal === 'Pago Completado') progress = 100;
+                        if(item.statusFinal === 'Pagado') progress = 100;
 
                         html += `
                             <tr class="hover:bg-white/5 transition group">
@@ -220,7 +220,7 @@
                                     <i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i>
                                 </td>
                                 <td class="px-8 py-6 text-right">
-                                    ${item.statusFinal === 'Pago Completado' 
+                                    ${item.statusFinal === 'Pagado' 
                                         ? `<button onclick="window.open('https://wa.me/56951134778')" class="bg-green-600 text-[10px] font-black px-4 py-2 rounded-lg text-white transition hover:bg-green-500 shadow-lg shadow-green-900/30">COBRAR</button>` 
                                         : `<span class="text-[10px] text-gray-500 font-black uppercase italic tracking-widest bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'En Proceso'}</span>`}
                                 </td>
