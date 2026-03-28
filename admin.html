@@ -31,7 +31,7 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
         // Importante: Este appId debe ser EXACTAMENTE el mismo que usas en intranet.html e ingresopartner.html
         const appId = 'jimenez-portal-oficial'; 
 
-        window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, signOut, ADMIN_EMAIL, appId };
+        window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, collection, deleteDoc, increment, getDocs, signOut, ADMIN_EMAIL, appId };
     </script>
 
     <style>
@@ -364,17 +364,44 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
             } catch (err) { alert("Error al cambiar contador: " + err.message); }
         };
 
+        // --- FUNCIÓN PARA ELIMINAR PARTNERS CON COMPRESIÓN DINÁMICA ---
         window.deletePartner = async (path) => {
-            if (confirm("⚠️ ¿Estás seguro de que deseas eliminar este Partner?")) {
+            if (confirm("⚠️ ¿Eliminar este Partner? Si tiene invitados, su red subirá de nivel y pasará a su Sponsor automáticamente.")) {
                 try {
                     const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                    await window.fbAdmin.deleteDoc(docRef);
+                    const docSnap = await window.fbAdmin.getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        const partnerEmail = docSnap.data().email;
+                        // Guardamos quién lo invitó (Si nadie lo invitó, pasan a ti por defecto)
+                        const partnerSponsor = docSnap.data().sponsorEmail || window.fbAdmin.ADMIN_EMAIL;
 
+                        if (partnerEmail) {
+                            // 1. Traemos a toda la red para analizarla (sin filtros complejos para evitar errores)
+                            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
+                            const profilesSnap = await window.fbAdmin.getDocs(q);
+                            
+                            // 2. Buscamos a los "hijos" de este partner y los subimos de nivel
+                            profilesSnap.forEach(async (perfilDoc) => {
+                                const data = perfilDoc.data();
+                                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === partnerEmail.toLowerCase()) {
+                                    // 3. ¡Magia! El nuevo sponsor ahora es el "abuelo"
+                                    await window.fbAdmin.updateDoc(perfilDoc.ref, {
+                                        sponsorEmail: partnerSponsor
+                                    });
+                                }
+                            });
+                        }
+                    }
+
+                    // 4. Borramos al partner original y restamos la estadística pública
+                    await window.fbAdmin.deleteDoc(docRef);
                     const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
                     await window.fbAdmin.updateDoc(statsRef, { totalSocios: window.fbAdmin.increment(-1) });
+                    
                 } catch (err) {
                     console.error("Error al eliminar:", err);
-                    alert("Error al eliminar el partner.");
+                    alert("Error al eliminar el partner. Revisa la consola.");
                 }
             }
         };
