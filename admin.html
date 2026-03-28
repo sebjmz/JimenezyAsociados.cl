@@ -46,12 +46,21 @@
 </head>
 <body id="admin-body" class="min-h-screen p-4 md:p-10 hidden-content">
 
-    <header class="max-w-7xl mx-auto mb-10 flex justify-between items-center">
+    <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <!-- 1. Título y tu Correo de Admin -->
         <div>
             <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">Panel <span class="text-blue-500">Master</span></h1>
-            <p class="text-gray-400 text-sm italic tracking-widest">ADMIN: sebjmz@gmail.com</p>
+            <p id="admin-id-display" class="text-gray-400 text-sm italic tracking-widest mt-1">Verificando sesión...</p>
         </div>
-        <button onclick="handleLogout()" class="text-red-500 text-xs font-bold uppercase tracking-widest border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition">Cerrar Sesión</button>
+        
+        <!-- 2. Pestañas de Navegación (NUEVO) -->
+        <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
+            <button onclick="switchTab('negocios')" id="btn-tab-negocios" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Negocios</button>
+            <button onclick="switchTab('partners')" id="btn-tab-partners" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
+        </div>
+
+        <!-- 3. Botón Salir -->
+        <button onclick="window.fbAdmin.signOut(window.fbAdmin.auth).then(() => window.location.href='ingresopartner.html')" class="text-red-500 text-xs font-bold uppercase tracking-widest border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition">Cerrar Sesión</button>
     </header>
 
     <main class="max-w-7xl mx-auto">
