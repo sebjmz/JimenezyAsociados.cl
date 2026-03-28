@@ -183,7 +183,25 @@ const { auth, db, ADMIN_EMAIL, appId } = window.fbAdmin;
             } else {
                 document.getElementById('admin-body').classList.remove('hidden-content');
                 document.getElementById('admin-id-display').innerText = "ADMIN: " + user.email;
-                loadAllLeads();
+                // BUSCA ESTO en admin.html (alrededor de la línea 137):
+async function loadAllLeads() {
+    const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'referidos'));
+    
+    // REPLAZA EL COMIENZO DEL onSnapshot por este que detecta errores:
+    window.fbAdmin.onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('admin-table-body');
+        let html = "";
+        let total = 0, pending = 0, done = 0;
+
+        if (snapshot.empty) {
+            container.innerHTML = '<tr><td colspan="5" class="p-20 text-center italic text-gray-500">Buscando en la red... Si ves esto mucho tiempo, es que el índice aún se está creando en Firebase.</td></tr>';
+        }
+        // ... el resto del forEach se queda igual
+    }, (error) => {
+        console.error("Error de conexión:", error);
+        document.getElementById('admin-table-body').innerHTML = `<tr><td colspan="5" class="p-20 text-center text-red-500 font-bold">⚠️ EL TEJIDO AÚN NO CONECTA: ${error.message}</td></tr>`;
+    });
+}
             }
         });
 
