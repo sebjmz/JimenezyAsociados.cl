@@ -208,6 +208,70 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
+                    
+                    snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    
+                    // --- SUPERVISOR DE PRODUCTIVIDAD Y ALERTAS ---
+                    const uid = docSnap.ref.parent.parent.id;
+                    const now = new Date();
+                    let partnerAgeDays = 0;
+                    
+                    if (data.createdAt) {
+                        const date = data.createdAt.toDate();
+                        partnerAgeDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
+                    } else {
+                        partnerAgeDays = 31; 
+                    }
+
+                    const isAdmin = (data.email && data.email.toLowerCase() === window.fbAdmin.ADMIN_EMAIL.toLowerCase());
+
+                    if (!isAdmin) {
+                        const refQuery = window.fbAdmin.query(window.fbAdmin.collection(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'users', uid, 'referidos'));
+                        window.fbAdmin.getDocs(refQuery).then(refsSnap => {
+                            let cumpleMeta = false;
+                            
+                            refsSnap.forEach(refDoc => {
+                                const rData = refDoc.data();
+                                if (rData.contactado && rData.contrato && rData.createdAt) {
+                                    const rDate = rData.createdAt.toDate();
+                                    const rAgeDays = Math.ceil(Math.abs(now - rDate) / (1000 * 60 * 60 * 24));
+                                    if (rAgeDays <= 30) cumpleMeta = true; 
+                                }
+                            });
+                            
+                            // 1. REGLA DE ELIMINACIÓN (Día 31+)
+                            if (partnerAgeDays > 30 && !cumpleMeta) {
+                                window.deletePartner(path, true); 
+                            } 
+                            
+                            // 2. REGLA DE ADVERTENCIA (Día 20 al 30)
+                            // Si han pasado entre 20 y 30 días y NO ha cumplido la meta
+                            else if (partnerAgeDays >= 20 && !cumpleMeta) {
+                                // Solo disparamos el aviso si no lo hemos abierto en esta sesión para no saturar
+                                if (!window[`alerted_${uid}`]) {
+                                    window[`alerted_${uid}`] = true;
+                                    const miTelefono = "56951134778"; // Tu WhatsApp
+                                    const partnerTelefono = data.phone || ""; // El WhatsApp del socio
+                                    
+                                    const msg = `*AVISO DE EXPIRACIÓN - JIMÉNEZ & ASOCIADOS*\n\nHola ${data.name || 'Socio'},\n\nTe quedan 10 días para ingresar un referido válido (contactado y con firma) para mantenerte enrolado en la red. Si no cumples la meta, el día 30 perderás tus beneficios de sponsor, tus líneas descendentes y tus comisiones residuales acumuladas.\n\n¡Aún estás a tiempo!`;
+                                    
+                                    // Abrir WhatsApp para que tú le envíes el mensaje al socio
+                                    // Si tienes el teléfono del socio, se le enviará a él, sino solo se te abrirá a ti el aviso
+                                    const waLink = partnerTelefono 
+                                        ? `https://wa.me/${partnerTelefono}?text=${encodeURIComponent(msg)}`
+                                        : `https://wa.me/${miTelefono}?text=${encodeURIComponent("*RECORDATORIO:* Avisar a " + data.email + " que le quedan 10 días o perderá su red.")}`;
+                                    
+                                    console.log("Disparando aviso de 10 días para:", data.email);
+                                    window.open(waLink, '_blank');
+                                }
+                            }
+                        });
+                    }
+                    // ---------------------------------------------------------------------
+
+                    count++;
                     // --- FILTRO DE LIMPIEZA AUTOMÁTICA MULTINIVEL ---
                     if (data.createdAt) {
                         const now = new Date();
@@ -364,47 +428,141 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
             } catch (err) { alert("Error al cambiar contador: " + err.message); }
         };
 
-        // --- FUNCIÓN PARA ELIMINAR PARTNERS CON COMPRESIÓN DINÁMICA ---
-        window.deletePartner = async (path) => {
-            if (confirm("⚠️ ¿Eliminar este Partner? Si tiene invitados, su red subirá de nivel y pasará a su Sponsor automáticamente.")) {
-                try {
-                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                    const docSnap = await window.fbAdmin.getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const partnerEmail = docSnap.data().email;
-                        // Guardamos quién lo invitó (Si nadie lo invitó, pasan a ti por defecto)
-                        const partnerSponsor = docSnap.data().sponsorEmail || window.fbAdmin.ADMIN_EMAIL;
+       // --- FUNCIÓN: DEGRADAR SOCIO (QUITAR RED) ---
+        window.downgradePartner = async (path, partnerEmail, isAuto = false) => {
+            try {
+                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                
+                // 1. El socio ahora es hijo del Administrador
+                await window.fbAdmin.updateDoc(docRef, { 
+                    sponsorEmail: window.fbAdmin.ADMIN_EMAIL,
+                    lastDowngrade: window.fbAdmin.serverTimestamp() // Marca de tiempo del castigo
+                });
 
-                        if (partnerEmail) {
-                            // 1. Traemos a toda la red para analizarla (sin filtros complejos para evitar errores)
-                            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
-                            const profilesSnap = await window.fbAdmin.getDocs(q);
-                            
-                            // 2. Buscamos a los "hijos" de este partner y los subimos de nivel
-                            profilesSnap.forEach(async (perfilDoc) => {
-                                const data = perfilDoc.data();
-                                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === partnerEmail.toLowerCase()) {
-                                    // 3. ¡Magia! El nuevo sponsor ahora es el "abuelo"
-                                    await window.fbAdmin.updateDoc(perfilDoc.ref, {
-                                        sponsorEmail: partnerSponsor
-                                    });
-                                }
-                            });
-                        }
+                // 2. Quitamos su red: Todos sus hijos pasan al Administrador
+                const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
+                const profilesSnap = await window.fbAdmin.getDocs(q);
+                
+                profilesSnap.forEach(async (perfilDoc) => {
+                    const data = perfilDoc.data();
+                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === partnerEmail.toLowerCase()) {
+                        await window.fbAdmin.updateDoc(perfilDoc.ref, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
                     }
+                });
 
-                    // 4. Borramos al partner original y restamos la estadística pública
-                    await window.fbAdmin.deleteDoc(docRef);
-                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
-                    await window.fbAdmin.updateDoc(statsRef, { totalSocios: window.fbAdmin.increment(-1) });
-                    
-                } catch (err) {
-                    console.error("Error al eliminar:", err);
-                    alert("Error al eliminar el partner. Revisa la consola.");
-                }
+                if (!isAuto) alert("Socio degradado: Ha perdido su red y ahora es referido directo del admin.");
+            } catch (err) {
+                console.error("Error al degradar:", err);
             }
         };
+
+        // --- FUNCIÓN: ELIMINAR PARTNER POR COMPLETO ---
+        window.deletePartner = async (path, isAuto = false) => {
+            if (!isAuto && !confirm("⚠️ ¿Eliminar este Partner por completo? Esta acción es irreversible.")) return;
+            
+            try {
+                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                await window.fbAdmin.deleteDoc(docRef);
+                const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
+                await window.fbAdmin.updateDoc(statsRef, { totalSocios: window.fbAdmin.increment(-1) });
+            } catch (err) {
+                console.error("Error al eliminar:", err);
+            }
+        };
+```
+
+### Paso 2: El Supervisor de Productividad (Lógica en el Loop)
+
+Ahora, sube a la función `loadAllPartners()` y **reemplaza el bloque del supervisor** (el que estaba dentro del `snapshot.forEach`) por este motor de decisiones inteligente:
+
+```javascript
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    
+                    // --- SUPERVISOR DE PRODUCTIVIDAD INTELIGENTE ---
+                    const uid = docSnap.ref.parent.parent.id;
+                    const now = new Date();
+                    let partnerAgeDays = 0;
+                    
+                    if (data.createdAt) {
+                        const date = data.createdAt.toDate();
+                        partnerAgeDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
+                    }
+
+                    const isAdmin = (data.email && data.email.toLowerCase() === window.fbAdmin.ADMIN_EMAIL.toLowerCase());
+
+                    if (!isAdmin) {
+                        const refQuery = window.fbAdmin.query(window.fbAdmin.collection(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'users', uid, 'referidos'));
+                        window.fbAdmin.getDocs(refQuery).then(refsSnap => {
+                            let hasRecentSuccess = false; // Firma en los últimos 30 días
+                            let hasAnyActiveLead = false; // Cualquier dato que no sea 'Perdido'
+
+                            refsSnap.forEach(refDoc => {
+                                const rData = refDoc.data();
+                                if (rData.statusFinal !== 'Perdido') hasAnyActiveLead = true;
+                                
+                                if (rData.contactado && rData.contrato && rData.createdAt) {
+                                    const rDate = rData.createdAt.toDate();
+                                    const rAgeDays = Math.ceil(Math.abs(now - rDate) / (1000 * 60 * 60 * 24));
+                                    if (rAgeDays <= 30) hasRecentSuccess = true; 
+                                }
+                            });
+                            
+                            // --- ESCENARIO A: PÉRDIDA DE RED (Día 20 aviso, Día 31 ejecución) ---
+                            // El socio NO es hijo del admin todavía (está en una red externa)
+                            const esReferidoDirecto = (data.sponsorEmail && data.sponsorEmail.toLowerCase() === window.fbAdmin.ADMIN_EMAIL.toLowerCase());
+
+                            if (!hasRecentSuccess && !esReferidoDirecto) {
+                                if (partnerAgeDays >= 20 && partnerAgeDays <= 30) {
+                                    enviarAlertaWA(uid, data, "RED", 30 - partnerAgeDays);
+                                } else if (partnerAgeDays > 30) {
+                                    window.downgradePartner(path, data.email, true);
+                                }
+                            }
+
+                            // --- ESCENARIO B: ELIMINACIÓN TOTAL (Día 31+ sin datos activos) ---
+                            if (partnerAgeDays > 30 && !hasRecentSuccess && !hasAnyActiveLead) {
+                                // Aquí podrías poner un margen de 10 días más (Día 40) o eliminar de inmediato
+                                // Usaremos el margen de 10 días que pediste
+                                if (partnerAgeDays >= 31 && partnerAgeDays < 40) {
+                                    enviarAlertaWA(uid, data, "CUENTA", 40 - partnerAgeDays);
+                                } else if (partnerAgeDays >= 40) {
+                                    window.deletePartner(path, true);
+                                }
+                            }
+                        });
+                    }
+                    // ---------------------------------------------------------------------
+                    count++;
+```
+
+### Paso 3: Función de Alerta unificada para WhatsApp
+
+Agrega esta función auxiliar al final de tu script (fuera de los loops) para gestionar los mensajes:
+
+```javascript
+        // --- GESTOR DE ALERTAS WHATSAPP ---
+        function enviarAlertaWA(uid, data, tipo, diasRestantes) {
+            if (window[`alerted_${tipo}_${uid}`]) return;
+            window[`alerted_${tipo}_${uid}`] = true;
+
+            const miTel = "56951134778";
+            const partnerTel = data.phone || "";
+            let msg = "";
+
+            if (tipo === "RED") {
+                msg = `*AVISO DE RED - JIMÉNEZ & ASOCIADOS*\n\nHola ${data.name},\nTe quedan ${diasRestantes} días para ingresar un referido válido (Contacto + Firma). Si no lo logras, perderás tus beneficios de sponsor y toda tu red de invitados pasará a la administración.`;
+            } else {
+                msg = `*AVISO DE ELIMINACIÓN TOTAL*\n\nHola ${data.name},\nDado que no tienes clientes activos ni has producido cierres, tu cuenta será eliminada del registro en ${diasRestantes} días. Ingresa un referido hoy mismo para mantenerte en el sistema.`;
+            }
+
+            const waLink = partnerTel 
+                ? `https://wa.me/${partnerTel}?text=${encodeURIComponent(msg)}`
+                : `https://wa.me/${miTel}?text=${encodeURIComponent("*RECORDATORIO:* Avisar a " + data.email + " sobre su " + tipo)}`;
+            
+            window.open(waLink, '_blank');
+        }
     </script>
 </body>
 </html>
