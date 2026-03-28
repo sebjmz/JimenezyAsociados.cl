@@ -143,6 +143,8 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
 
     <script type="module">
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Importante: Aseguramos que getDocs y deleteDoc estén aquí
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Función de salida segura
         window.handleLogout = () => {
@@ -151,7 +153,7 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 .catch(err => console.error("Error al salir:", err));
         };
 
-        // --- SISTEMA DE PESTAÑAS (CORREGIDO) ---
+        // --- SISTEMA DE PESTAÑAS ---
         window.switchTab = function(tab) {
             const vNegocios = document.getElementById('view-negocios');
             const vPartners = document.getElementById('view-partners');
@@ -168,83 +170,59 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 vPartners.classList.remove('hidden');
                 bPartners.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
                 bNegocios.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
-                
-                loadAllPartners(); // Carga los partners
+                loadAllPartners(); 
             }
         };
 
-        // --- AUTENTICACIÓN (CORREGIDA) ---
+        // --- AUTENTICACIÓN ---
         onAuthStateChanged(window.fbAdmin.auth, (user) => {
             if (!user) {
                 window.location.href = 'ingresopartner.html';
             } else if (user.email.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
-                alert("Acceso Restringido a Administrador.");
+                alert("Acceso Restringido.");
                 window.location.href = 'intranet.html';
             } else {
                 document.getElementById('admin-body').classList.remove('hidden-content');
-                
-                // ERROR 1 SOLUCIONADO: El ID correcto es 'admin-id-display'
                 document.getElementById('admin-id-display').innerText = "ADMIN: " + user.email;
-                
                 loadAllLeads();
             }
         });
 
-        // ERROR 2 SOLUCIONADO: Sacamos las funciones FUERA de las llaves de autenticación
-
+        // --- 1. GESTIÓN DE NEGOCIOS (REFERIDOS) ---
         async function loadAllLeads() {
             const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'referidos'));
-            
             window.fbAdmin.onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('admin-table-body');
                 let html = "";
                 let total = 0, pending = 0, done = 0;
 
-                if (snapshot.empty) {
-                    container.innerHTML = '<tr><td colspan="5" class="p-20 text-center text-gray-500 italic">No se encontraron registros en la base de datos.</td></tr>';
-                    return;
-                }
-
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
-                    // --- FILTRO DE LIMPIEZA AUTOMÁTICA MULTINIVEL ---
+
+                    // FILTRO DE LIMPIEZA AUTOMÁTICA (7, 30, 60, 90 DÍAS)
                     if (data.createdAt) {
                         const now = new Date();
                         const date = data.createdAt.toDate();
                         const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24)); 
                         
-                        // 1. Reglas de inactividad de tiempo
                         const sinContacto = (diffDays > 7 && !data.contactado);
                         const sinContrato = (diffDays > 30 && !data.contrato);
                         const sinVisitas = (diffDays > 60 && !data.visitas);
-                        
-                        // 2. Regla de Negocio Perdido (Eliminar a los 30 días de estar en "Perdido")
-                        // Como no tenemos una fecha de "cuándo se marcó perdido", usamos 30 días desde la creación
-                        // o podrías simplemente borrarlo de inmediato, o a los 90 días globales. 
-                        // Aplicaremos la lógica: Si es "Perdido" y ya tiene más de 30 días en el sistema.
                         const esPerdidoAntiguo = (data.statusFinal === 'Perdido' && diffDays > 90);
 
-                        // Si cumple CUALQUIERA de las 4 reglas, se elimina
                         if (sinContacto || sinContrato || sinVisitas || esPerdidoAntiguo) {
-                            
-                            // Borrar el documento
                             window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
-                            
-                            // Si se borró por ser un "Negocio Perdido", disparar alerta a WhatsApp
                             if (esPerdidoAntiguo) {
-                                const phone = "56951134778";
-                                const msg = `*ALERTA SISTEMA:* Se ha eliminado automáticamente el referido "${data.name}" (${data.service}) por llevar 90 días como Negocio Perdido. Por favor, revisa si debes dar de baja la publicación en PortalInmobiliario.`;
-                                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                window.open(`https://wa.me/56951134778?text=${encodeURIComponent("*SISTEMA:* Eliminado el referido " + data.name + " por inactividad prolongada.")}`, '_blank');
                             }
-                            
-                            return; // Salta este registro para no dibujarlo
+                            return; 
                         }
                     }
-                    // ------------------------------------------------
+                    
                     total++;
                     if (!data.contactado) pending++;
-                    if (data.statusFinal === 'Pago Completado') done++;
+                    if (data.statusFinal === 'Pagado') done++;
 
                     html += `
                         <tr class="hover:bg-white/5 transition group">
@@ -263,38 +241,36 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-center">
-    <button onclick="updateStatus('${path}', 'visitas', ${!data.visitas})" class="transition hover:scale-125">
-        <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-2xl"></i>
-    </button>
-</td>
+                                <button onclick="updateStatus('${path}', 'visitas', ${!data.visitas})" class="transition hover:scale-125">
+                                    <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-2xl"></i>
+                                </button>
+                            </td>
                             <td class="px-8 py-6 text-right">
                                 <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2 rounded-lg font-bold text-white focus:border-blue-500 focus:outline-none uppercase cursor-pointer">
-    <option value="Validando" class="bg-gray-900 text-white" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-    <option value="Oferta" class="bg-gray-900 text-white" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
-    <option value="Contrato" class="bg-gray-900 text-white" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
-    <option value="Firma" class="bg-gray-900 text-white" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
-    <option value="Inscrito" class="bg-gray-900 text-white" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
-    <option value="Pagado" class="bg-gray-900 text-white" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
-    <option value="Perdido" class="bg-red-900 text-white" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
-</select>
+                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                    <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
+                                    <option value="Contrato" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
+                                    <option value="Firma" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
+                                    <option value="Inscrito" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
+                                    <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
+                                    <option value="Perdido" class="bg-red-900" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
+                                </select>
                             </td>
                         </tr>
                     `;
                 });
                 container.innerHTML = html;
-
                 document.getElementById('stat-total').innerText = total;
                 document.getElementById('stat-pending').innerText = pending;
                 document.getElementById('stat-done').innerText = done;
-            }, (error) => { console.error("Error Firestore:", error); });
+            });
         }
 
+        // --- 2. GESTIÓN DE PARTNERS (SOCIOS) ---
         let partnersListener = null;
         async function loadAllPartners() {
             if (partnersListener) return;
-
             const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
-            
             partnersListener = window.fbAdmin.onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('admin-partners-body');
                 let html = "";
@@ -305,106 +281,82 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
-                    count++;
+                    const uid = docSnap.ref.parent.parent.id;
                     
-                    let fecha = "Desconocida";
-                    if (data.createdAt) {
-                        const date = data.createdAt.toDate();
-                        fecha = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                        const diffTime = Math.abs(now - date);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                        if (diffDays <= 30) nuevos++;
+                    // SUPERVISOR DE PRODUCTIVIDAD
+                    if (!data.email || data.email.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
+                        const refQ = window.fbAdmin.query(window.fbAdmin.collection(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'users', uid, 'referidos'));
+                        window.fbAdmin.getDocs(refQ).then(rSnap => {
+                            let success = false, active = false;
+                            rSnap.forEach(r => {
+                                if (r.data().statusFinal !== 'Perdido') active = true;
+                                if (r.data().contactado && r.data().contrato) success = true;
+                            });
+
+                            const age = data.createdAt ? Math.ceil(Math.abs(now - data.createdAt.toDate()) / (1000*60*60*24)) : 31;
+                            const isDirect = (data.sponsorEmail === window.fbAdmin.ADMIN_EMAIL);
+
+                            if (!success && !isDirect) {
+                                if (age >= 20 && age <= 30) enviarAlerta(uid, data, "RED", 30 - age);
+                                else if (age > 30) window.downgradePartner(path, data.email, true);
+                            }
+                            if (age > 40 && !success && !active) window.deletePartner(path, true);
+                        });
                     }
 
-                    let sponsorVisual = `<span class="text-gray-600 italic">Administrador</span>`;
-                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
-                        sponsorVisual = `<span class="text-purple-400 font-bold">${data.sponsorEmail}</span>`;
-                        uniqueSponsors.add(data.sponsorEmail);
-                    }
+                    count++;
+                    let fecha = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
+                    let sponsorVisual = data.sponsorEmail || "Administrador";
 
                     html += `
                         <tr class="hover:bg-white/5 transition">
                             <td class="px-8 py-6">
-                                <div class="font-bold text-white">${data.name || 'Socio Anónimo'}</div>
-                                <div class="text-[10px] text-gray-500 font-bold tracking-wider">${data.email || 'Sin correo'}</div>
+                                <div class="font-bold text-white">${data.name || 'Socio'}</div>
+                                <div class="text-[10px] text-gray-500">${data.email}</div>
                             </td>
-                            <td class="px-8 py-6 text-center text-xs">${sponsorVisual}</td>
+                            <td class="px-8 py-6 text-center text-xs text-purple-400">${sponsorVisual}</td>
                             <td class="px-8 py-6 text-center text-xs text-gray-400">${fecha}</td>
                             <td class="px-8 py-6 text-right">
-                                <button onclick="deletePartner('${path}')" class="bg-red-900/30 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition">
-                                    <i class="fa-solid fa-trash mr-1"></i> Eliminar
-                                </button>
+                                <button onclick="deletePartner('${path}')" class="bg-red-900/30 text-red-500 p-2 rounded-lg text-[10px] uppercase font-bold">Eliminar</button>
                             </td>
                         </tr>
                     `;
                 });
-
-                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">Aún no hay Partners registrados.</td></tr>';
-                
+                container.innerHTML = html;
                 document.getElementById('stat-partners-total').innerText = count;
-                document.getElementById('stat-partners-nuevos').innerText = nuevos;
-                document.getElementById('stat-partners-sponsors').innerText = uniqueSponsors.size;
-
-            }, (error) => { console.error("Error cargando partners:", error); });
+            });
         }
 
+        // --- FUNCIONES AUXILIARES DE GESTIÓN ---
         window.updateStatus = async (path, field, value) => {
-            try {
-                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                await window.fbAdmin.updateDoc(docRef, { [field]: value });
-            } catch (err) { alert("Error al actualizar: " + err.message); }
+            await window.fbAdmin.updateDoc(window.fbAdmin.doc(window.fbAdmin.db, path), { [field]: value });
         };
 
-        window.changeCounter = async (path, field, change) => {
-            try {
-                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                const docSnap = await window.fbAdmin.getDoc(docRef);
-                const currentVal = docSnap.data()[field] || 0;
-                await window.fbAdmin.updateDoc(docRef, { [field]: Math.max(0, currentVal + change) });
-            } catch (err) { alert("Error al cambiar contador: " + err.message); }
-        };
-
-        // --- FUNCIÓN PARA ELIMINAR PARTNERS CON COMPRESIÓN DINÁMICA ---
-        window.deletePartner = async (path) => {
-            if (confirm("⚠️ ¿Eliminar este Partner? Si tiene invitados, su red subirá de nivel y pasará a su Sponsor automáticamente.")) {
-                try {
-                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                    const docSnap = await window.fbAdmin.getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const partnerEmail = docSnap.data().email;
-                        // Guardamos quién lo invitó (Si nadie lo invitó, pasan a ti por defecto)
-                        const partnerSponsor = docSnap.data().sponsorEmail || window.fbAdmin.ADMIN_EMAIL;
-
-                        if (partnerEmail) {
-                            // 1. Traemos a toda la red para analizarla (sin filtros complejos para evitar errores)
-                            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
-                            const profilesSnap = await window.fbAdmin.getDocs(q);
-                            
-                            // 2. Buscamos a los "hijos" de este partner y los subimos de nivel
-                            profilesSnap.forEach(async (perfilDoc) => {
-                                const data = perfilDoc.data();
-                                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === partnerEmail.toLowerCase()) {
-                                    // 3. ¡Magia! El nuevo sponsor ahora es el "abuelo"
-                                    await window.fbAdmin.updateDoc(perfilDoc.ref, {
-                                        sponsorEmail: partnerSponsor
-                                    });
-                                }
-                            });
-                        }
-                    }
-
-                    // 4. Borramos al partner original y restamos la estadística pública
-                    await window.fbAdmin.deleteDoc(docRef);
-                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
-                    await window.fbAdmin.updateDoc(statsRef, { totalSocios: window.fbAdmin.increment(-1) });
-                    
-                } catch (err) {
-                    console.error("Error al eliminar:", err);
-                    alert("Error al eliminar el partner. Revisa la consola.");
+        window.downgradePartner = async (path, email, isAuto) => {
+            const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+            await window.fbAdmin.updateDoc(docRef, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
+            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
+            const snap = await window.fbAdmin.getDocs(q);
+            snap.forEach(async p => {
+                if (p.data().sponsorEmail?.toLowerCase() === email.toLowerCase()) {
+                    await window.fbAdmin.updateDoc(p.ref, { sponsorEmail: window.fbAdmin.ADMIN_EMAIL });
                 }
-            }
+            });
         };
+
+        window.deletePartner = async (path, isAuto) => {
+            if (!isAuto && !confirm("¿Eliminar socio?")) return;
+            await window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
+            const sRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
+            await window.fbAdmin.updateDoc(sRef, { totalSocios: window.fbAdmin.increment(-1) });
+        };
+
+        function enviarAlerta(uid, data, tipo, dias) {
+            if (window[`alt_${tipo}_${uid}`]) return;
+            window[`alt_${tipo}_${uid}`] = true;
+            const msg = `*AVISO:* Hola ${data.name}, te quedan ${dias} dias para activar tu red o pasará al administrador.`;
+            window.open(`https://wa.me/${data.phone || '56951134778'}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
     </script>
 </body>
 </html>
