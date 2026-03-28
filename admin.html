@@ -7,11 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // CONFIGURACIÓN OFICIAL
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
             authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -25,11 +27,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // CONFIGURACIÓN DE IDENTIDAD
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
+        // Importante: Este appId debe ser EXACTAMENTE el mismo que usas en intranet.html e ingresopartner.html
         const appId = 'jimenez-portal-oficial'; 
 
-        // Exportamos a la ventana global para poder usar las funciones en el HTML
-        window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, collection, deleteDoc, increment, signOut, ADMIN_EMAIL, appId };
+        window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, signOut, ADMIN_EMAIL, appId };
     </script>
 
     <style>
@@ -37,246 +40,206 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
         .admin-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
         .hidden-content { display: none !important; }
-        
-        /* Estilos para las pestañas */
-        .tab-btn { transition: all 0.3s ease; }
-        .tab-active { background-color: #2563eb; color: white; }
-        .tab-inactive { color: #9ca3af; background-color: transparent; }
-        .tab-inactive:hover { color: white; }
+        .error-banner { background: #ef4444; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; font-size: 13px; }
+        .info-banner { background: #3b82f6; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; font-size: 13px; }
     </style>
 </head>
 <body id="admin-body" class="min-h-screen p-4 md:p-10 hidden-content">
 
     <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <!-- 1. Título y tu Correo de Admin -->
         <div>
             <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">Panel <span class="text-blue-500">Master</span></h1>
             <p id="admin-id-display" class="text-gray-400 text-sm italic tracking-widest mt-1">Verificando sesión...</p>
         </div>
         
-        <!-- Pestañas -->
+        <!-- 2. Pestañas de Navegación (NUEVO) -->
         <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
-            <button onclick="switchTab('negocios')" id="btn-tab-negocios" class="tab-btn tab-active px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest">Negocios</button>
-            <button onclick="switchTab('partners')" id="btn-tab-partners" class="tab-btn tab-inactive px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest">Partners</button>
+            <button onclick="switchTab('negocios')" id="btn-tab-negocios" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Negocios</button>
+            <button onclick="switchTab('partners')" id="btn-tab-partners" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
         </div>
 
+        <!-- 3. Botón Salir -->
         <button onclick="window.fbAdmin.signOut(window.fbAdmin.auth).then(() => window.location.href='ingresopartner.html')" class="text-red-500 text-xs font-bold uppercase tracking-widest border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition">Cerrar Sesión</button>
     </header>
 
     <main class="max-w-7xl mx-auto">
-        
-        <!-- ================= VISTA: NEGOCIOS ================= -->
-        <div id="view-negocios" class="block">
-            <div class="admin-card rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
-                            <tr>
-                                <th class="px-8 py-6">Propiedad</th>
-                                <th class="px-8 py-6 text-center">Contactado</th>
-                                <th class="px-8 py-6 text-center">Contrato</th>
-                                <th class="px-8 py-6 text-right">Estatus Final</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm">
-                            <tr><td colspan="4" class="p-20 text-center italic text-gray-600">Sincronizando negocios...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Banner de Error para Índices o Permisos -->
+        <div id="status-error" class="error-banner">
+            <i class="fa-solid fa-triangle-exclamation mr-2"></i> 
+            <span id="error-text">Error de conexión con la base de datos.</span>
+            <a id="index-link" target="_blank" class="underline font-bold ml-2 hidden">Haz clic aquí para solucionar</a>
+        </div>
+
+        <div id="status-info" class="info-banner">
+            <i class="fa-solid fa-circle-info mr-2"></i> 
+            <span>Conexión establecida. Si no ves datos, asegúrate de que los socios hayan ingresado referidos con el ID: <b id="display-appid"></b></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
+                <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Referidos Totales</div>
+                <div id="stat-total" class="text-5xl font-black text-white">0</div>
+            </div>
+            <div class="admin-card p-8 rounded-[2rem] text-center border-blue-500/20">
+                <div class="text-blue-500 text-[10px] font-bold uppercase mb-2">Pendientes de Contacto</div>
+                <div id="stat-pending" class="text-5xl font-black text-blue-500">0</div>
+            </div>
+            <div class="admin-card p-8 rounded-[2rem] text-center border-green-500/20">
+                <div class="text-green-500 text-[10px] font-bold uppercase mb-2">Ventas Cerradas</div>
+                <div id="stat-done" class="text-5xl font-black text-green-500">0</div>
             </div>
         </div>
 
-        <!-- ================= VISTA: PARTNERS ================= -->
-        <div id="view-partners" class="hidden">
-            <div class="admin-card rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-                    <h2 class="text-xl font-bold uppercase tracking-widest text-blue-400">Red de Colaboradores</h2>
-                    <div class="text-xs text-gray-400 bg-black/50 px-4 py-2 rounded-full border border-white/10">
-                        <span id="total-partners-count" class="font-bold text-white text-sm">0</span> Activos
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
-                            <tr>
-                                <th class="px-8 py-6">Partner</th>
-                                <th class="px-8 py-6 text-center">Sponsor (Invitado por)</th>
-                                <th class="px-8 py-6 text-center">Fecha Registro</th>
-                                <th class="px-8 py-6 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-partners-body" class="divide-y divide-white/5 text-sm">
-                            <tr><td colspan="4" class="p-20 text-center italic text-gray-600">Sincronizando red...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="admin-card rounded-[2.5rem] overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                        <tr>
+                            <th class="px-8 py-6">Propiedad / Cliente</th>
+                            <th class="px-8 py-6 text-center">Contactado</th>
+                            <th class="px-8 py-6 text-center">Firma</th>
+                            <th class="px-8 py-6 text-center">Visitas</th>
+                            <th class="px-8 py-6 text-right">Estatus Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm">
+                        <tr><td colspan="5" class="p-20 text-center italic text-gray-600">Sincronizando base de datos segura...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </main>
 
     <script type="module">
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- SISTEMA DE PESTAÑAS ---
-        window.switchTab = function(tab) {
-            const viewNegocios = document.getElementById('view-negocios');
-            const viewPartners = document.getElementById('view-partners');
-            const btnNegocios = document.getElementById('btn-tab-negocios');
-            const btnPartners = document.getElementById('btn-tab-partners');
-
-            if (tab === 'negocios') {
-                viewNegocios.classList.remove('hidden');
-                viewPartners.classList.add('hidden');
-                btnNegocios.className = 'tab-btn tab-active px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest';
-                btnPartners.className = 'tab-btn tab-inactive px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest';
-            } else {
-                viewNegocios.classList.add('hidden');
-                viewPartners.classList.remove('hidden');
-                btnPartners.className = 'tab-btn tab-active px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest';
-                btnNegocios.className = 'tab-btn tab-inactive px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest';
-                
-                // Cargar partners solo cuando se abre la pestaña (optimización)
-                loadAllPartners();
-            }
+        // Función de salida segura para evitar el error de 'Location'
+        window.handleLogout = () => {
+            window.fbAdmin.signOut(window.fbAdmin.auth)
+                .then(() => {
+                    const target = 'ingresopartner.html';
+                    if (target) window.location.href = target;
+                })
+                .catch(err => console.error("Error al salir:", err));
         };
 
-        // --- AUTENTICACIÓN ---
         onAuthStateChanged(window.fbAdmin.auth, (user) => {
             if (!user) {
                 window.location.href = 'ingresopartner.html';
             } else if (user.email.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
+                alert("Acceso Restringido a Administrador.");
                 window.location.href = 'intranet.html';
             } else {
                 document.getElementById('admin-body').classList.remove('hidden-content');
-                document.getElementById('admin-id-display').innerText = "ADMIN: " + user.email;
-                loadAllLeads(); // Carga la tabla de negocios por defecto
+                document.getElementById('display-appid').innerText = window.fbAdmin.appId;
+                loadAllLeads();
             }
         });
 
-        // --- CARGAR NEGOCIOS ---
         async function loadAllLeads() {
+            // Buscamos la colección 'referidos' en toda la base de datos
             const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'referidos'));
+            
             window.fbAdmin.onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('admin-table-body');
+                const infoBanner = document.getElementById('status-info');
                 let html = "";
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    html += `
-                        <tr class="hover:bg-white/2 transition">
-                            <td class="px-8 py-6"><div class="font-bold text-white text-base">${data.name || 'Sin nombre'}</div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">${data.service || 'Venta'}</div></td>
-                            <td class="px-8 py-6 text-center">
-                                <button onclick="updateStatus('${path}', 'contactado', ${!data.contactado})">
-                                    <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
-                                </button>
-                            </td>
-                            <td class="px-8 py-6 text-center">
-                                <button onclick="updateStatus('${path}', 'contrato', ${!data.contrato})">
-                                    <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
-                                </button>
-                            </td>
-                            <td class="px-8 py-6 text-right">
-                                <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300">
-                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-                                    <option value="En Proceso" ${data.statusFinal === 'En Proceso' ? 'selected' : ''}>PROCESO</option>
-                                    <option value="Pago Completado" ${data.statusFinal === 'Pago Completado' ? 'selected' : ''}>PAGO LISTO</option>
-                                </select>
-                            </td>
-                        </tr>
-                    `;
-                });
-                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">No hay negocios registrados.</td></tr>';
-            }, (error) => { console.error("Error cargando negocios:", error); });
+                let total = 0, pending = 0, done = 0;
+
+                if (snapshot.empty) {
+                    infoBanner.style.display = 'block';
+                    container.innerHTML = '<tr><td colspan="5" class="p-20 text-center text-gray-500 italic">No se encontraron registros en la base de datos.</td></tr>';
+                } else {
+                    infoBanner.style.display = 'none';
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const path = docSnap.ref.path;
+                        total++;
+                        if (!data.contactado) pending++;
+                        if (data.statusFinal === 'Pago Completado') done++;
+
+                        html += `
+                            <tr class="hover:bg-white/5 transition group">
+                                <td class="px-8 py-6">
+                                    <div class="font-bold text-white">${data.name || 'Socio Sin Nombre'}</div>
+                                    <div class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">${data.service || 'Venta'}</div>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <button onclick="updateStatus('${path}', 'contactado', ${!data.contactado})" class="transition hover:scale-125">
+                                        <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
+                                    </button>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <button onclick="updateStatus('${path}', 'contrato', ${!data.contrato})" class="transition hover:scale-125">
+                                        <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
+                                    </button>
+                                </td>
+                                <td class="px-8 py-6 text-center">
+                                    <div class="flex items-center justify-center gap-4 bg-white/5 rounded-full py-1 px-3 w-max mx-auto">
+                                        <button onclick="changeCounter('${path}', 'visitas', -1)" class="text-gray-600 hover:text-white">-</button>
+                                        <span class="font-bold min-w-[20px]">${data.visitas || 0}</span>
+                                        <button onclick="changeCounter('${path}', 'visitas', 1)" class="text-gray-600 hover:text-white">+</button>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300 focus:outline-none">
+                                        <option value="Recibido" ${data.statusFinal === 'Recibido' ? 'selected' : ''}>RECIBIDO</option>
+                                        <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                        <option value="En Proceso" ${data.statusFinal === 'En Proceso' ? 'selected' : ''}>PROCESO</option>
+                                        <option value="Pago Completado" ${data.statusFinal === 'Pago Completado' ? 'selected' : ''}>PAGO LISTO</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+
+                document.getElementById('stat-total').innerText = total;
+                document.getElementById('stat-pending').innerText = pending;
+                document.getElementById('stat-done').innerText = done;
+
+            }, (error) => {
+                const errorBanner = document.getElementById('status-error');
+                const errorText = document.getElementById('error-text');
+                const indexLink = document.getElementById('index-link');
+                
+                errorBanner.style.display = 'block';
+                
+                if (error.message.includes('index')) {
+                    errorText.innerText = "Firebase requiere crear un índice para mostrar los datos de todos los socios.";
+                    const urlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
+                    if (urlMatch) {
+                        indexLink.href = urlMatch[0];
+                        indexLink.classList.remove('hidden');
+                    }
+                } else if (error.code === 'permission-denied') {
+                    errorText.innerText = "Error: Permiso denegado. Revisa las reglas de seguridad de tu base de datos.";
+                } else {
+                    errorText.innerText = "Error inesperado: " + error.message;
+                }
+                console.error("Error Firestore:", error);
+            });
         }
 
-        // --- CARGAR PARTNERS (NUEVO) ---
-        let partnersListener = null;
-        async function loadAllPartners() {
-            // Si ya hay un "escuchador" activo, no creamos otro
-            if (partnersListener) return;
-
-            // Buscamos todos los documentos 'data' dentro de la colección 'profile'
-            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
-            
-            partnersListener = window.fbAdmin.onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('admin-partners-body');
-                const countDisplay = document.getElementById('total-partners-count');
-                let html = "";
-                let count = 0;
-
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    count++;
-                    
-                    // Formatear la fecha (si existe)
-                    let fecha = "Desconocida";
-                    if (data.createdAt) {
-                        const date = data.createdAt.toDate();
-                        fecha = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                    }
-
-                    // Determinar el Sponsor visualmente
-                    let sponsorVisual = `<span class="text-gray-600 italic">Administrador (Tú)</span>`;
-                    if (data.sponsorEmail && data.sponsorEmail !== window.fbAdmin.ADMIN_EMAIL) {
-                        sponsorVisual = `<span class="text-purple-400 font-bold">${data.sponsorEmail}</span>`;
-                    }
-
-                    html += `
-                        <tr class="hover:bg-white/2 transition">
-                            <td class="px-8 py-6">
-                                <div class="font-bold text-white text-base">${data.name || 'Socio Anónimo'}</div>
-                                <div class="text-[10px] text-gray-500 font-bold tracking-wider">${data.email || 'Sin correo'}</div>
-                            </td>
-                            <td class="px-8 py-6 text-center text-xs">
-                                ${sponsorVisual}
-                            </td>
-                            <td class="px-8 py-6 text-center text-xs text-gray-400">
-                                ${fecha}
-                            </td>
-                            <td class="px-8 py-6 text-right">
-                                <!-- Botón para eliminar partner y restar estadística -->
-                                <button onclick="deletePartner('${path}')" class="bg-red-900/30 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition">
-                                    <i class="fa-solid fa-trash mr-1"></i> Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">Aún no hay Partners registrados en la red.</td></tr>';
-                countDisplay.innerText = count;
-
-            }, (error) => { console.error("Error cargando partners:", error); });
-        }
-
-        // --- ACTUALIZAR NEGOCIOS ---
         window.updateStatus = async (path, field, value) => {
             try {
                 const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
                 await window.fbAdmin.updateDoc(docRef, { [field]: value });
-            } catch (err) { alert("Error actualizando: " + err.message); }
+            } catch (err) {
+                alert("Error al actualizar: " + err.message);
+            }
         };
 
-        // --- ELIMINAR PARTNER Y RESTAR ESTADÍSTICA (NUEVO) ---
-        window.deletePartner = async (path) => {
-            if (confirm("¿Estás seguro de que deseas eliminar este Partner? Esta acción no se puede deshacer.")) {
-                try {
-                    // 1. Borramos el documento del perfil del partner
-                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                    await window.fbAdmin.deleteDoc(docRef);
-
-                    // 2. Restamos 1 al contador público de estadísticas
-                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
-                    await window.fbAdmin.updateDoc(statsRef, {
-                        totalSocios: window.fbAdmin.increment(-1)
-                    });
-                    
-                } catch (err) {
-                    // Si el documento de estadísticas no existe aún, lanzará error, pero lo ignoramos o manejamos
-                    console.error("Error al eliminar o restar estadística:", err);
-                    alert("Se eliminó el registro, pero hubo un error al actualizar el contador global.");
-                }
+        window.changeCounter = async (path, field, change) => {
+            try {
+                const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                const docSnap = await window.fbAdmin.getDoc(docRef);
+                const currentVal = docSnap.data()[field] || 0;
+                await window.fbAdmin.updateDoc(docRef, { [field]: Math.max(0, currentVal + change) });
+            } catch (err) {
+                alert("Error al cambiar contador: " + err.message);
             }
         };
     </script>
