@@ -144,16 +144,36 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
     <script type="module">
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Función de salida segura para evitar el error de 'Location'
+        // Función de salida segura
         window.handleLogout = () => {
             window.fbAdmin.signOut(window.fbAdmin.auth)
-                .then(() => {
-                    const target = 'ingresopartner.html';
-                    if (target) window.location.href = target;
-                })
+                .then(() => window.location.href = 'ingresopartner.html')
                 .catch(err => console.error("Error al salir:", err));
         };
 
+        // --- SISTEMA DE PESTAÑAS (CORREGIDO) ---
+        window.switchTab = function(tab) {
+            const vNegocios = document.getElementById('view-negocios');
+            const vPartners = document.getElementById('view-partners');
+            const bNegocios = document.getElementById('btn-tab-negocios');
+            const bPartners = document.getElementById('btn-tab-partners');
+
+            if (tab === 'negocios') {
+                vNegocios.classList.remove('hidden');
+                vPartners.classList.add('hidden');
+                bNegocios.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                bPartners.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+            } else {
+                vNegocios.classList.add('hidden');
+                vPartners.classList.remove('hidden');
+                bPartners.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                bNegocios.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
+                
+                loadAllPartners(); // Carga los partners
+            }
+        };
+
+        // --- AUTENTICACIÓN (CORREGIDA) ---
         onAuthStateChanged(window.fbAdmin.auth, (user) => {
             if (!user) {
                 window.location.href = 'ingresopartner.html';
@@ -162,21 +182,88 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 window.location.href = 'intranet.html';
             } else {
                 document.getElementById('admin-body').classList.remove('hidden-content');
-                document.getElementById('display-appid').innerText = window.fbAdmin.appId;
+                
+                // ERROR 1 SOLUCIONADO: El ID correcto es 'admin-id-display'
+                document.getElementById('admin-id-display').innerText = "ADMIN: " + user.email;
+                
                 loadAllLeads();
-                // --- FUNCIÓN PARA CARGAR PARTNERS Y SUS ESTADÍSTICAS ---
+            }
+        });
+
+        // ERROR 2 SOLUCIONADO: Sacamos las funciones FUERA de las llaves de autenticación
+
+        async function loadAllLeads() {
+            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'referidos'));
+            
+            window.fbAdmin.onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('admin-table-body');
+                let html = "";
+                let total = 0, pending = 0, done = 0;
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<tr><td colspan="5" class="p-20 text-center text-gray-500 italic">No se encontraron registros en la base de datos.</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    total++;
+                    if (!data.contactado) pending++;
+                    if (data.statusFinal === 'Pago Completado') done++;
+
+                    html += `
+                        <tr class="hover:bg-white/5 transition group">
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-white">${data.name || 'Socio Sin Nombre'}</div>
+                                <div class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">${data.service || 'Venta'}</div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <button onclick="updateStatus('${path}', 'contactado', ${!data.contactado})" class="transition hover:scale-125">
+                                    <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
+                                </button>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <button onclick="updateStatus('${path}', 'contrato', ${!data.contrato})" class="transition hover:scale-125">
+                                    <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
+                                </button>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <div class="flex items-center justify-center gap-4 bg-white/5 rounded-full py-1 px-3 w-max mx-auto">
+                                    <button onclick="changeCounter('${path}', 'visitas', -1)" class="text-gray-600 hover:text-white">-</button>
+                                    <span class="font-bold min-w-[20px]">${data.visitas || 0}</span>
+                                    <button onclick="changeCounter('${path}', 'visitas', 1)" class="text-gray-600 hover:text-white">+</button>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300 focus:outline-none">
+                                    <option value="Recibido" ${data.statusFinal === 'Recibido' ? 'selected' : ''}>RECIBIDO</option>
+                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                    <option value="En Proceso" ${data.statusFinal === 'En Proceso' ? 'selected' : ''}>PROCESO</option>
+                                    <option value="Pago Completado" ${data.statusFinal === 'Pago Completado' ? 'selected' : ''}>PAGO LISTO</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+                container.innerHTML = html;
+
+                document.getElementById('stat-total').innerText = total;
+                document.getElementById('stat-pending').innerText = pending;
+                document.getElementById('stat-done').innerText = done;
+            }, (error) => { console.error("Error Firestore:", error); });
+        }
+
         let partnersListener = null;
         async function loadAllPartners() {
-            if (partnersListener) return; // Evita recargar innecesariamente
+            if (partnersListener) return;
 
-            // Buscamos en toda la colección 'profile'
             const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'profile'));
             
             partnersListener = window.fbAdmin.onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('admin-partners-body');
                 let html = "";
-                let count = 0;
-                let nuevos = 0;
+                let count = 0, nuevos = 0;
                 let uniqueSponsors = new Set();
                 const now = new Date();
 
@@ -189,7 +276,6 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                     if (data.createdAt) {
                         const date = data.createdAt.toDate();
                         fecha = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                        // Validar si son de los últimos 30 días
                         const diffTime = Math.abs(now - date);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                         if (diffDays <= 30) nuevos++;
@@ -218,9 +304,8 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                     `;
                 });
 
-                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">Aún no hay Partners registrados en la red.</td></tr>';
+                container.innerHTML = html || '<tr><td colspan="4" class="p-20 text-center text-gray-500">Aún no hay Partners registrados.</td></tr>';
                 
-                // Actualizar las tarjetas de métricas
                 document.getElementById('stat-partners-total').innerText = count;
                 document.getElementById('stat-partners-nuevos').innerText = nuevos;
                 document.getElementById('stat-partners-sponsors').innerText = uniqueSponsors.size;
@@ -228,120 +313,11 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
             }, (error) => { console.error("Error cargando partners:", error); });
         }
 
-        // --- FUNCIÓN PARA ELIMINAR PARTNERS ---
-        window.deletePartner = async (path) => {
-            if (confirm("⚠️ ¿Estás seguro de que deseas eliminar este Partner? Esta acción restará 1 a las estadísticas públicas.")) {
-                try {
-                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
-                    await window.fbAdmin.deleteDoc(docRef); // Esto requiere que importes deleteDoc arriba
-
-                    // Dispara el decremento en las estadísticas públicas
-                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
-                    await window.fbAdmin.updateDoc(statsRef, {
-                        totalSocios: window.fbAdmin.increment(-1)
-                    });
-                } catch (err) {
-                    console.error("Error al eliminar:", err);
-                    alert("Error al eliminar el partner. Revisa la consola.");
-                }
-            }
-        };
-            }
-        });
-
-        async function loadAllLeads() {
-            // Buscamos la colección 'referidos' en toda la base de datos
-            const q = window.fbAdmin.query(window.fbAdmin.collectionGroup(window.fbAdmin.db, 'referidos'));
-            
-            window.fbAdmin.onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('admin-table-body');
-                const infoBanner = document.getElementById('status-info');
-                let html = "";
-                let total = 0, pending = 0, done = 0;
-
-                if (snapshot.empty) {
-                    infoBanner.style.display = 'block';
-                    container.innerHTML = '<tr><td colspan="5" class="p-20 text-center text-gray-500 italic">No se encontraron registros en la base de datos.</td></tr>';
-                } else {
-                    infoBanner.style.display = 'none';
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        const path = docSnap.ref.path;
-                        total++;
-                        if (!data.contactado) pending++;
-                        if (data.statusFinal === 'Pago Completado') done++;
-
-                        html += `
-                            <tr class="hover:bg-white/5 transition group">
-                                <td class="px-8 py-6">
-                                    <div class="font-bold text-white">${data.name || 'Socio Sin Nombre'}</div>
-                                    <div class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">${data.service || 'Venta'}</div>
-                                </td>
-                                <td class="px-8 py-6 text-center">
-                                    <button onclick="updateStatus('${path}', 'contactado', ${!data.contactado})" class="transition hover:scale-125">
-                                        <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
-                                    </button>
-                                </td>
-                                <td class="px-8 py-6 text-center">
-                                    <button onclick="updateStatus('${path}', 'contrato', ${!data.contrato})" class="transition hover:scale-125">
-                                        <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
-                                    </button>
-                                </td>
-                                <td class="px-8 py-6 text-center">
-                                    <div class="flex items-center justify-center gap-4 bg-white/5 rounded-full py-1 px-3 w-max mx-auto">
-                                        <button onclick="changeCounter('${path}', 'visitas', -1)" class="text-gray-600 hover:text-white">-</button>
-                                        <span class="font-bold min-w-[20px]">${data.visitas || 0}</span>
-                                        <button onclick="changeCounter('${path}', 'visitas', 1)" class="text-gray-600 hover:text-white">+</button>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-6 text-right">
-                                    <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300 focus:outline-none">
-                                        <option value="Recibido" ${data.statusFinal === 'Recibido' ? 'selected' : ''}>RECIBIDO</option>
-                                        <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-                                        <option value="En Proceso" ${data.statusFinal === 'En Proceso' ? 'selected' : ''}>PROCESO</option>
-                                        <option value="Pago Completado" ${data.statusFinal === 'Pago Completado' ? 'selected' : ''}>PAGO LISTO</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    container.innerHTML = html;
-                }
-
-                document.getElementById('stat-total').innerText = total;
-                document.getElementById('stat-pending').innerText = pending;
-                document.getElementById('stat-done').innerText = done;
-
-            }, (error) => {
-                const errorBanner = document.getElementById('status-error');
-                const errorText = document.getElementById('error-text');
-                const indexLink = document.getElementById('index-link');
-                
-                errorBanner.style.display = 'block';
-                
-                if (error.message.includes('index')) {
-                    errorText.innerText = "Firebase requiere crear un índice para mostrar los datos de todos los socios.";
-                    const urlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
-                    if (urlMatch) {
-                        indexLink.href = urlMatch[0];
-                        indexLink.classList.remove('hidden');
-                    }
-                } else if (error.code === 'permission-denied') {
-                    errorText.innerText = "Error: Permiso denegado. Revisa las reglas de seguridad de tu base de datos.";
-                } else {
-                    errorText.innerText = "Error inesperado: " + error.message;
-                }
-                console.error("Error Firestore:", error);
-            });
-        }
-
         window.updateStatus = async (path, field, value) => {
             try {
                 const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
                 await window.fbAdmin.updateDoc(docRef, { [field]: value });
-            } catch (err) {
-                alert("Error al actualizar: " + err.message);
-            }
+            } catch (err) { alert("Error al actualizar: " + err.message); }
         };
 
         window.changeCounter = async (path, field, change) => {
@@ -350,29 +326,21 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                 const docSnap = await window.fbAdmin.getDoc(docRef);
                 const currentVal = docSnap.data()[field] || 0;
                 await window.fbAdmin.updateDoc(docRef, { [field]: Math.max(0, currentVal + change) });
-            } catch (err) {
-                alert("Error al cambiar contador: " + err.message);
-            }
+            } catch (err) { alert("Error al cambiar contador: " + err.message); }
         };
-        // --- FUNCIÓN PARA CAMBIAR PESTAÑAS Y ESTADÍSTICAS ---
-        window.switchTab = function(tab) {
-            const vNegocios = document.getElementById('view-negocios');
-            const vPartners = document.getElementById('view-partners');
-            const bNegocios = document.getElementById('btn-tab-negocios');
-            const bPartners = document.getElementById('btn-tab-partners');
 
-            if (tab === 'negocios') {
-                vNegocios.classList.remove('hidden');
-                vPartners.classList.add('hidden');
-                if (bNegocios) bNegocios.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
-                if (bPartners) bPartners.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
-            } else {
-                vNegocios.classList.add('hidden');
-                vPartners.classList.remove('hidden');
-                if (bPartners) bPartners.className = 'bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
-                if (bNegocios) bNegocios.className = 'text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition';
-                
-                loadAllPartners(); // Carga los partners solo cuando entras a la pestaña
+        window.deletePartner = async (path) => {
+            if (confirm("⚠️ ¿Estás seguro de que deseas eliminar este Partner?")) {
+                try {
+                    const docRef = window.fbAdmin.doc(window.fbAdmin.db, path);
+                    await window.fbAdmin.deleteDoc(docRef);
+
+                    const statsRef = window.fbAdmin.doc(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'public', 'estadisticas');
+                    await window.fbAdmin.updateDoc(statsRef, { totalSocios: window.fbAdmin.increment(-1) });
+                } catch (err) {
+                    console.error("Error al eliminar:", err);
+                    alert("Error al eliminar el partner.");
+                }
             }
         };
     </script>
