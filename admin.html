@@ -214,14 +214,30 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                         const date = data.createdAt.toDate();
                         const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24)); 
                         
-                        // Reglas de eliminación
+                        // 1. Reglas de inactividad de tiempo
                         const sinContacto = (diffDays > 7 && !data.contactado);
                         const sinContrato = (diffDays > 30 && !data.contrato);
                         const sinVisitas = (diffDays > 60 && !data.visitas);
                         
-                        // Si cumple CUALQUIERA de las 3 reglas, se elimina
-                        if (sinContacto || sinContrato || sinVisitas) {
+                        // 2. Regla de Negocio Perdido (Eliminar a los 30 días de estar en "Perdido")
+                        // Como no tenemos una fecha de "cuándo se marcó perdido", usamos 30 días desde la creación
+                        // o podrías simplemente borrarlo de inmediato, o a los 90 días globales. 
+                        // Aplicaremos la lógica: Si es "Perdido" y ya tiene más de 30 días en el sistema.
+                        const esPerdidoAntiguo = (data.statusFinal === 'Perdido' && diffDays > 90);
+
+                        // Si cumple CUALQUIERA de las 4 reglas, se elimina
+                        if (sinContacto || sinContrato || sinVisitas || esPerdidoAntiguo) {
+                            
+                            // Borrar el documento
                             window.fbAdmin.deleteDoc(window.fbAdmin.doc(window.fbAdmin.db, path));
+                            
+                            // Si se borró por ser un "Negocio Perdido", disparar alerta a WhatsApp
+                            if (esPerdidoAntiguo) {
+                                const phone = "56951134778";
+                                const msg = `*ALERTA SISTEMA:* Se ha eliminado automáticamente el referido "${data.name}" (${data.service}) por llevar 90 días como Negocio Perdido. Por favor, revisa si debes dar de baja la publicación en PortalInmobiliario.`;
+                                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                            }
+                            
                             return; // Salta este registro para no dibujarlo
                         }
                     }
@@ -253,13 +269,14 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
 </td>
                             <td class="px-8 py-6 text-right">
                                 <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2 rounded-lg font-bold text-white focus:border-blue-500 focus:outline-none uppercase cursor-pointer">
-                                    <option value="Validando" class="bg-gray-900 text-white" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-                                    <option value="Oferta" class="bg-gray-900 text-white" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
-                                    <option value="Contrato" class="bg-gray-900 text-white" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
-                                    <option value="Firma" class="bg-gray-900 text-white" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
-                                    <option value="Inscrito" class="bg-gray-900 text-white" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
-                                    <option value="Pagado" class="bg-gray-900 text-white" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
-                                </select>
+    <option value="Validando" class="bg-gray-900 text-white" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+    <option value="Oferta" class="bg-gray-900 text-white" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
+    <option value="Contrato" class="bg-gray-900 text-white" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
+    <option value="Firma" class="bg-gray-900 text-white" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
+    <option value="Inscrito" class="bg-gray-900 text-white" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
+    <option value="Pagado" class="bg-gray-900 text-white" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
+    <option value="Perdido" class="bg-red-900 text-white" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
+</select>
                             </td>
                         </tr>
                     `;
