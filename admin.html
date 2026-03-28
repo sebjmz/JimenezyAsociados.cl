@@ -229,12 +229,10 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                <div class="flex items-center justify-center gap-4 bg-white/5 rounded-full py-1 px-3 w-max mx-auto">
-                                    <button onclick="changeCounter('${path}', 'visitas', -1)" class="text-gray-600 hover:text-white">-</button>
-                                    <span class="font-bold min-w-[20px]">${data.visitas || 0}</span>
-                                    <button onclick="changeCounter('${path}', 'visitas', 1)" class="text-gray-600 hover:text-white">+</button>
-                                </div>
-                            </td>
+    <button onclick="updateStatus('${path}', 'visitas', ${!data.visitas})" class="transition hover:scale-125">
+        <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-2xl"></i>
+    </button>
+</td>
                             <td class="px-8 py-6 text-right">
                                 <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300 focus:outline-none">
                                     <option value="Recibido" ${data.statusFinal === 'Recibido' ? 'selected' : ''}>RECIBIDO</option>
