@@ -285,9 +285,9 @@
                 };
 
                 // 4. Disparamos la magia: Escuchamos nuestros datos y los de nuestra red
-                escucharColeccion(uid, '10% (Propio)');
-                redL1.forEach(l1Uid => escucharColeccion(l1Uid, '5% (L1)'));
-                redL2.forEach(l2Uid => escucharColeccion(l2Uid, '1% (L2)'));
+                escucharColeccion(uid, '20% Propio');
+                redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
+                redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
                 
                 // (Opcional) Si en 1.5 segundos no cargó nada, dibujamos la tabla vacía
                 setTimeout(() => { if(todosLosReferidos.length === 0) pintarTabla(); }, 1500);
