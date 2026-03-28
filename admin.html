@@ -143,7 +143,8 @@ window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot,
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         // Importante: Aseguramos que getDocs y deleteDoc estén aquí
         import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+// AGREGAR ESTO JUSTO DEBAJO DE LAS IMPORTACIONES (Línea 106 aprox)
+const { auth, db, ADMIN_EMAIL, appId } = window.fbAdmin;
         // Función de salida segura
         window.handleLogout = () => {
             window.fbAdmin.signOut(window.fbAdmin.auth)
@@ -283,38 +284,38 @@ window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot,
 const uid = docSnap.ref.parent.parent.id;
 const now = new Date();
 
-if (!data.email || data.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    const refQ = query(collection(db, 'artifacts', appId, 'users', uid, 'referidos'));
-    getDocs(refQ).then(rSnap => {
-        let tieneFirmaReciente = false; 
-        let tieneDatoActivo = false; 
+// REEMPLAZAR DENTRO DE snapshot.forEach en loadAllPartners (Línea 214 aprox)
+                    if (!data.email || data.email.toLowerCase() !== window.fbAdmin.ADMIN_EMAIL.toLowerCase()) {
+                        const refQ = window.fbAdmin.query(window.fbAdmin.collection(window.fbAdmin.db, 'artifacts', window.fbAdmin.appId, 'users', uid, 'referidos'));
+                        window.fbAdmin.getDocs(refQ).then(rSnap => {
+                            let tieneFirmaReciente = false; 
+                            let tieneDatoActivo = false; 
 
-        rSnap.forEach(r => {
-            const rData = r.data();
-            if (rData.statusFinal !== 'Perdido') tieneDatoActivo = true;
-            if (rData.contactado && rData.contrato && rData.createdAt) {
-                const rDate = rData.createdAt.toDate();
-                if (Math.ceil(Math.abs(now - rDate) / (1000*60*60*24)) <= 30) tieneFirmaReciente = true;
-            }
-        });
+                            rSnap.forEach(r => {
+                                const rData = r.data();
+                                if (rData.statusFinal !== 'Perdido') tieneDatoActivo = true;
+                                if (rData.contactado && rData.contrato && rData.createdAt) {
+                                    const rDate = rData.createdAt.toDate();
+                                    if (Math.ceil(Math.abs(now - rDate) / (1000*60*60*24)) <= 30) tieneFirmaReciente = true;
+                                }
+                            });
 
-        const edadSocio = data.createdAt ? Math.ceil(Math.abs(now - data.createdAt.toDate()) / (1000*60*60*24)) : 31;
-        const esHijoDirecto = (data.sponsorEmail === ADMIN_EMAIL);
+                            const edadSocio = data.createdAt ? Math.ceil(Math.abs(now - data.createdAt.toDate()) / (1000*60*60*24)) : 31;
+                            const esHijoDirecto = (data.sponsorEmail === window.fbAdmin.ADMIN_EMAIL);
 
-        // ESCENARIO 1: Perder la Red (Día 20 aviso, Día 31 degradación)
-        if (!tieneFirmaReciente && !esHijoDirecto) {
-            if (edadSocio >= 20 && edadSocio <= 30) enviarAlertaWA(uid, data, "RED", 30 - edadSocio);
-            else if (edadSocio > 30) window.downgradePartner(path, data.email, true);
-        }
-        
-        // ESCENARIO 2: Eliminar Cuenta (Día 31 aviso, Día 41 eliminación)
-        if (!tieneFirmaReciente && !tieneDatoActivo && edadSocio > 30) {
-            if (edadSocio <= 40) enviarAlertaWA(uid, data, "CUENTA", 40 - edadSocio);
-            else if (edadSocio > 40) window.deletePartner(path, true);
-        }
-    });
-}
-
+                            // ESCENARIO 1: Perder la Red (Día 20 aviso, Día 31 degradación)
+                            if (!tieneFirmaReciente && !esHijoDirecto) {
+                                if (edadSocio >= 20 && edadSocio <= 30) enviarAlertaWA(uid, data, "RED", 30 - edadSocio);
+                                else if (edadSocio > 30) window.downgradePartner(path, data.email, true);
+                            }
+                            
+                            // ESCENARIO 2: Eliminar Cuenta (Día 31 aviso, Día 41 eliminación)
+                            if (!tieneFirmaReciente && !tieneDatoActivo && edadSocio > 30) {
+                                if (edadSocio <= 40) enviarAlertaWA(uid, data, "CUENTA", 40 - edadSocio);
+                                else if (edadSocio > 40) window.deletePartner(path, true);
+                            }
+                        });
+                    }
                     count++;
                     let fecha = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
                     let sponsorVisual = data.sponsorEmail || "Administrador";
