@@ -234,11 +234,13 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
     </button>
 </td>
                             <td class="px-8 py-6 text-right">
-                                <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-900/20 border border-blue-500/30 text-[10px] p-2 rounded-lg font-bold text-blue-300 focus:outline-none">
-                                    <option value="Recibido" ${data.statusFinal === 'Recibido' ? 'selected' : ''}>RECIBIDO</option>
-                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-                                    <option value="En Proceso" ${data.statusFinal === 'En Proceso' ? 'selected' : ''}>PROCESO</option>
-                                    <option value="Pago Completado" ${data.statusFinal === 'Pago Completado' ? 'selected' : ''}>PAGO LISTO</option>
+                                <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2 rounded-lg font-bold text-white focus:border-blue-500 focus:outline-none uppercase cursor-pointer">
+                                    <option value="Validando" class="bg-gray-900 text-white" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                    <option value="Oferta" class="bg-gray-900 text-white" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
+                                    <option value="Contrato" class="bg-gray-900 text-white" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
+                                    <option value="Firma" class="bg-gray-900 text-white" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
+                                    <option value="Inscrito" class="bg-gray-900 text-white" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
+                                    <option value="Pagado" class="bg-gray-900 text-white" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
                                 </select>
                             </td>
                         </tr>
