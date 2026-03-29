@@ -94,6 +94,29 @@
                 btn.disabled = false;
             }
         });
+        // Función para recuperar la clave
+async function recuperarClave() {
+    // 1. Buscamos el correo (tu input se llama 'loginEmail' según vimos antes)
+    const emailField = document.getElementById('loginEmail'); 
+    const email = emailField.value;
+
+    if (email === "") {
+        alert("Sebastián, el socio debe escribir su correo primero para poder enviarle el link.");
+        return;
+    }
+
+    try {
+        // 2. Le pedimos a Firebase que mande el correo usando tu variable 'auth'
+        await sendPasswordResetEmail(auth, email);
+        alert("¡Listo! Enviamos un link de recuperación a su correo. Dile que revise el Spam.");
+    } catch (error) {
+        console.error("Error al enviar email:", error);
+        alert("No pudimos enviar el correo: " + error.message);
+    }
+}
+
+// ESTA LÍNEA ES CLAVE: Hace que el botón de arriba pueda encontrar la función
+window.recuperarClave = recuperarClave;
     </script>
 </body>
 </html>
