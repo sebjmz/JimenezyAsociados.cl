@@ -313,6 +313,25 @@
                             <span class="text-[9px] font-black uppercase">$450.000 CLP</span>
                         </button>
                     </div> </div> </div> </main>
+    <div id="modal-nuevo" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-6 hidden">
+        <div class="glass-panel w-full max-w-xl p-10 rounded-[3rem] relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-3xl font-black mb-6 uppercase italic tracking-tight text-white">Nueva <span class="text-blue-500">Referencia</span></h3>
+            
+            <form id="form-add" class="space-y-4">
+                <input type="text" id="in-name" required placeholder="Nombre del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                <input type="tel" id="in-phone" required placeholder="WhatsApp del Cliente (+569...)" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                <select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Tipo de Gestión</option>
+                    <option value="Venta">Venta de Propiedad</option>
+                    <option value="Arriendo">Arriendo</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
+                    REGISTRAR Y NOTIFICAR
+                </button>
+            </form>
+        </div>
+    </div>
 <script type="module">
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { collection, query, onSnapshot, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
