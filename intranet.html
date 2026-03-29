@@ -330,7 +330,19 @@
                         container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones activas.</td></tr>';
                         return;
                     }
-                    todosLosReferidos.sort((a, b) => b.createdAt - a.createdAt);
+
+                    // --- LÓGICA DE PRIORIDAD 10X ---
+                    const pesos = { '20% (Propio)': 1, '7% (L1)': 2, '3% (L2)': 3 };
+                    
+                    todosLosReferidos.sort((a, b) => {
+                        // 1. Primero ordenamos por el nivel de comisión (Jerarquía)
+                        if (pesos[a.comision] !== pesos[b.comision]) {
+                            return pesos[a.comision] - pesos[b.comision];
+                        }
+                        // 2. Si son del mismo nivel, ponemos el más nuevo arriba (Fecha)
+                        return b.createdAt - a.createdAt;
+                    });
+
                     let html = "";
                     todosLosReferidos.forEach(item => {
                         let progress = 10;
@@ -339,12 +351,13 @@
                         if(item.visitas) progress += 20;
                         if(item.statusFinal === 'Pagado') progress = 100;
 
-                        let badgeColor = "bg-blue-600/20 text-blue-400 border-blue-500/30";
+                        // Colores de las etiquetas según el nivel
+                        let badgeColor = "bg-blue-600/20 text-blue-400 border-blue-500/30"; // Propio
                         if(item.comision.includes('7%')) badgeColor = "bg-purple-600/20 text-purple-400 border-purple-500/30";
                         if(item.comision.includes('3%')) badgeColor = "bg-pink-600/20 text-pink-400 border-pink-500/30";
 
                         html += `
-                            <tr class="hover:bg-white/5 transition">
+                            <tr class="hover:bg-white/5 transition border-b border-white/5 group">
                                 <td class="px-8 py-6">
                                     <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
                                     <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'}</div>
