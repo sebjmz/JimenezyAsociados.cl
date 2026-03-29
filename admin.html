@@ -61,20 +61,27 @@
         // --- CARGA DE NEGOCIOS ---
         function loadAllLeads() {
             const container = document.getElementById('admin-table-body');
+            const containerMobile = document.getElementById('admin-cards-container');
             const q = query(collectionGroup(db, 'referidos'));
+            
             onSnapshot(q, (snapshot) => {
                 ejecutarLimpiezaMaestra(snapshot);
-                let html = "";
+                let htmlDesktop = "";
+                let htmlMobile = "";
                 let total = 0, pending = 0, done = 0;
+
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
                     if (!path.includes(appId)) return;
+
                     total++;
                     if (!data.contactado) pending++;
                     if (data.statusFinal === 'Pagado') done++;
                     const dias = data.createdAt ? Math.floor((new Date() - data.createdAt.toDate()) / (1000 * 60 * 60 * 24)) : 0;
-                    html += `
+
+                    // DISEÑO DESKTOP (TABLA)
+                    htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
@@ -104,8 +111,42 @@
                                 </select>
                             </td>
                         </tr>`;
+
+                    // DISEÑO MOBILE (TARJETAS)
+                    htmlMobile += `
+                        <div class="glass-panel p-6 rounded-3xl mb-4 border-white/5">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <div class="text-lg font-black text-white leading-tight">${data.name || 'Sin Nombre'}</div>
+                                    <div class="text-[10px] text-blue-500 font-bold uppercase tracking-widest mt-1">${data.service} • Hace ${dias} d</div>
+                                </div>
+                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-600/10 border border-blue-500/20 text-[9px] p-2 rounded-lg font-black text-blue-400 uppercase">
+                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                    <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
+                                    <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
+                                    <option value="Perdido" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 pt-4 border-t border-white/5">
+                                <button onclick="window.updateStatus('${path}', 'contactado', ${!data.contactado})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
+                                    <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-xl"></i>
+                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Contactado</span>
+                                </button>
+                                <button onclick="window.updateStatus('${path}', 'contrato', ${!data.contrato})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
+                                    <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-800'} text-xl"></i>
+                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Firma</span>
+                                </button>
+                                <button onclick="window.updateStatus('${path}', 'visitas', ${!data.visitas})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
+                                    <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i>
+                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Visitas</span>
+                                </button>
+                            </div>
+                        </div>`;
                 });
-                container.innerHTML = html || '<tr><td colspan="5" class="p-20 text-center text-gray-600 italic">No hay datos activos.</td></tr>';
+
+                container.innerHTML = htmlDesktop || '<tr><td colspan="5" class="p-20 text-center text-gray-600 italic">No hay datos activos.</td></tr>';
+                containerMobile.innerHTML = htmlMobile || '<div class="p-10 text-center text-gray-600 italic">No hay datos activos.</div>';
+                
                 document.getElementById('stat-total').innerText = total;
                 document.getElementById('stat-pending').innerText = pending;
                 document.getElementById('stat-done').innerText = done;
@@ -115,9 +156,11 @@
         // --- CARGA DE PARTNERS ---
         function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
+            const containerMobile = document.getElementById('admin-partners-cards');
             const q = query(collectionGroup(db, 'profile'));
             onSnapshot(q, (snapshot) => {
-                let html = "";
+                let htmlDesktop = "";
+                let htmlMobile = "";
                 let count = 0, nuevos = 0;
                 let sponsors = new Set();
                 const hoy = new Date();
@@ -129,13 +172,12 @@
                     
                     count++;
                     if (data.sponsorEmail) sponsors.add(data.sponsorEmail);
-                    
                     const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
                     const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
                     if (dias <= 30) nuevos++;
-
                     let fechaStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
-                    html += `
+
+                    htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Socio'}</div>
@@ -147,15 +189,25 @@
                                 <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
                             </td>
                         </tr>`;
+
+                    htmlMobile += `
+                        <div class="glass-panel p-5 rounded-2xl mb-3 border-white/5 flex justify-between items-center">
+                            <div>
+                                <div class="font-black text-white text-sm">${data.name || 'Socio'}</div>
+                                <div class="text-[9px] text-gray-500 font-bold mt-0.5">${data.email}</div>
+                                <div class="text-[9px] text-purple-400 font-black uppercase mt-1">Sponsor: ${data.sponsorEmail || 'Admin'}</div>
+                            </div>
+                            <button onclick="window.deletePartner('${path}')" class="bg-red-900/20 text-red-500 p-3 rounded-xl text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>`;
                 });
-                container.innerHTML = html;
+                container.innerHTML = htmlDesktop;
+                containerMobile.innerHTML = htmlMobile;
                 document.getElementById('stat-partners-total').innerText = count;
                 document.getElementById('stat-partners-nuevos').innerText = nuevos;
                 document.getElementById('stat-partners-sponsors').innerText = sponsors.size;
             });
         }
 
-        // --- EXPOSICIÓN GLOBAL DE FUNCIONES ---
         window.updateStatus = async (path, field, value) => {
             try { await updateDoc(doc(db, path), { [field]: value }); } catch (e) { alert("Error: " + e.message); }
         };
@@ -183,11 +235,11 @@
             const btnPart = document.getElementById('btn-tab-partners');
             
             if (tab === 'negocios') {
-                btnNeg.className = "bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition shadow-lg";
-                btnPart.className = "text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition";
+                btnNeg.className = "bg-blue-600 text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition shadow-lg";
+                btnPart.className = "text-gray-400 hover:text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition";
             } else {
-                btnNeg.className = "text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition";
-                btnPart.className = "bg-purple-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition shadow-lg";
+                btnNeg.className = "text-gray-400 hover:text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition";
+                btnPart.className = "bg-purple-600 text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition shadow-lg";
                 loadAllPartners();
             }
         };
@@ -204,11 +256,14 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; -webkit-tap-highlight-color: transparent; }
         .glass-panel { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
         .hidden { display: none !important; }
         #msg-box-admin { position: fixed; top: 100px; right: 20px; z-index: 100; background: #3b82f6; color: white; padding: 15px; border-radius: 12px; display: none; font-size: 11px; font-weight: bold; border-left: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Ajustes para scroll suave y evitar desborde horizontal */
+        html, body { overflow-x: hidden; width: 100%; position: relative; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black">
@@ -216,46 +271,49 @@
     <div id="loading-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center text-center">
         <div>
             <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-xs font-black uppercase tracking-[0.3em] text-blue-500 italic">Verificando Seguridad Master...</p>
+            <p class="text-xs font-black uppercase tracking-[0.3em] text-blue-500 italic">Seguridad Master...</p>
         </div>
     </div>
 
     <div id="msg-box-admin">Aviso del Sistema</div>
 
     <div id="admin-content" class="hidden">
-        <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-center md:text-left">
-            <div>
-                <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">Panel <span class="text-blue-500">Master</span></h1>
-                <p id="admin-id-display" class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1 italic">Gestión de Jiménez & Asociados</p>
+        <!-- HEADER ADAPTABLE -->
+        <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Panel <span class="text-blue-500">Master</span></h1>
+                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1 italic">Gestión Jiménez & Asociados</p>
             </div>
             
-            <div class="flex gap-2 bg-white/5 p-1 rounded-xl mx-auto md:mx-0">
-                <button id="btn-tab-negocios" onclick="switchTab('negocios')" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition shadow-lg">Negocios</button>
-                <button id="btn-tab-partners" onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
+            <div class="flex gap-2 bg-white/5 p-1 rounded-2xl w-full md:w-auto justify-center">
+                <button id="btn-tab-negocios" onclick="switchTab('negocios')" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none">Negocios</button>
+                <button id="btn-tab-partners" onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">Partners</button>
             </div>
 
-            <button onclick="logout()" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-xl hover:bg-red-600 hover:text-white transition shadow-sm">Cerrar Sesión</button>
+            <button onclick="logout()" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-2xl hover:bg-red-600 hover:text-white transition w-full md:w-auto">Cerrar Sesión</button>
         </header>
 
         <main class="max-w-7xl mx-auto">
             <!-- VISTA DE NEGOCIOS -->
             <div id="view-negocios">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
-                    <div class="glass-panel p-8 rounded-[2rem] border-white/5">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-widest">Referidos Totales</div>
-                        <div id="stat-total" class="text-5xl font-black">0</div>
+                <!-- GRID DE STATS (1 col en móvil, 3 en desktop) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+                    <div class="glass-panel p-6 md:p-8 rounded-[2rem] text-center border-white/5">
+                        <div class="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase mb-1 tracking-widest">Referidos Totales</div>
+                        <div id="stat-total" class="text-4xl md:text-5xl font-black">0</div>
                     </div>
-                    <div class="glass-panel p-8 rounded-[2rem] border-blue-500/20">
-                        <div class="text-[10px] font-bold text-blue-500 uppercase mb-2 tracking-widest">Por Contactar</div>
-                        <div id="stat-pending" class="text-5xl font-black text-blue-500">0</div>
+                    <div class="glass-panel p-6 md:p-8 rounded-[2rem] text-center border-blue-500/20">
+                        <div class="text-[9px] md:text-[10px] font-bold text-blue-500 uppercase mb-1 tracking-widest">Por Contactar</div>
+                        <div id="stat-pending" class="text-4xl md:text-5xl font-black text-blue-500">0</div>
                     </div>
-                    <div class="glass-panel p-8 rounded-[2rem] border-green-500/20">
-                        <div class="text-[10px] font-bold text-green-500 uppercase mb-2 tracking-widest">Ventas Pagadas</div>
-                        <div id="stat-done" class="text-5xl font-black text-green-500">0</div>
+                    <div class="glass-panel p-6 md:p-8 rounded-[2rem] text-center border-green-500/20">
+                        <div class="text-[9px] md:text-[10px] font-bold text-green-500 uppercase mb-1 tracking-widest">Ventas Pagadas</div>
+                        <div id="stat-done" class="text-4xl md:text-5xl font-black text-green-500">0</div>
                     </div>
                 </div>
 
-                <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <!-- TABLE DESKTOP / CARDS MOBILE -->
+                <div class="hidden md:block glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] border-b border-white/5">
@@ -271,26 +329,29 @@
                         </table>
                     </div>
                 </div>
+                <!-- Contenedor para tarjetas en móvil -->
+                <div id="admin-cards-container" class="md:hidden"></div>
             </div>
 
-            <!-- VISTA DE PARTNERS (RESTAURADA TOTALMENTE) -->
+            <!-- VISTA DE PARTNERS -->
             <div id="view-partners" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
-                    <div class="glass-panel p-8 rounded-[2rem] border-white/5 shadow-[0_0_20px_rgba(255,255,255,0.02)]">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-widest">Partners Totales</div>
-                        <div id="stat-partners-total" class="text-5xl font-black text-white">0</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 text-center">
+                    <div class="glass-panel p-6 rounded-[2rem] border-white/5">
+                        <div class="text-[9px] font-bold text-gray-500 uppercase mb-1 tracking-widest">Partners Totales</div>
+                        <div id="stat-partners-total" class="text-4xl font-black text-white">0</div>
                     </div>
-                    <div class="glass-panel p-8 rounded-[2rem] border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.1)]">
-                        <div class="text-[10px] font-bold text-purple-400 uppercase mb-2 tracking-widest">Nuevos (30 días)</div>
-                        <div id="stat-partners-nuevos" class="text-5xl font-black text-purple-400">0</div>
+                    <div class="glass-panel p-6 rounded-[2rem] border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+                        <div class="text-[9px] font-bold text-purple-400 uppercase mb-1 tracking-widest">Nuevos (30 días)</div>
+                        <div id="stat-partners-nuevos" class="text-4xl font-black text-purple-400">0</div>
                     </div>
-                    <div class="glass-panel p-8 rounded-[2rem] border-pink-500/20 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                        <div class="text-[10px] font-bold text-pink-500 uppercase mb-2 tracking-widest">Sponsors Únicos</div>
-                        <div id="stat-partners-sponsors" class="text-5xl font-black text-pink-500">0</div>
+                    <div class="glass-panel p-6 rounded-[2rem] border-pink-500/20 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                        <div class="text-[9px] font-bold text-pink-500 uppercase mb-1 tracking-widest">Sponsors Únicos</div>
+                        <div id="stat-partners-sponsors" class="text-4xl font-black text-pink-500">0</div>
                     </div>
                 </div>
 
-                <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <!-- TABLE DESKTOP / CARDS MOBILE -->
+                <div class="hidden md:block glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] border-b border-white/5">
@@ -305,6 +366,8 @@
                         </table>
                     </div>
                 </div>
+                <!-- Contenedor para tarjetas en móvil -->
+                <div id="admin-partners-cards" class="md:hidden"></div>
             </div>
         </main>
     </div>
