@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN | Jiménez & Asociados</title>
+    <title>Panel Master | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";        // CONFIGURACIÓN OFICIAL
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
             authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -24,200 +24,111 @@ import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDo
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // CONFIGURACIÓN DE IDENTIDAD
-        const ADMIN_EMAIL = "sebjmz@gmail.com"; 
-        // Importante: Este appId debe ser EXACTAMENTE el mismo que usas en intranet.html e ingresopartner.html
-        const appId = 'jimenez-portal-oficial'; 
-
-window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot, getDoc, collection, deleteDoc, increment, getDocs, serverTimestamp, signOut, ADMIN_EMAIL, appId };    </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
-        .admin-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        .hidden-content { display: none !important; }
-        .error-banner { background: #ef4444; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; font-size: 13px; }
-        .info-banner { background: #3b82f6; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; font-size: 13px; }
-    </style>
-</head>
-<body id="admin-body" class="min-h-screen p-4 md:p-10 hidden-content">
-
-    <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <!-- 1. Título y tu Correo de Admin -->
-        <div>
-            <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">Panel <span class="text-blue-500">Master</span></h1>
-            <p id="admin-id-display" class="text-gray-400 text-sm italic tracking-widest mt-1">Verificando sesión...</p>
-        </div>
         
-        <!-- 2. Pestañas de Navegación (NUEVO) -->
-        <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
-            <button onclick="switchTab('negocios')" id="btn-tab-negocios" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Negocios</button>
-            <button onclick="switchTab('partners')" id="btn-tab-partners" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
-        </div>
+        const appId = 'jimenez-portal-oficial';
+        const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
-        <!-- 3. Botón Salir -->
-        <button onclick="window.fbAdmin.signOut(window.fbAdmin.auth).then(() => window.location.href='ingresopartner.html')" class="text-red-500 text-xs font-bold uppercase tracking-widest border border-red-500/20 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition">Cerrar Sesión</button>
-    </header>
+        // ==========================================
+        // MOTOR DE LIMPIEZA (TUS REGLAS)
+        // ==========================================
+        async function ejecutarLimpiezaMaestra(snapshot) {
+            let borrados = 0;
+            const hoy = new Date();
 
-    <main class="max-w-7xl mx-auto">
-        <!-- ================= VISTA: NEGOCIOS ================= -->
-        <div id="view-negocios" class="block">
-            <!-- Estadísticas de Negocios -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
-                    <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Referidos Totales</div>
-                    <div id="stat-total" class="text-5xl font-black text-white">0</div>
-                </div>
-                <div class="admin-card p-8 rounded-[2rem] text-center border-blue-500/20">
-                    <div class="text-blue-500 text-[10px] font-bold uppercase mb-2">Pendientes de Contacto</div>
-                    <div id="stat-pending" class="text-5xl font-black text-blue-500">0</div>
-                </div>
-                <div class="admin-card p-8 rounded-[2rem] text-center border-green-500/20">
-                    <div class="text-green-500 text-[10px] font-bold uppercase mb-2">Ventas Cerradas</div>
-                    <div id="stat-done" class="text-5xl font-black text-green-500">0</div>
-                </div>
-            </div>
+            for (const docSnap of snapshot.docs) {
+                const data = docSnap.data();
+                const path = docSnap.ref.path;
+                
+                if (!path.includes(appId)) continue;
 
-            <!-- Tabla de Negocios -->
-            <div class="admin-card rounded-[2.5rem] overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
-                            <tr>
-                                <th class="px-8 py-6">Propiedad / Cliente</th>
-                                <th class="px-8 py-6 text-center">Contactado</th>
-                                <th class="px-8 py-6 text-center">Firma</th>
-                                <th class="px-8 py-6 text-center">Visitas</th>
-                                <th class="px-8 py-6 text-right">Estatus Final</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm">
-                            <tr><td colspan="5" class="p-20 text-center italic text-gray-600">Sincronizando base de datos segura...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
+                const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
 
-        <!-- ================= VISTA: PARTNERS (Oculta por defecto) ================= -->
-        <div id="view-partners" class="hidden">
-            <!-- Estadísticas de Partners -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="admin-card p-8 rounded-[2rem] text-center border-white/5">
-                    <div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Total Partners Activos</div>
-                    <div id="stat-partners-total" class="text-5xl font-black text-white">0</div>
-                </div>
-                <div class="admin-card p-8 rounded-[2rem] text-center border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-                    <div class="text-purple-400 text-[10px] font-bold uppercase mb-2">Nuevos (Últimos 30 Días)</div>
-                    <div id="stat-partners-nuevos" class="text-5xl font-black text-purple-400">0</div>
-                </div>
-                <div class="admin-card p-8 rounded-[2rem] text-center border-pink-500/20 shadow-[0_0_15px_rgba(236,72,153,0.1)]">
-                    <div class="text-pink-500 text-[10px] font-bold uppercase mb-2">Sponsors Únicos Generados</div>
-                    <div id="stat-partners-sponsors" class="text-5xl font-black text-pink-500">0</div>
-                </div>
-            </div>
+                let debeBorrarse = false;
 
-            <!-- Tabla de Partners -->
-            <div class="admin-card rounded-[2.5rem] overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
-                            <tr>
-                                <th class="px-8 py-6">Datos del Partner</th>
-                                <th class="px-8 py-6 text-center">Sponsor (Invitado por)</th>
-                                <th class="px-8 py-6 text-center">Fecha de Registro</th>
-                                <th class="px-8 py-6 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-partners-body" class="divide-y divide-white/5 text-sm">
-                            <tr><td colspan="4" class="p-20 text-center italic text-gray-600">Sincronizando red de colaboradores...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
+                // TUS REGLAS DE NEGOCIO:
+                if (!data.contactado && dias >= 7) debeBorrarse = true;
+                else if (data.contactado && !data.contrato && dias >= 30) debeBorrarse = true;
+                else if (data.contrato && !data.visitas && dias >= 60) debeBorrarse = true;
+                else if (data.statusFinal !== 'Oferta' && data.statusFinal !== 'Pagado' && dias >= 90) debeBorrarse = true;
 
-    <script type="module">
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, getDoc, collection, deleteDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+                if (debeBorrarse) {
+                    await deleteDoc(docSnap.ref);
+                    borrados++;
+                }
+            }
 
-        // Extraemos las herramientas una sola vez
-        const { auth, db, ADMIN_EMAIL, appId } = window.fbAdmin;
+            if (borrados > 0) {
+                const box = document.getElementById('msg-box-admin');
+                box.innerText = `LIMPIEZA: Se eliminaron ${borrados} registros vencidos.`;
+                box.style.display = 'block';
+                setTimeout(() => box.style.display = 'none', 5000);
+            }
+        }
 
-        // --- 1. GESTIÓN DE NEGOCIOS (VERSIÓN ÚNICA Y REPARADA) ---
-        async function loadAllLeads() {
+        function loadAllLeads() {
             const container = document.getElementById('admin-table-body');
-            // collectionGroup busca en todas las carpetas 'referidos' de todos los usuarios
             const q = query(collectionGroup(db, 'referidos'));
             
             onSnapshot(q, (snapshot) => {
+                // Activar limpieza automática
+                ejecutarLimpiezaMaestra(snapshot);
+
                 let html = "";
                 let total = 0, pending = 0, done = 0;
-
-                if (snapshot.empty) {
-                    container.innerHTML = '<tr><td colspan="5" class="p-24 text-center italic text-gray-500">No hay referidos registrados bajo el ID: ' + appId + '</td></tr>';
-                    return;
-                }
 
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
-
-                    // Filtro de seguridad para que solo veas tus datos
                     if (!path.includes(appId)) return;
 
                     total++;
                     if (!data.contactado) pending++;
                     if (data.statusFinal === 'Pagado') done++;
 
+                    const dias = data.createdAt ? Math.floor((new Date() - data.createdAt.toDate()) / (1000 * 60 * 60 * 24)) : 0;
+
                     html += `
-                        <tr class="hover:bg-white/5 transition group">
+                        <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
-                                <div class="font-bold text-white">${data.name || 'Sin Nombre'}</div>
-                                <div class="text-[10px] text-blue-500 font-black uppercase italic tracking-widest">${data.service || 'Venta'}</div>
+                                <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                                    ${data.service} • Hace ${dias} días
+                                </div>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                <button onclick="updateStatus('${path}', 'contactado', ${!data.contactado})" class="hover:scale-125 transition">
+                                <button onclick="window.updateStatus('${path}', 'contactado', ${!data.contactado})" class="hover:scale-125 transition">
                                     <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                <button onclick="updateStatus('${path}', 'contrato', ${!data.contrato})" class="hover:scale-125 transition">
+                                <button onclick="window.updateStatus('${path}', 'contrato', ${!data.contrato})" class="hover:scale-125 transition">
                                     <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                <button onclick="updateStatus('${path}', 'visitas', ${!data.visitas})" class="hover:scale-125 transition">
+                                <button onclick="window.updateStatus('${path}', 'visitas', ${!data.visitas})" class="hover:scale-125 transition">
                                     <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-2xl"></i>
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-right">
-                                <select onchange="updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2.5 rounded-xl font-black text-white uppercase cursor-pointer focus:border-blue-500 focus:outline-none">
+                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2.5 rounded-xl font-black text-white uppercase cursor-pointer focus:border-blue-500 focus:outline-none">
                                     <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
                                     <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
-                                    <option value="Contrato" ${data.statusFinal === 'Contrato' ? 'selected' : ''}>CONTRATO</option>
-                                    <option value="Firma" ${data.statusFinal === 'Firma' ? 'selected' : ''}>FIRMA</option>
-                                    <option value="Inscrito" ${data.statusFinal === 'Inscrito' ? 'selected' : ''}>INSCRITO</option>
                                     <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
-                                    <option value="Perdido" class="bg-red-900" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
+                                    <option value="Perdido" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
                                 </select>
                             </td>
                         </tr>`;
                 });
-                container.innerHTML = html;
+                container.innerHTML = html || '<tr><td colspan="5" class="p-20 text-center text-gray-600">No hay datos activos.</td></tr>';
                 document.getElementById('stat-total').innerText = total;
                 document.getElementById('stat-pending').innerText = pending;
                 document.getElementById('stat-done').innerText = done;
-            }, (error) => {
-                console.error("Error Admin:", error);
-                container.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-red-500">⚠️ ERROR: ${error.message}</td></tr>`;
             });
         }
 
-        // --- 2. GESTIÓN DE PARTNERS ---
-        async function loadAllPartners() {
+        function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
             const q = query(collectionGroup(db, 'profile'));
             onSnapshot(q, (snapshot) => {
@@ -237,7 +148,7 @@ window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot,
                             <td class="px-8 py-6 text-center text-xs text-purple-400 font-bold">${data.sponsorEmail || 'Admin'}</td>
                             <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fecha}</td>
                             <td class="px-8 py-6 text-right">
-                                <button onclick="deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
+                                <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
                             </td>
                         </tr>`;
                 });
@@ -246,15 +157,16 @@ window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot,
             });
         }
 
-        // --- FUNCIONES DE APOYO (GLOBALES) ---
         window.updateStatus = async (path, field, value) => {
-            await updateDoc(doc(db, path), { [field]: value });
+            try { await updateDoc(doc(db, path), { [field]: value }); } catch (e) { alert("Error: " + e.message); }
         };
 
         window.deletePartner = async (path) => {
             if (confirm("¿Eliminar socio?")) {
-                await deleteDoc(doc(db, path));
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
+                try { 
+                    await deleteDoc(doc(db, path)); 
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
+                } catch (e) { alert("Error: " + e.message); }
             }
         };
 
@@ -264,18 +176,94 @@ window.fbAdmin = { auth, db, doc, updateDoc, collectionGroup, query, onSnapshot,
             if (tab === 'partners') loadAllPartners();
         };
 
-        window.handleLogout = () => window.fbAdmin.signOut(auth).then(() => window.location.href = 'ingresopartner.html');
-
-        // --- ARRANQUE SEGURO ---
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                document.getElementById('admin-body').classList.remove('hidden-content');
-                document.getElementById('admin-id-display').innerText = "ADMIN: " + user.email;
-                loadAllLeads(); // Carga inicial de negocios
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                loadAllLeads();
             } else {
                 window.location.href = 'ingresopartner.html';
             }
         });
     </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
+        .glass-panel { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        .hidden { display: none !important; }
+        #msg-box-admin { position: fixed; top: 100px; right: 20px; z-index: 100; background: #3b82f6; color: white; padding: 15px; border-radius: 12px; display: none; font-size: 11px; font-weight: bold; border-left: 4px solid #fff; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black">
+
+    <div id="loading-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center text-center">
+        <div>
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-xs font-black uppercase tracking-[0.3em] text-blue-500 italic">Verificando Seguridad Master...</p>
+        </div>
+    </div>
+
+    <div id="msg-box-admin">Aviso del Sistema</div>
+
+    <div id="admin-content" class="hidden">
+        <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">Panel <span class="text-blue-500">Master</span></h1>
+                <p id="admin-id-display" class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1 italic">Gestión de Jiménez & Asociados</p>
+            </div>
+            
+            <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
+                <button onclick="switchTab('negocios')" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Negocios</button>
+                <button onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
+            </div>
+
+            <button onclick="signOut(auth).then(() => window.location.href='ingresopartner.html')" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-xl hover:bg-red-600 hover:text-white transition">Cerrar Sesión</button>
+        </header>
+
+        <main class="max-w-7xl mx-auto text-center">
+            <div id="view-negocios">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="glass-panel p-8 rounded-[2rem] border-white/5"><div class="text-[10px] font-bold text-gray-500 uppercase mb-2">Total Referidos</div><div id="stat-total" class="text-5xl font-black">0</div></div>
+                    <div class="glass-panel p-8 rounded-[2rem] border-blue-500/20"><div class="text-[10px] font-bold text-blue-500 uppercase mb-2">Por Contactar</div><div id="stat-pending" class="text-5xl font-black text-blue-500">0</div></div>
+                    <div class="glass-panel p-8 rounded-[2rem] border-green-500/20"><div class="text-[10px] font-bold text-green-500 uppercase mb-2">Ventas Pagadas</div><div id="stat-done" class="text-5xl font-black text-green-500">0</div></div>
+                </div>
+
+                <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] border-b border-white/5">
+                                <tr>
+                                    <th class="px-8 py-6">Propiedad / Cliente</th>
+                                    <th class="px-8 py-6 text-center">Contacto</th>
+                                    <th class="px-8 py-6 text-center">Firma</th>
+                                    <th class="px-8 py-6 text-center">Visitas</th>
+                                    <th class="px-8 py-6 text-right">Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="divide-y divide-white/5 text-sm italic"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-partners" class="hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-black uppercase italic text-purple-500">Gestión de Red</h2>
+                    <p class="text-gray-500 text-sm">Total registrados: <span id="stat-partners-total" class="font-bold text-white">0</span></p>
+                </div>
+                <div class="glass-panel rounded-[2.5rem] overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                                <tr><th class="px-8 py-6">Partner</th><th class="px-8 py-6 text-center">Sponsor</th><th class="px-8 py-6 text-center">Registro</th><th class="px-8 py-6 text-right">Acción</th></tr>
+                            </thead>
+                            <tbody id="admin-partners-body" class="divide-y divide-white/5 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
