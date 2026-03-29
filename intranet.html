@@ -37,7 +37,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050b14; color: #ffffff; overflow-x: hidden; }
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .progress-bar { height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+        .progress-bar { height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; width: 100%; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
         .hidden { display: none !important; }
 
@@ -46,6 +46,32 @@
             position: fixed; bottom: 20px; right: 20px; padding: 1rem 2rem; border-radius: 1rem;
             background: #10b981; color: white; font-weight: bold; display: none;
             z-index: 100; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Diseño EXCLUSIVO para Celulares (no toca el PC) */
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { display: none; }
+            tbody tr { background: rgba(15, 23, 42, 0.4); margin-bottom: 1rem; border-radius: 1.5rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+            tbody td { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; }
+            tbody td:last-child { border-bottom: none; }
+            tbody td::before { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; }
+            
+            /* Títulos de celdas en móvil para la Intranet */
+            #leads-body td:nth-child(1)::before { content: "Propiedad / Cliente"; }
+            #leads-body td:nth-child(2)::before { content: "Progreso"; margin-right: 15px; }
+            #leads-body td:nth-child(3)::before { content: "Comisión"; }
+            #leads-body td:nth-child(4)::before { content: "Contactado"; }
+            #leads-body td:nth-child(5)::before { content: "Firma"; }
+            #leads-body td:nth-child(6)::before { content: "Visitas"; }
+            #leads-body td:nth-child(7)::before { content: "Estatus Final"; }
+
+            tbody td:nth-child(1) { flex-direction: column; align-items: flex-start; text-align: left; }
+            tbody td:nth-child(1)::before { margin-bottom: 0.5rem; }
+            
+            /* Ajuste específico para que la barra de progreso se vea bien en móvil */
+            tbody td:nth-child(2) { flex-wrap: wrap; }
+            tbody td:nth-child(2) > div:first-child { width: 100%; margin-bottom: 5px; }
         }
     </style>
 </head>
