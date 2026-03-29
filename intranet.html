@@ -68,59 +68,70 @@
                 const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
                 
                 let userNames = {}; 
-                let adminUid = ""; // Para identificar tu ID interno
+                let userSponsors = {}; // Para saber quién trajo a quién
+                let productivePartners = new Set(); // UIDs de socios con al menos 1 firma
+                let adminUid = ""; 
+                
                 let recruiterStats = {}; 
                 let gestorStats = {};    
 
-                // 1. Mapeo de perfiles y Filtro de Reclutadores
+                // 1. Mapear nombres y sponsors (Saltando al Admin)
                 profilesSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    if (!path.includes(window.fb.appId)) return;
-
                     const uid = docSnap.ref.parent.parent.id;
                     const email = data.email ? data.email.toLowerCase() : "";
-                    const name = data.name || email.split('@')[0];
                     
-                    // Detectamos si este perfil es el tuyo
                     if (email === window.fb.ADMIN_EMAIL.toLowerCase()) {
-                        adminUid = uid; 
-                        return; // Te saltamos a ti como candidato al ranking
+                        adminUid = uid;
+                        return;
                     }
 
-                    userNames[uid] = name;
-
-                    // FILTRO ADMIN: Solo contamos el reclutamiento si el sponsor NO eres tú
-                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() !== window.fb.ADMIN_EMAIL.toLowerCase()) {
-                        const sponsor = data.sponsorEmail.toLowerCase();
-                        if (!recruiterStats[sponsor]) recruiterStats[sponsor] = { name: sponsor.split('@')[0], count: 0 };
-                        recruiterStats[sponsor].count++;
+                    userNames[uid] = data.name || email.split('@')[0];
+                    if (data.sponsorEmail) {
+                        userSponsors[uid] = data.sponsorEmail.toLowerCase();
                     }
                 });
 
-                // 2. Filtro de Captadores (Gestores)
+                // 2. Procesar Referidos con FIRMA y detectar Socios Productivos
                 referidosSnap.forEach(docSnap => {
+                    const data = docSnap.data();
                     const path = docSnap.ref.path;
                     if (!path.includes(window.fb.appId)) return;
 
                     const ownerUid = docSnap.ref.parent.parent.id;
                     
-                    // FILTRO ADMIN: Si el dueño del referido eres tú, no te contamos para el ranking
-                    if (ownerUid === adminUid) return;
+                    // CRITERIO DE CALIDAD: Solo si tiene firma (contrato === true)
+                    if (data.contrato === true) {
+                        productivePartners.add(ownerUid); // Este socio es "real", tiene producción
 
-                    if (!gestorStats[ownerUid]) {
-                        gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
+                        // Ranking de Gestores (Solo si no es el Admin)
+                        if (ownerUid !== adminUid) {
+                            if (!gestorStats[ownerUid]) {
+                                gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
+                            }
+                            gestorStats[ownerUid].count++;
+                        }
                     }
-                    gestorStats[ownerUid].count++;
                 });
 
-                // 3. Ordenar y Renderizar (Top 3)
+                // 3. Ranking de Reclutadores (Solo cuentan socios PRODUCTIVOS)
+                for (const [invitedUid, sponsorEmail] of Object.entries(userSponsors)) {
+                    // Si el invitado tiene producción Y el sponsor no es el admin
+                    if (productivePartners.has(invitedUid) && sponsorEmail !== window.fb.ADMIN_EMAIL.toLowerCase()) {
+                        if (!recruiterStats[sponsorEmail]) {
+                            recruiterStats[sponsorEmail] = { name: sponsorEmail.split('@')[0], count: 0 };
+                        }
+                        recruiterStats[sponsorEmail].count++;
+                    }
+                }
+
+                // 4. Ordenar Top 3 y Renderizar
                 const topRecruiters = Object.values(recruiterStats).sort((a, b) => b.count - a.count).slice(0, 3);
                 const topGestores = Object.values(gestorStats).sort((a, b) => b.count - a.count).slice(0, 3);
 
                 const renderRank = (dataList, container, label) => {
                     if (dataList.length === 0) {
-                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4">Esperando nuevos movimientos en la red...</p>';
+                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4 text-center">Buscando resultados confirmados con firma...</p>';
                         return;
                     }
                     let html = "";
@@ -138,8 +149,8 @@
                     container.innerHTML = html;
                 };
 
-                renderRank(topGestores, leadsContainer, 'REFERIDOS');
-                renderRank(topRecruiters, recruitersContainer, 'SOCIOS');
+                renderRank(topGestores, leadsContainer, 'FIRMAS');
+                renderRank(topRecruiters, recruitersContainer, 'ACTIVOS');
 
             } catch(e) { console.error("Error Leaderboard:", e); }
         }
