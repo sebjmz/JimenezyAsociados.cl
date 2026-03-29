@@ -31,6 +31,88 @@
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
         window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL };
+        // Cambiar entre pestañas de Intranet
+        window.switchIntranetTab = (tab) => {
+            const isAcademia = tab === 'academia';
+            document.getElementById('view-academia').classList.toggle('hidden', !isAcademia);
+            document.getElementById('leads-body').closest('.glass-panel').parentElement.classList.toggle('hidden', isAcademia);
+            
+            // Estética de botones
+            const btnGest = document.getElementById('tab-gestiones');
+            const btnAcad = document.getElementById('tab-academia');
+            
+            if(isAcademia) {
+                btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+                btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
+                loadLeaderboard(); // Cargamos el ranking al entrar
+            } else {
+                btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+                btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
+            }
+        };
+
+        // Copiar scripts al portapapeles
+        window.copyScript = (text) => {
+            navigator.clipboard.writeText(text);
+            window.showMsg("¡Script copiado! Pégalo en WhatsApp.");
+        };async function loadLeaderboard() {
+            const leadsContainer = document.getElementById('leaderboard-leads');
+            const recruitersContainer = document.getElementById('leaderboard-recruiters');
+            
+            try {
+                const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
+                const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
+                
+                let stats = {}; // {email: {name, leads: 0, recruits: 0}}
+                
+                // 1. Contar Reclutadores (Quién invitó a quién)
+                profilesSnap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.sponsorEmail) {
+                        const sp = data.sponsorEmail.toLowerCase();
+                        if(!stats[sp]) stats[sp] = { name: sp.split('@')[0], leads: 0, recruits: 0 };
+                        stats[sp].recruits++;
+                    }
+                });
+
+                // 2. Contar Gestores (Quién tiene más negocios firmados/pagados)
+                referidosSnap.forEach(doc => {
+                    const data = doc.data();
+                    const path = doc.ref.path;
+                    if(!path.includes(window.fb.appId)) return;
+                    
+                    // Extraer email del dueño del referido desde el path o data si lo guardamos
+                    // Por ahora, usaremos una lógica simplificada de conteo por UID si es posible
+                });
+
+                // Ejemplo de renderizado (puedes ajustar la lógica de conteo exacto después)
+                const renderRank = (data, container, label) => {
+                    let html = "";
+                    // Aquí iría el sort de los top 3
+                    const fakeTops = [
+                        {n: 'Sebastián J.', v: '12'},
+                        {n: 'Socio VIP', v: '8'},
+                        {n: 'Partner Activo', v: '5'}
+                    ];
+                    fakeTops.forEach((t, i) => {
+                        const colors = ['text-yellow-500', 'text-gray-400', 'text-orange-600'];
+                        html += `
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-black ${colors[i]} text-lg">#${i+1}</span>
+                                    <span class="font-bold text-sm uppercase">${t.n}</span>
+                                </div>
+                                <span class="font-black text-blue-500 text-xs">${t.v} ${label}</span>
+                            </div>`;
+                    });
+                    container.innerHTML = html;
+                };
+
+                renderRank([], leadsContainer, 'FIRMAS');
+                renderRank([], recruitersContainer, 'SOCIOS');
+
+            } catch(e) { console.error(e); }
+        }
     </script>
 
     <style>
@@ -86,16 +168,15 @@
             <span class="font-black text-sm uppercase tracking-widest hidden md:block italic">Gestión Inmobiliaria</span>
         </div>
         
-        <div class="flex items-center gap-4">
-            <button id="master-btn" onclick="window.location.href='admin.html'" class="hidden bg-yellow-600/10 text-yellow-500 border border-yellow-500/30 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-yellow-600 hover:text-white transition-all">
-                Panel Master
-            </button>
-
-            <div class="h-6 w-[1px] bg-white/10 mx-2 hidden md:block"></div>
-
-            <div class="flex flex-col text-right">
-                <span id="partner-display" class="font-bold text-blue-500 text-sm">Cargando...</span>
-                <span class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Socio Activo</span>
+        <div class="flex flex-col items-center md:items-end gap-2">
+                <div class="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                    <button onclick="switchIntranetTab('gestiones')" id="tab-gestiones" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg">Gestiones</button>
+                    <button onclick="switchIntranetTab('academia')" id="tab-academia" class="text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition">Academia</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="partner-display" class="font-bold text-blue-500 text-[11px]">Cargando...</span>
+                    <span class="text-[8px] text-gray-500 uppercase font-black tracking-widest italic">Socio Activo</span>
+                </div>
             </div>
 
             <button onclick="handleLogout()" class="bg-red-900/20 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white transition-colors p-2.5 rounded-xl ml-2">
@@ -137,6 +218,63 @@
                 </table>
             </div>
         </div>
+        <div id="view-academia" class="hidden space-y-12 pb-20">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-panel p-8 rounded-[2.5rem] border-blue-500/20">
+                    <h4 class="text-blue-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy"></i> Top Gestores (30 días)
+                    </h4>
+                    <div id="leaderboard-leads" class="space-y-4">
+                        <p class="text-gray-600 italic text-xs">Calculando ranking de cierres...</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-8 rounded-[2.5rem] border-purple-500/20">
+                    <h4 class="text-purple-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-users-rays"></i> Top Reclutadores
+                    </h4>
+                    <div id="leaderboard-recruiters" class="space-y-4">
+                        <p class="text-gray-600 italic text-xs">Calculando red de socios...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-3xl font-black uppercase italic mb-8">Arsenal de <span class="text-blue-500">Cierres Maestros</span></h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="glass-panel p-6 rounded-3xl border-white/5 hover:border-blue-500/30 transition group">
+                        <div class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center text-blue-500 font-black mb-4 group-hover:bg-blue-600 group-hover:text-white transition">01</div>
+                        <h5 class="font-black text-sm uppercase mb-2">Cierre por Conclusión</h5>
+                        <p class="text-[11px] text-gray-400 leading-relaxed mb-4 italic">"Llega a la reunión convencido de que el cliente SÍ quiere trabajar contigo. Tu seguridad es contagiosa."</p>
+                        <button onclick="copyScript('Sí quiere que le administremos la propiedad, es un hecho.')" class="text-[9px] font-black text-blue-500 uppercase tracking-widest hover:underline">Copiar Mantra</button>
+                    </div>
+                    <div class="glass-panel p-6 rounded-3xl border-white/5 hover:border-blue-500/30 transition group">
+                        <div class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center text-blue-500 font-black mb-4 group-hover:bg-blue-600 group-hover:text-white transition">02</div>
+                        <h5 class="font-black text-sm uppercase mb-2">Doble Alternativa</h5>
+                        <p class="text-[11px] text-gray-400 leading-relaxed mb-4 italic">No preguntes 'cuándo', ofrece dos opciones cerradas.</p>
+                        <button onclick="copyScript('¿Prefiere que el tasador vaya el martes a las 10:00 o el miércoles a las 16:00?')" class="text-[9px] font-black text-blue-500 uppercase tracking-widest hover:underline">Copiar Script</button>
+                    </div>
+                    </div>
+            </div>
+
+            <div class="glass-panel p-10 rounded-[3rem] border-green-500/20 bg-green-500/5">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h3 class="text-2xl font-black uppercase italic">Comisiones <span class="text-green-500">Pagadas</span></h3>
+                        <p class="text-xs text-gray-500">Comprobantes reales de los últimos 30 días.</p>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto pb-2 w-full md:w-auto">
+                        <button onclick="window.open('URL_DE_TU_PDF_1')" class="bg-white/5 border border-white/10 p-4 rounded-2xl flex flex-col items-center min-w-[120px] hover:bg-white/10 transition">
+                            <i class="fa-solid fa-file-pdf text-red-500 text-2xl mb-2"></i>
+                            <span class="text-[9px] font-black uppercase">$450.000 CLP</span>
+                        </button>
+                        <button onclick="window.open('URL_DE_TU_PDF_2')" class="bg-white/5 border border-white/10 p-4 rounded-2xl flex flex-col items-center min-w-[120px] hover:bg-white/10 transition">
+                            <i class="fa-solid fa-file-pdf text-red-500 text-2xl mb-2"></i>
+                            <span class="text-[9px] font-black uppercase">$180.000 CLP</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal Nuevo Dato -->
@@ -162,7 +300,7 @@
     </div>
 
     <!-- LÓGICA JAVASCRIPT CORREGIDA -->
-    <script type="module">
+    
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // Utilidades UI
