@@ -256,14 +256,37 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; -webkit-tap-highlight-color: transparent; }
-        .glass-panel { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        .hidden { display: none !important; }
-        #msg-box-admin { position: fixed; top: 100px; right: 20px; z-index: 100; background: #3b82f6; color: white; padding: 15px; border-radius: 12px; display: none; font-size: 11px; font-weight: bold; border-left: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
+        .admin-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        .hidden-content { display: none !important; }
+        #msg-box-admin { position: fixed; top: 100px; right: 20px; z-index: 100; background: #3b82f6; color: white; padding: 15px; border-radius: 12px; display: none; font-size: 11px; font-weight: bold; border-left: 4px solid #fff; }
         
-        /* Ajustes para scroll suave y evitar desborde horizontal */
-        html, body { overflow-x: hidden; width: 100%; position: relative; }
+        /* Diseño EXCLUSIVO para Celulares (no toca el PC) */
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { display: none; }
+            tbody tr { background: rgba(30, 41, 59, 0.4); margin-bottom: 1rem; border-radius: 1.5rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+            tbody td { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; }
+            tbody td:last-child { border-bottom: none; }
+            tbody td::before { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; }
+            
+            /* Títulos de celdas en móvil para Negocios */
+            #admin-table-body td:nth-child(1)::before { content: "Propiedad / Cliente"; }
+            #admin-table-body td:nth-child(2)::before { content: "Contactado"; }
+            #admin-table-body td:nth-child(3)::before { content: "Firma"; }
+            #admin-table-body td:nth-child(4)::before { content: "Visitas"; }
+            #admin-table-body td:nth-child(5)::before { content: "Estatus Final"; }
+            
+            /* Títulos de celdas en móvil para Partners */
+            #admin-partners-body td:nth-child(1)::before { content: "Datos del Partner"; }
+            #admin-partners-body td:nth-child(2)::before { content: "Sponsor"; }
+            #admin-partners-body td:nth-child(3)::before { content: "Fecha Registro"; }
+            #admin-partners-body td:nth-child(4)::before { content: "Acción"; }
+
+            tbody td:nth-child(1) { flex-direction: column; align-items: flex-start; text-align: left; }
+            tbody td:nth-child(1)::before { margin-bottom: 0.5rem; }
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black">
