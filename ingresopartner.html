@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script type="module">
+        // 1. IMPORTAMOS TODO LO NECESARIO EN UN SOLO BLOQUE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -22,11 +23,57 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // --- CONFIGURA AQUÍ TU CORREO DE ADMINISTRADOR ---
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
-        window.fbAuth = { auth, signInWithEmailAndPassword, ADMIN_EMAIL };
+        // --- FUNCIÓN PARA RECUPERAR CLAVE (CORREGIDA) ---
+        async function recuperarClave() {
+            // Buscamos el ID "email" que es el que tienes en tu input de abajo
+            const emailField = document.getElementById('email'); 
+            const email = emailField.value;
+
+            if (email === "") {
+                alert("Por favor, escribe tu correo en el cuadro para poder enviarte el link.");
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("¡Listo! Enviamos un link de recuperación a tu correo. Revisa también tu carpeta de Spam.");
+            } catch (error) {
+                console.error("Error:", error);
+                alert("No pudimos enviar el correo. Revisa si está bien escrito.");
+            }
+        }
+
+        // --- LÓGICA DE INICIO DE SESIÓN ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const btn = document.getElementById('btn-entrar');
+
+            btn.innerText = "VERIFICANDO...";
+            btn.disabled = true;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                if (user.email === ADMIN_EMAIL) {
+                    window.location.href = 'admin.html';
+                } else {
+                    localStorage.setItem('active_partner', email.split('@')[0]);
+                    window.location.href = 'intranet.html';
+                }
+            } catch (error) {
+                alert("Error: Correo o contraseña incorrectos.");
+                btn.innerText = "ENTRAR AL PORTAL";
+                btn.disabled = false;
+            }
+        });
+
+        // Hacemos que la función sea visible para el botón de HTML
+        window.recuperarClave = recuperarClave;
     </script>
 
     <style>
@@ -55,68 +102,15 @@
             </button>
 
             <div style="margin-top: 20px; text-align: center;">
-    <a href="#" onclick="recuperarClave()" style="color: #3b82f6; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
-        ¿Olvidaste tu contraseña?
-    </a>
-</div>
-            
+                <a href="#" onclick="recuperarClave()" style="color: #3b82f6; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
         </form>
 
         <div class="mt-8 text-center">
             <p class="text-xs text-gray-500">¿No tienes cuenta? <a href="registrate.html" class="text-blue-500 font-bold underline hover:text-blue-400 transition">Regístrate aquí</a></p>
         </div>
     </div>
-
-    <script type="module">
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            const btn = document.getElementById('btn-entrar');
-
-            btn.innerText = "VERIFICANDO...";
-            btn.disabled = true;
-
-            try {
-                const userCredential = await window.fbAuth.signInWithEmailAndPassword(window.fbAuth.auth, email, pass);
-                const user = userCredential.user;
-
-                // --- REDIRECCIÓN INTELIGENTE ---
-                if (user.email === window.fbAuth.ADMIN_EMAIL) {
-                    window.location.href = 'admin.html'; // Sebastián va al panel master
-                } else {
-                    localStorage.setItem('active_partner', email.split('@')[0]);
-                    window.location.href = 'intranet.html'; // Los socios van a su panel
-                }
-            } catch (error) {
-                alert("Error: Correo o contraseña incorrectos.");
-                btn.innerText = "ENTRAR AL PORTAL";
-                btn.disabled = false;
-            }
-        });
-        // Función para recuperar la clave
-async function recuperarClave() {
-    // 1. Buscamos el correo (tu input se llama 'loginEmail' según vimos antes)
-    const emailField = document.getElementById('loginEmail'); 
-    const email = emailField.value;
-
-    if (email === "") {
-        alert("Sebastián, el socio debe escribir su correo primero para poder enviarle el link.");
-        return;
-    }
-
-    try {
-        // 2. Le pedimos a Firebase que mande el correo usando tu variable 'auth'
-        await sendPasswordResetEmail(auth, email);
-        alert("¡Listo! Enviamos un link de recuperación a su correo. Dile que revise el Spam.");
-    } catch (error) {
-        console.error("Error al enviar email:", error);
-        alert("No pudimos enviar el correo: " + error.message);
-    }
-}
-
-// ESTA LÍNEA ES CLAVE: Hace que el botón de arriba pueda encontrar la función
-window.recuperarClave = recuperarClave;
-    </script>
 </body>
 </html>
