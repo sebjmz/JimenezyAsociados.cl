@@ -58,63 +58,83 @@
         window.copyScript = (text) => {
             navigator.clipboard.writeText(text);
             window.showMsg("¡Script copiado! Pégalo en WhatsApp.");
-        };async function loadLeaderboard() {
+        };
+        async function loadLeaderboard() {
             const leadsContainer = document.getElementById('leaderboard-leads');
             const recruitersContainer = document.getElementById('leaderboard-recruiters');
             
             try {
+                // 1. Traemos toda la data necesaria de un solo golpe
                 const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
                 const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
                 
-                let stats = {}; // {email: {name, leads: 0, recruits: 0}}
-                
-                // 1. Contar Reclutadores (Quién invitó a quién)
-                profilesSnap.forEach(doc => {
-                    const data = doc.data();
-                    if(data.sponsorEmail) {
-                        const sp = data.sponsorEmail.toLowerCase();
-                        if(!stats[sp]) stats[sp] = { name: sp.split('@')[0], leads: 0, recruits: 0 };
-                        stats[sp].recruits++;
+                let userNames = {}; // Para traducir UIDs a Nombres reales
+                let recruiterStats = {}; // {email: {name, count}}
+                let gestorStats = {};    // {uid: {name, count}}
+
+                // 2. Procesar Perfiles (Para Reclutadores y Mapa de Nombres)
+                profilesSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    if (!path.includes(window.fb.appId)) return;
+
+                    const uid = docSnap.ref.parent.parent.id;
+                    const name = data.name || data.email.split('@')[0];
+                    userNames[uid] = name;
+
+                    // Si este perfil fue invitado por alguien, le sumamos un punto al sponsor
+                    if (data.sponsorEmail) {
+                        const sponsor = data.sponsorEmail.toLowerCase();
+                        if (!recruiterStats[sponsor]) recruiterStats[sponsor] = { name: sponsor.split('@')[0], count: 0 };
+                        recruiterStats[sponsor].count++;
                     }
                 });
 
-                // 2. Contar Gestores (Quién tiene más negocios firmados/pagados)
-                referidosSnap.forEach(doc => {
-                    const data = doc.data();
-                    const path = doc.ref.path;
-                    if(!path.includes(window.fb.appId)) return;
-                    
-                    // Extraer email del dueño del referido desde el path o data si lo guardamos
-                    // Por ahora, usaremos una lógica simplificada de conteo por UID si es posible
+                // 3. Procesar Referidos (Para Captadores)
+                referidosSnap.forEach(docSnap => {
+                    const path = docSnap.ref.path;
+                    if (!path.includes(window.fb.appId)) return;
+
+                    const ownerUid = docSnap.ref.parent.parent.id;
+                    if (!gestorStats[ownerUid]) {
+                        gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
+                    }
+                    gestorStats[ownerUid].count++;
                 });
 
-                // Ejemplo de renderizado (puedes ajustar la lógica de conteo exacto después)
-                const renderRank = (data, container, label) => {
+                // 4. Convertir a listas y ordenar de mayor a menor
+                const topRecruiters = Object.values(recruiterStats).sort((a, b) => b.count - a.count).slice(0, 3);
+                const topGestores = Object.values(gestorStats).sort((a, b) => b.count - a.count).slice(0, 3);
+
+                // 5. Función para dibujar las medallas
+                const renderRank = (dataList, container, label) => {
+                    if (dataList.length === 0) {
+                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4">Aún no hay datos para el ranking...</p>';
+                        return;
+                    }
                     let html = "";
-                    // Aquí iría el sort de los top 3
-                    const fakeTops = [
-                        {n: 'Sebastián J.', v: '12'},
-                        {n: 'Socio VIP', v: '8'},
-                        {n: 'Partner Activo', v: '5'}
-                    ];
-                    fakeTops.forEach((t, i) => {
+                    dataList.forEach((t, i) => {
                         const colors = ['text-yellow-500', 'text-gray-400', 'text-orange-600'];
                         html += `
-                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition">
                                 <div class="flex items-center gap-3">
-                                    <span class="font-black ${colors[i]} text-lg">#${i+1}</span>
-                                    <span class="font-bold text-sm uppercase">${t.n}</span>
+                                    <span class="font-black ${colors[i]} text-lg italic">#${i+1}</span>
+                                    <span class="font-bold text-[11px] uppercase text-white">${t.name}</span>
                                 </div>
-                                <span class="font-black text-blue-500 text-xs">${t.v} ${label}</span>
+                                <span class="font-black text-blue-500 text-[10px] tracking-widest">${t.count} ${label}</span>
                             </div>`;
                     });
                     container.innerHTML = html;
                 };
 
-                renderRank([], leadsContainer, 'FIRMAS');
-                renderRank([], recruitersContainer, 'SOCIOS');
+                // Renderizamos las dos listas
+                renderRank(topGestores, leadsContainer, 'REFERIDOS');
+                renderRank(topRecruiters, recruitersContainer, 'SOCIOS');
 
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error("Error en Leaderboard:", e); 
+                leadsContainer.innerHTML = recruitersContainer.innerHTML = '<p class="text-red-500 text-[10px]">Error al cargar ranking.</p>';
+            }
         }
     </script>
 
