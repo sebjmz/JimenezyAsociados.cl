@@ -10,7 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -153,12 +153,67 @@
             });
         }
 
+        // ==========================================
+        // BOT 2: LIMPIEZA DE PARTNERS INACTIVOS
+        // ==========================================
+        async function limpiarPartnersInactivos(snapshot) {
+            let partnersBorrados = 0;
+            const hoy = new Date();
+
+            for (const docSnap of snapshot.docs) {
+                const data = docSnap.data();
+                const path = docSnap.ref.path;
+                
+                if (!path.includes(appId)) continue;
+
+                const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
+                const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
+
+                // Si lleva 30 días o más creado, lo auditamos
+                if (dias >= 30) {
+                    const uid = docSnap.ref.parent.parent.id;
+                    const referidosRef = collection(db, 'artifacts', appId, 'users', uid, 'referidos');
+                    const referidosSnap = await getDocs(referidosRef);
+                    
+                    let tieneFirmados = false;
+                    
+                    referidosSnap.forEach(refDoc => {
+                        const refData = refDoc.data();
+                        if (refData.contrato === true || refData.statusFinal === 'Contrato' || refData.statusFinal === 'Firma' || refData.statusFinal === 'Inscrito' || refData.statusFinal === 'Pagado') {
+                            tieneFirmados = true;
+                        }
+                    });
+
+                    // Si no tiene firmas, se elimina SU PERFIL, pero NO sus referidos
+                    if (!tieneFirmados) {
+                        await deleteDoc(docSnap.ref); 
+                        
+                        try {
+                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
+                        } catch (e) {}
+                        
+                        partnersBorrados++;
+                    }
+                }
+            }
+
+            if (partnersBorrados > 0) {
+                const box = document.getElementById('msg-box-admin');
+                box.innerText = `LIMPIEZA DE PARTNERS: Se eliminó ${partnersBorrados} socio inactivo. Sus referidos siguen en el sistema.`;
+                box.style.display = 'block';
+                setTimeout(() => box.style.display = 'none', 6000);
+            }
+        }
+
         // --- CARGA DE PARTNERS ---
         function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
             const containerMobile = document.getElementById('admin-partners-cards');
             const q = query(collectionGroup(db, 'profile'));
             onSnapshot(q, (snapshot) => {
+                
+                limpiarPartnersInactivos(snapshot); // <-- EL BOT SE ACTIVA AQUÍ AUTOMÁTICAMENTE
+
                 let htmlDesktop = "";
                 let htmlMobile = "";
                 let count = 0, nuevos = 0;
@@ -200,6 +255,7 @@
                             <button onclick="window.deletePartner('${path}')" class="bg-red-900/20 text-red-500 p-3 rounded-xl text-xs"><i class="fa-solid fa-trash-can"></i></button>
                         </div>`;
                 });
+                
                 container.innerHTML = htmlDesktop;
                 containerMobile.innerHTML = htmlMobile;
                 document.getElementById('stat-partners-total').innerText = count;
