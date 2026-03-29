@@ -80,7 +80,33 @@
             try {
                 const userCredential = await window.fbAuth.signInWithEmailAndPassword(window.fbAuth.auth, email, pass);
                 const user = userCredential.user;
+function recuperarClave() {
+    // 1. Buscamos qué correo escribió el socio en el cuadro de texto
+    const emailField = document.getElementById('email'); // Asegúrate que el ID coincida con tu input de correo
+    const email = emailField.value;
 
+    // 2. Si el cuadro está vacío, le avisamos
+    if (email === "") {
+        alert("Por favor, escribe tu correo electrónico primero para poder enviarte el link de recuperación.");
+        return;
+    }
+
+    // 3. Le pedimos a Firebase que mande el correo
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            // Éxito
+            alert("¡Correo enviado! Revisa tu bandeja de entrada (y la carpeta de Spam) para restablecer tu clave.");
+        })
+        .catch((error) => {
+            // Si hay un error (ejemplo: el correo no existe)
+            console.error("Error al recuperar:", error);
+            if (error.code === 'auth/user-not-found') {
+                alert("Este correo no está registrado en nuestro sistema de Partners.");
+            } else {
+                alert("Hubo un problema: " + error.message);
+            }
+        });
+}
                 // --- REDIRECCIÓN INTELIGENTE ---
                 if (user.email === window.fbAuth.ADMIN_EMAIL) {
                     window.location.href = 'admin.html'; // Sebastián va al panel master
