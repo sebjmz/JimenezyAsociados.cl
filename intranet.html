@@ -64,59 +64,70 @@
             const recruitersContainer = document.getElementById('leaderboard-recruiters');
             
             try {
-                // 1. Traemos toda la data necesaria de un solo golpe
                 const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
                 const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
                 
-                let userNames = {}; // Para traducir UIDs a Nombres reales
-                let recruiterStats = {}; // {email: {name, count}}
-                let gestorStats = {};    // {uid: {name, count}}
+                let userNames = {}; 
+                let adminUid = ""; // Para identificar tu ID interno
+                let recruiterStats = {}; 
+                let gestorStats = {};    
 
-                // 2. Procesar Perfiles (Para Reclutadores y Mapa de Nombres)
+                // 1. Mapeo de perfiles y Filtro de Reclutadores
                 profilesSnap.forEach(docSnap => {
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
                     if (!path.includes(window.fb.appId)) return;
 
                     const uid = docSnap.ref.parent.parent.id;
-                    const name = data.name || data.email.split('@')[0];
+                    const email = data.email ? data.email.toLowerCase() : "";
+                    const name = data.name || email.split('@')[0];
+                    
+                    // Detectamos si este perfil es el tuyo
+                    if (email === window.fb.ADMIN_EMAIL.toLowerCase()) {
+                        adminUid = uid; 
+                        return; // Te saltamos a ti como candidato al ranking
+                    }
+
                     userNames[uid] = name;
 
-                    // Si este perfil fue invitado por alguien, le sumamos un punto al sponsor
-                    if (data.sponsorEmail) {
+                    // FILTRO ADMIN: Solo contamos el reclutamiento si el sponsor NO eres tú
+                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() !== window.fb.ADMIN_EMAIL.toLowerCase()) {
                         const sponsor = data.sponsorEmail.toLowerCase();
                         if (!recruiterStats[sponsor]) recruiterStats[sponsor] = { name: sponsor.split('@')[0], count: 0 };
                         recruiterStats[sponsor].count++;
                     }
                 });
 
-                // 3. Procesar Referidos (Para Captadores)
+                // 2. Filtro de Captadores (Gestores)
                 referidosSnap.forEach(docSnap => {
                     const path = docSnap.ref.path;
                     if (!path.includes(window.fb.appId)) return;
 
                     const ownerUid = docSnap.ref.parent.parent.id;
+                    
+                    // FILTRO ADMIN: Si el dueño del referido eres tú, no te contamos para el ranking
+                    if (ownerUid === adminUid) return;
+
                     if (!gestorStats[ownerUid]) {
                         gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
                     }
                     gestorStats[ownerUid].count++;
                 });
 
-                // 4. Convertir a listas y ordenar de mayor a menor
+                // 3. Ordenar y Renderizar (Top 3)
                 const topRecruiters = Object.values(recruiterStats).sort((a, b) => b.count - a.count).slice(0, 3);
                 const topGestores = Object.values(gestorStats).sort((a, b) => b.count - a.count).slice(0, 3);
 
-                // 5. Función para dibujar las medallas
                 const renderRank = (dataList, container, label) => {
                     if (dataList.length === 0) {
-                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4">Aún no hay datos para el ranking...</p>';
+                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4">Esperando nuevos movimientos en la red...</p>';
                         return;
                     }
                     let html = "";
                     dataList.forEach((t, i) => {
                         const colors = ['text-yellow-500', 'text-gray-400', 'text-orange-600'];
                         html += `
-                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition">
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-blue-500/20 transition">
                                 <div class="flex items-center gap-3">
                                     <span class="font-black ${colors[i]} text-lg italic">#${i+1}</span>
                                     <span class="font-bold text-[11px] uppercase text-white">${t.name}</span>
@@ -127,14 +138,10 @@
                     container.innerHTML = html;
                 };
 
-                // Renderizamos las dos listas
                 renderRank(topGestores, leadsContainer, 'REFERIDOS');
                 renderRank(topRecruiters, recruitersContainer, 'SOCIOS');
 
-            } catch(e) { 
-                console.error("Error en Leaderboard:", e); 
-                leadsContainer.innerHTML = recruitersContainer.innerHTML = '<p class="text-red-500 text-[10px]">Error al cargar ranking.</p>';
-            }
+            } catch(e) { console.error("Error Leaderboard:", e); }
         }
     </script>
 
