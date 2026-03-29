@@ -319,6 +319,23 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { collection, query, onSnapshot, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+// --- FUNCIONES DE INTERFAZ (UI) ---
+        window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
+        
+        window.showMsg = (text) => {
+            const box = document.getElementById('msg-box');
+            box.innerText = text;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
+        };
+
+        window.handleLogout = () => {
+            window.fb.signOut(window.fb.auth).then(() => {
+                window.location.href = 'ingresopartner.html';
+            }).catch(e => console.error("Error al salir:", e));
+        };
+    
         // 1. Verificación de Autenticación
         onAuthStateChanged(window.fb.auth, (user) => {
             if (!user) {
