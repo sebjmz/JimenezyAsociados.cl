@@ -33,25 +33,26 @@
         window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL };
         // Cambiar entre pestañas de Intranet
         window.switchIntranetTab = (tab) => {
-            const isAcademia = tab === 'academia';
-            
-            // 1. Control de visibilidad de los contenedores principales
-            document.getElementById('view-academia').classList.toggle('hidden', !isAcademia);
-            document.getElementById('view-gestiones').classList.toggle('hidden', isAcademia);
-            
-            // 2. Estética de los botones (Azul para el activo, gris para el inactivo)
-            const btnGest = document.getElementById('tab-gestiones');
-            const btnAcad = document.getElementById('tab-academia');
-            
-            if(isAcademia) {
-                btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
-                btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
-                loadLeaderboard(); 
-            } else {
-                btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
-                btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
-            }
-        };
+    const isAcademia = tab === 'academia';
+    
+    // 1. Control de visibilidad total
+    // Si es academia, esconde gestiones y muestra academia. Si no, al revés.
+    document.getElementById('view-academia').classList.toggle('hidden', !isAcademia);
+    document.getElementById('view-gestiones').classList.toggle('hidden', isAcademia);
+    
+    // 2. Colores de los botones para saber dónde estamos
+    const btnGest = document.getElementById('tab-gestiones');
+    const btnAcad = document.getElementById('tab-academia');
+    
+    if(isAcademia) {
+        btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+        btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
+        loadLeaderboard(); 
+    } else {
+        btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+        btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
+    }
+};
 
         // Copiar scripts al portapapeles
         window.copyScript = (text) => {
