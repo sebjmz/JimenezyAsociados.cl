@@ -112,7 +112,7 @@
             });
         }
 
-        // --- CARGA DE PARTNERS (CON SUS 3 RECUADROS RESTAURADOS) ---
+        // --- CARGA DE PARTNERS ---
         function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
             const q = query(collectionGroup(db, 'profile'));
@@ -155,6 +155,7 @@
             });
         }
 
+        // --- EXPOSICIÓN GLOBAL DE FUNCIONES ---
         window.updateStatus = async (path, field, value) => {
             try { await updateDoc(doc(db, path), { [field]: value }); } catch (e) { alert("Error: " + e.message); }
         };
@@ -166,6 +167,12 @@
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
                 } catch (e) { alert("Error: " + e.message); }
             }
+        };
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'ingresopartner.html';
+            }).catch((error) => alert("Error al salir: " + error.message));
         };
 
         window.switchTab = (tab) => {
@@ -227,7 +234,7 @@
                 <button id="btn-tab-partners" onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">Partners</button>
             </div>
 
-            <button onclick="signOut(auth).then(() => window.location.href='ingresopartner.html')" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-xl hover:bg-red-600 hover:text-white transition shadow-sm">Cerrar Sesión</button>
+            <button onclick="logout()" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-xl hover:bg-red-600 hover:text-white transition shadow-sm">Cerrar Sesión</button>
         </header>
 
         <main class="max-w-7xl mx-auto">
@@ -266,7 +273,7 @@
                 </div>
             </div>
 
-            <!-- VISTA DE PARTNERS (RESTAURADA) -->
+            <!-- VISTA DE PARTNERS (RESTAURADA TOTALMENTE) -->
             <div id="view-partners" class="hidden">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
                     <div class="glass-panel p-8 rounded-[2rem] border-white/5 shadow-[0_0_20px_rgba(255,255,255,0.02)]">
