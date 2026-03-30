@@ -80,12 +80,17 @@
                     if (data.statusFinal === 'Pagado') done++;
                     const dias = data.createdAt ? Math.floor((new Date() - data.createdAt.toDate()) / (1000 * 60 * 60 * 24)) : 0;
 
-                    // DISEÑO DESKTOP (TABLA)
+                 // DISEÑO DESKTOP (TABLA CON WHATSAPP)
                     htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
                                 <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${data.service} • Hace ${dias} días</div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <a href="https://wa.me/${data.phone ? data.phone.replace(/\D/g, '') : ''}" target="_blank" class="text-green-500 font-black text-xs hover:underline flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-whatsapp text-lg"></i> ${data.phone || 'S/N'}
+                                </a>
                             </td>
                             <td class="px-8 py-6 text-center">
                                 <button onclick="window.updateStatus('${path}', 'contactado', ${!data.contactado})" class="hover:scale-125 transition">
