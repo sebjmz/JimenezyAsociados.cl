@@ -232,16 +232,26 @@
                     
                     count++;
                     if (data.sponsorEmail) sponsors.add(data.sponsorEmail);
-                    const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
+
+                    const fechaCreacion = (data.createdAt && data.createdAt.toDate) ? data.createdAt.toDate() : hoy;
                     const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
                     if (dias <= 30) nuevos++;
-                    let fechaStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
+                    
+                    let fechaStr = (data.createdAt && data.createdAt.toDate) ? data.createdAt.toDate().toLocaleDateString() : "Reciente";
+
+                    // Limpieza de teléfono para el link de WhatsApp
+                    const cleanPhone = data.phone ? data.phone.replace(/\D/g, '') : '';
 
                     htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Socio'}</div>
-                                <div class="text-[10px] text-gray-500 font-bold">${data.email}</div>
+                                <div class="text-[10px] text-gray-500 font-bold">${data.email || 'Sin email'}</div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <a href="https://wa.me/${cleanPhone}" target="_blank" class="text-green-500 font-black text-xs hover:underline flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-whatsapp text-lg"></i> ${data.phone || 'S/N'}
+                                </a>
                             </td>
                             <td class="px-8 py-6 text-center text-xs text-purple-400 font-bold">${data.sponsorEmail || 'Admin'}</td>
                             <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fechaStr}</td>
@@ -249,6 +259,7 @@
                                 <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
                             </td>
                         </tr>`;
+                });
 
                     htmlMobile += `
                         <div class="glass-panel p-5 rounded-2xl mb-3 border-white/5 flex justify-between items-center">
