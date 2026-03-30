@@ -461,8 +461,8 @@
         }
     });
 
-    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
-    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
+    
+    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin y con Sistema de Semáforo)
     async function checkVigencia(uid) {
         try {
             const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile'));
@@ -479,20 +479,50 @@
             const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
             
             const diferenciaDias = Math.floor((hoyMidnight - baseMidnight) / (1000 * 60 * 60 * 24));
-            const diasRestantes = 30 - diferenciaDias;
-
-            document.getElementById('status-card').classList.remove('hidden');
-            const countDisplay = document.getElementById('days-count');
-            countDisplay.innerText = diasRestantes > 0 ? diasRestantes : 0;
+            let diasRestantes = 30 - diferenciaDias;
             
+            // Evitamos que los números bajen de cero si el socio se pasó de los 30 días
+            if (diasRestantes < 0) diasRestantes = 0; 
+
+            const statusCard = document.getElementById('status-card');
+            const iconBg = document.getElementById('icon-bg');
+            const countDisplay = document.getElementById('days-count');
             const statusText = document.getElementById('timer-status');
-            if (diasRestantes <= 5) {
-                statusText.innerText = "¡ALERTA: REQUIERES UNA FIRMA PARA SEGUIR!";
-                countDisplay.className = "text-4xl font-black text-red-500 animate-pulse";
+
+            statusCard.classList.remove('hidden');
+            countDisplay.innerText = diasRestantes;
+
+            // 1. Limpiamos todas las clases de colores anteriores para "resetear" la tarjeta
+            statusCard.className = "glass-panel p-6 rounded-[2rem] mb-8 flex justify-between items-center shadow-lg transition-all duration-500 border";
+            iconBg.className = "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-500";
+            countDisplay.className = "text-4xl font-black transition-colors duration-500";
+
+            // 2. SISTEMA DE SEMÁFORO (30 días divididos en 3 bloques de 10)
+            if (diasRestantes >= 21) {
+                // ZONA VERDE (Días 30 a 21): Felicitación y estatus
+                statusCard.classList.add('border-green-500/30', 'shadow-green-900/10');
+                iconBg.classList.add('bg-green-500/20', 'text-green-500');
+                iconBg.innerHTML = '<i class="fa-solid fa-fire text-xl"></i>';
+                statusText.innerText = "¡Intocable! Tu lugar en el Club Partners está asegurado.";
+                countDisplay.classList.add('text-green-500');
+
+            } else if (diasRestantes >= 11) {
+                // ZONA AMARILLA (Días 20 a 11): Motivación para volver a verde
+                statusCard.classList.add('border-yellow-500/30', 'shadow-yellow-900/10');
+                iconBg.classList.add('bg-yellow-500/20', 'text-yellow-500');
+                iconBg.innerHTML = '<i class="fa-solid fa-chart-line text-xl"></i>';
+                statusText.innerText = "¡Acelera el paso! Ve por esa firma y vuelve a zona Verde.";
+                countDisplay.classList.add('text-yellow-500');
+
             } else {
-                statusText.innerText = "Socio Vigente y Activo.";
-                countDisplay.className = "text-4xl font-black text-green-500";
+                // ZONA ROJA (Días 10 a 0): Advertencia de expulsión
+                statusCard.classList.add('border-red-500/40', 'shadow-red-900/20');
+                iconBg.classList.add('bg-red-500/20', 'text-red-500');
+                iconBg.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xl animate-pulse"></i>';
+                statusText.innerText = "¡ALERTA! Tu membresía en el Club Partners expira pronto.";
+                countDisplay.classList.add('text-red-500', 'animate-pulse');
             }
+
         } catch(e) { console.error("Error vigencia:", e); }
     }
 
