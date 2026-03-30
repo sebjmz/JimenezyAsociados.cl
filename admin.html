@@ -74,40 +74,48 @@
                     const data = docSnap.data();
                     const path = docSnap.ref.path;
                     if (!path.includes(appId)) return;
-                    
-                    count++;
-                    if (data.sponsorEmail) sponsors.add(data.sponsorEmail);
-                    const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
-                    const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
-                    if (dias <= 30) nuevos++;
-                    let fechaStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
 
-                    // LÓGICA DE WHATSAPP / VINCULAR
-                    let whatsappCell = "";
-                    if (!data.phone || data.phone === "PENDIENTE") {
-                        whatsappCell = `<button onclick="window.vincularManual('${path}')" class="bg-green-600/20 text-green-500 px-3 py-1 rounded-lg text-[9px] font-black uppercase border border-green-500/20 animate-pulse">Vincular</button>`;
-                    } else {
-                        whatsappCell = `<a href="https://wa.me/${data.phone.replace(/\D/g, '')}" target="_blank" class="text-green-500 font-black text-xs flex items-center justify-center gap-2">
-                                            <i class="fa-brands fa-whatsapp text-lg"></i> ${data.phone}
-                                        </a>`;
-                    }
+                    total++;
+                    if (!data.contactado) pending++;
+                    if (data.statusFinal === 'Pagado') done++;
+                    const dias = data.createdAt ? Math.floor((new Date() - data.createdAt.toDate()) / (1000 * 60 * 60 * 24)) : 0;
 
+                 // DISEÑO DESKTOP (TABLA CON WHATSAPP)
                     htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
-                                <div class="font-bold text-white text-base">${data.name || 'Socio'}</div>
-                                <div class="text-[10px] text-gray-500 font-bold">${data.email}</div>
+                                <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${data.service} • Hace ${dias} días</div>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                ${whatsappCell}
+                                <a href="https://wa.me/${data.phone ? data.phone.replace(/\D/g, '') : ''}" target="_blank" class="text-green-500 font-black text-xs hover:underline flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-whatsapp text-lg"></i> ${data.phone || 'S/N'}
+                                </a>
                             </td>
-                            <td class="px-8 py-6 text-center text-xs text-purple-400 font-bold">${data.sponsorEmail || 'Admin'}</td>
-                            <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fechaStr}</td>
+                            <td class="px-8 py-6 text-center">
+                                <button onclick="window.updateStatus('${path}', 'contactado', ${!data.contactado})" class="hover:scale-125 transition">
+                                    <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-2xl"></i>
+                                </button>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <button onclick="window.updateStatus('${path}', 'contrato', ${!data.contrato})" class="hover:scale-125 transition">
+                                    <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-2xl"></i>
+                                </button>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <button onclick="window.updateStatus('${path}', 'visitas', ${!data.visitas})" class="hover:scale-125 transition">
+                                    <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-2xl"></i>
+                                </button>
+                            </td>
                             <td class="px-8 py-6 text-right">
-                                <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
+                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2.5 rounded-xl font-black text-white uppercase cursor-pointer">
+                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
+                                    <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
+                                    <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
+                                    <option value="Perdido" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
+                                </select>
                             </td>
                         </tr>`;
-                });
 
                     // DISEÑO MOBILE (TARJETAS) - REEMPLAZADO PARA VER WHATSAPP
                     htmlMobile += `
@@ -158,21 +166,52 @@
         // BOT 2: LIMPIEZA DE PARTNERS INACTIVOS
         // ==========================================
         async function limpiarPartnersInactivos(snapshot) {
+            let partnersBorrados = 0;
             const hoy = new Date();
-            snapshot.forEach(async (docSnap) => {
+
+            for (const docSnap of snapshot.docs) {
                 const data = docSnap.data();
-                if (!docSnap.ref.path.includes(appId)) return;
+                const path = docSnap.ref.path;
+                
+                if (!path.includes(appId)) continue;
 
-                // Si nunca ha cerrado nada, usamos su fecha de registro
-                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy);
-                const diasSinExito = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
+                const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
+                const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
 
-                // SI PASARON 30 DÍAS SIN CONTRATOS FIRMADOS... ELIMINAR.
-                if (diasSinExito >= 30) {
-                    await deleteDoc(docSnap.ref);
-                    console.log("Socio eliminado por inactividad de 30 días:", data.email);
+                // Si lleva 30 días o más creado, lo auditamos
+                if (dias >= 30) {
+                    const uid = docSnap.ref.parent.parent.id;
+                    const referidosRef = collection(db, 'artifacts', appId, 'users', uid, 'referidos');
+                    const referidosSnap = await getDocs(referidosRef);
+                    
+                    let tieneFirmados = false;
+                    
+                    referidosSnap.forEach(refDoc => {
+                        const refData = refDoc.data();
+                        if (refData.contrato === true || refData.statusFinal === 'Contrato' || refData.statusFinal === 'Firma' || refData.statusFinal === 'Inscrito' || refData.statusFinal === 'Pagado') {
+                            tieneFirmados = true;
+                        }
+                    });
+
+                    // Si no tiene firmas, se elimina SU PERFIL, pero NO sus referidos
+                    if (!tieneFirmados) {
+                        await deleteDoc(docSnap.ref); 
+                        
+                        try {
+                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
+                        } catch (e) {}
+                        
+                        partnersBorrados++;
+                    }
                 }
-            });
+            }
+
+            if (partnersBorrados > 0) {
+                const box = document.getElementById('msg-box-admin');
+                box.innerText = `LIMPIEZA DE PARTNERS: Se eliminó ${partnersBorrados} socio inactivo. Sus referidos siguen en el sistema.`;
+                box.style.display = 'block';
+                setTimeout(() => box.style.display = 'none', 6000);
+            }
         }
 
         // --- CARGA DE PARTNERS ---
@@ -238,16 +277,14 @@
             try { 
                 await updateDoc(doc(db, path), { [field]: value }); 
                 
-                // SI CONFIRMAS CONTRATO (TRUE), RESETEAMOS SU RELOJ DE 30 DÍAS
+                // SI CONFIRMAS CONTRATO (TRUE), RESETEAMOS SU RELOJ
                 if (field === 'contrato' && value === true) {
                     const pathParts = path.split('/');
-                    const partnerUid = pathParts[3]; // Extrae el UID del socio de la ruta
-                    
-                    // Apuntamos al documento de perfil del socio
+                    const partnerUid = pathParts[4]; // Extrae el UID del socio
                     const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
                     
                     await updateDoc(profileRef, { 
-                        lastSuccessAt: serverTimestamp() 
+                        lastSuccessAt: window.fbReg.serverTimestamp() 
                     });
                 }
             } catch (e) { alert("Error: " + e.message); }
@@ -262,18 +299,6 @@
             }
         };
 
-window.vincularManual = async (path) => {
-            const phone = prompt("Ingresa el WhatsApp real del Partner (Ej: 56912345678):");
-            if (phone && phone.trim() !== "") {
-                try {
-                    await updateDoc(doc(db, path), { phone: phone.trim() });
-                    alert("¡Socio vinculado con éxito!");
-                } catch (e) {
-                    alert("Error al vincular: " + e.message);
-                }
-            }
-        };
-        
         window.logout = () => {
             signOut(auth).then(() => {
                 window.location.href = 'ingresopartner.html';
