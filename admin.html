@@ -10,8 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
             authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -166,31 +165,31 @@
         // BOT 2: LIMPIEZA DE PARTNERS INACTIVOS
         // ==========================================
         async function limpiarPartnersInactivos(snapshot) {
-            let partnersBorrados = 0;
             const hoy = new Date();
+            let eliminados = 0;
 
             for (const docSnap of snapshot.docs) {
                 const data = docSnap.data();
-                const path = docSnap.ref.path;
-                
-                if (!path.includes(appId)) continue;
+                if (!docSnap.ref.path.includes(appId)) continue;
 
-                const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
-                const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
+                // Si nunca ha firmado, usamos su fecha de creación
+                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy);
+                const diasInactivo = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
 
-                // Si lleva 30 días o más creado, lo auditamos
-                if (dias >= 30) {
-                    const uid = docSnap.ref.parent.parent.id;
-                    const referidosRef = collection(db, 'artifacts', appId, 'users', uid, 'referidos');
-                    const referidosSnap = await getDocs(referidosRef);
-                    
-                    let tieneFirmados = false;
-                    
-                    referidosSnap.forEach(refDoc => {
-                        const refData = refDoc.data();
-                        if (refData.contrato === true || refData.statusFinal === 'Contrato' || refData.statusFinal === 'Firma' || refData.statusFinal === 'Inscrito' || refData.statusFinal === 'Pagado') {
-                            tieneFirmados = true;
-                        }
+                // REGLA DE ORO: 30 días sin firmas = Se elimina el perfil del socio
+                if (diasInactivo >= 30) {
+                    await deleteDoc(docSnap.ref);
+                    eliminados++;
+                }
+            }
+
+            if (eliminados > 0) {
+                const box = document.getElementById('msg-box-admin');
+                box.innerText = `LIMPIEZA: Se eliminaron ${eliminados} socios inactivos (30 días sin firmas).`;
+                box.style.display = 'block';
+                setTimeout(() => box.style.display = 'none', 5000);
+            }
+        }
                     });
 
                     // Si no tiene firmas, se elimina SU PERFIL, pero NO sus referidos
@@ -275,17 +274,24 @@
 
         window.updateStatus = async (path, field, value) => {
             try { 
+                // Actualizamos el dato del referido
                 await updateDoc(doc(db, path), { [field]: value }); 
                 
-                // SI CONFIRMAS CONTRATO (TRUE), RESETEAMOS SU RELOJ
+                // SI MARCAs FIRMA (contrato) COMO EXITOSA, RESETEAMOS LOS 30 DÍAS
                 if (field === 'contrato' && value === true) {
                     const pathParts = path.split('/');
-                    const partnerUid = pathParts[4]; // Extrae el UID del socio
+                    const partnerUid = pathParts[3]; // El ID del socio está en la posición 3 de la ruta
+                    
                     const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
                     
                     await updateDoc(profileRef, { 
-                        lastSuccessAt: window.fbReg.serverTimestamp() 
+                        lastSuccessAt: serverTimestamp() // Le damos 30 días de vida desde ahora
                     });
+                    
+                    const box = document.getElementById('msg-box-admin');
+                    box.innerText = "¡FIRMA CONFIRMADA! Reloj del socio reiniciado a 30 días.";
+                    box.style.display = 'block';
+                    setTimeout(() => box.style.display = 'none', 4000);
                 }
             } catch (e) { alert("Error: " + e.message); }
         };
