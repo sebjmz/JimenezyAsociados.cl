@@ -232,6 +232,7 @@
                     const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
 await updateDoc(profileRef, { 
     lastSuccessAt: serverTimestamp()
+        });
                     showAdminMsg("¡FIRMA CONFIRMADA! Reloj del socio reiniciado.");
                 }
             } catch (e) { alert("Error: " + e.message); }
