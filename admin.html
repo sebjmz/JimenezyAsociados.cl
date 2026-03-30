@@ -237,11 +237,25 @@
                     if (dias <= 30) nuevos++;
                     let fechaStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
 
+                    // LÓGICA DE WHATSAPP (BOTÓN O LINK)
+                    let whatsappCell = "";
+                    if (!data.phone || data.phone === "PENDIENTE") {
+                        whatsappCell = `<button onclick="window.vincularManual('${path}')" class="bg-green-600/20 text-green-500 px-3 py-1 rounded-lg text-[9px] font-black uppercase border border-green-500/20 animate-pulse hover:bg-green-500 hover:text-white transition">Vincular</button>`;
+                    } else {
+                        const cleanPhone = data.phone.replace(/\D/g, '');
+                        whatsappCell = `<a href="https://wa.me/${cleanPhone}" target="_blank" class="text-green-500 font-black text-xs hover:underline flex items-center justify-center gap-2">
+                                            <i class="fa-brands fa-whatsapp text-lg"></i> ${data.phone}
+                                        </a>`;
+                    }
+
                     htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Socio'}</div>
                                 <div class="text-[10px] text-gray-500 font-bold">${data.email}</div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                ${whatsappCell}
                             </td>
                             <td class="px-8 py-6 text-center text-xs text-purple-400 font-bold">${data.sponsorEmail || 'Admin'}</td>
                             <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fechaStr}</td>
@@ -249,6 +263,7 @@
                                 <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
                             </td>
                         </tr>`;
+                });
 
                     htmlMobile += `
                         <div class="glass-panel p-5 rounded-2xl mb-3 border-white/5 flex justify-between items-center">
@@ -282,6 +297,19 @@
             }
         };
 
+window.vincularManual = async (path) => {
+            const phone = prompt("Ingresa el WhatsApp real del Partner (Ej: 56912345678):");
+            if (phone && phone.trim() !== "") {
+                try {
+                    const profileRef = doc(db, path);
+                    await updateDoc(profileRef, { phone: phone.trim() });
+                    alert("¡Socio vinculado con éxito!");
+                } catch (e) {
+                    alert("Error al vincular: " + e.message);
+                }
+            }
+        };
+        
         window.logout = () => {
             signOut(auth).then(() => {
                 window.location.href = 'ingresopartner.html';
@@ -444,6 +472,7 @@
                             <thead class="bg-white/5 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] border-b border-white/5">
                                 <tr>
                                     <th class="px-8 py-6">Partner</th>
+                                    <th class="px-8 py-6 text-center italic text-green-500">WhatsApp</th>
                                     <th class="px-8 py-6 text-center">Sponsor</th>
                                     <th class="px-8 py-6 text-center">Registro</th>
                                     <th class="px-8 py-6 text-right">Acción</th>
