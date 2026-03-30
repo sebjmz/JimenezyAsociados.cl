@@ -234,29 +234,28 @@
                 <h1 class="text-4xl font-black uppercase italic tracking-tighter mb-2">Mis <span class="text-blue-500">Gestiones</span></h1>
                 <p class="text-gray-500 text-sm">Estado de tus referidos y comisiones.</p>
             </div>
-            <button onclick="openModal()" class="bg-blue-600 ...">
-    <i class="fa-solid fa-plus"></i> NUEVO DATO
-</button>
-</div> ```
+            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition shadow-[0_0_20px_rgba(59,130,246,0.2)] transform active:scale-95 italic uppercase tracking-widest text-sm">
+                <i class="fa-solid fa-plus"></i> NUEVO DATO
+            </button>
+        </div>
 
-<div id="status-card" class="glass-panel p-6 rounded-[2rem] border-orange-500/20 mb-8 flex justify-between items-center shadow-lg shadow-orange-900/5 hidden">
-    <div class="flex items-center gap-4">
-        <div id="icon-bg" class="w-12 h-12 bg-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500">
-            <i class="fa-solid fa-hourglass-half"></i>
-        </div>
-        <div>
-            <p class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Vigencia de Socio J&A</p>
-            <p id="timer-status" class="text-xs font-bold text-white mt-0.5 italic">Verificando actividad...</p>
-        </div>
-    </div>
-    <div class="text-right">
-        <div class="flex items-baseline justify-end gap-1">
-            <span id="days-count" class="text-4xl font-black text-orange-500">--</span>
-            <span class="text-[10px] font-black text-gray-600 uppercase">Días</span>
-        </div>
-        <p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Para tu próxima Firma de Contrato</p>
-    </div>
-</div>
+        <div id="status-card" class="glass-panel p-6 rounded-[2rem] border-orange-500/20 mb-8 flex justify-between items-center shadow-lg shadow-orange-900/5 hidden">
+            <div class="flex items-center gap-4">
+                <div id="icon-bg" class="w-12 h-12 bg-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Vigencia de Socio J&A</p>
+                    <p id="timer-status" class="text-xs font-bold text-white mt-0.5 italic">Verificando actividad...</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="flex items-baseline justify-end gap-1">
+                    <span id="days-count" class="text-4xl font-black text-orange-500">--</span>
+                    <span class="text-[10px] font-black text-gray-600 uppercase">Días</span>
+                </div>
+                <p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Para tu próxima Firma de Contrato</p>
+            </div>
         </div>
 
         <!-- Tabla de Datos -->
