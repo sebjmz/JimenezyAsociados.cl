@@ -11,6 +11,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
             authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -28,33 +29,61 @@
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
         // ==========================================
-        // MOTOR DE LIMPIEZA AUTOMÁTICA
+        // BOT 1: LIMPIEZA DE NEGOCIOS (LEADS)
         // ==========================================
         async function ejecutarLimpiezaMaestra(snapshot) {
             let borrados = 0;
             const hoy = new Date();
             for (const docSnap of snapshot.docs) {
                 const data = docSnap.data();
-                const path = docSnap.ref.path;
-                if (!path.includes(appId)) continue;
+                if (!docSnap.ref.path.includes(appId)) continue;
                 const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
                 const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
+                
                 let debeBorrarse = false;
                 if (!data.contactado && dias >= 7) debeBorrarse = true;
                 else if (data.contactado && !data.contrato && dias >= 30) debeBorrarse = true;
                 else if (data.contrato && !data.visitas && dias >= 60) debeBorrarse = true;
                 else if (data.statusFinal !== 'Oferta' && data.statusFinal !== 'Pagado' && dias >= 90) debeBorrarse = true;
+                
                 if (debeBorrarse) {
                     await deleteDoc(docSnap.ref);
                     borrados++;
                 }
             }
             if (borrados > 0) {
-                const box = document.getElementById('msg-box-admin');
-                box.innerText = `LIMPIEZA AUTOMÁTICA: Se eliminaron ${borrados} registros vencidos.`;
-                box.style.display = 'block';
-                setTimeout(() => box.style.display = 'none', 6000);
+                showAdminMsg(`LIMPIEZA NEGOCIOS: ${borrados} registros eliminados.`);
             }
+        }
+
+        // ==========================================
+        // BOT 2: LIMPIEZA DE PARTNERS (30 DÍAS)
+        // ==========================================
+        async function limpiarPartnersInactivos(snapshot) {
+            const hoy = new Date();
+            let eliminados = 0;
+            for (const docSnap of snapshot.docs) {
+                const data = docSnap.data();
+                if (!docSnap.ref.path.includes(appId)) continue;
+
+                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy);
+                const diasInactivo = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
+
+                if (diasInactivo >= 30) {
+                    await deleteDoc(docSnap.ref);
+                    eliminados++;
+                }
+            }
+            if (eliminados > 0) {
+                showAdminMsg(`LIMPIEZA PARTNERS: ${eliminados} socios eliminados por inactividad.`);
+            }
+        }
+
+        function showAdminMsg(txt) {
+            const box = document.getElementById('msg-box-admin');
+            box.innerText = txt;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 5000);
         }
 
         // --- CARGA DE NEGOCIOS ---
@@ -71,20 +100,18 @@
 
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    if (!path.includes(appId)) return;
-
+                    if (!docSnap.ref.path.includes(appId)) return;
                     total++;
                     if (!data.contactado) pending++;
                     if (data.statusFinal === 'Pagado') done++;
                     const dias = data.createdAt ? Math.floor((new Date() - data.createdAt.toDate()) / (1000 * 60 * 60 * 24)) : 0;
+                    const path = docSnap.ref.path;
 
-                 // DISEÑO DESKTOP (TABLA CON WHATSAPP)
                     htmlDesktop += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
-                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${data.service} • Hace ${dias} días</div>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${data.service} • Hace ${dias} d</div>
                             </td>
                             <td class="px-8 py-6 text-center">
                                 <a href="https://wa.me/${data.phone ? data.phone.replace(/\D/g, '') : ''}" target="_blank" class="text-green-500 font-black text-xs hover:underline flex items-center justify-center gap-2">
@@ -107,7 +134,7 @@
                                 </button>
                             </td>
                             <td class="px-8 py-6 text-right">
-                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2.5 rounded-xl font-black text-white uppercase cursor-pointer">
+                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-[#0f172a] border border-white/10 text-[10px] p-2.5 rounded-xl font-black text-white uppercase">
                                     <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
                                     <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
                                     <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
@@ -115,157 +142,47 @@
                                 </select>
                             </td>
                         </tr>`;
-
-                    // DISEÑO MOBILE (TARJETAS) - REEMPLAZADO PARA VER WHATSAPP
-                    htmlMobile += `
-                        <div class="glass-panel p-6 rounded-3xl mb-4 border-white/5">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <div class="text-lg font-black text-white leading-tight">${data.name || 'Sin Nombre'}</div>
-                                    <div class="text-[10px] text-blue-500 font-bold uppercase tracking-widest mt-1">${data.service} • Hace ${dias} d</div>
-                                    
-                                    <a href="https://wa.me/${data.phone ? data.phone.replace(/\D/g, '') : ''}" target="_blank" class="flex items-center gap-2 text-green-500 font-black text-[11px] mt-3 bg-green-500/10 w-fit px-3 py-1.5 rounded-lg border border-green-500/20">
-                                        <i class="fa-brands fa-whatsapp text-sm"></i> ${data.phone || 'S/N'}
-                                    </a>
-                                </div>
-                                <select onchange="window.updateStatus('${path}', 'statusFinal', this.value)" class="bg-blue-600/10 border border-blue-500/20 text-[9px] p-2 rounded-lg font-black text-blue-400 uppercase">
-                                    <option value="Validando" ${data.statusFinal === 'Validando' ? 'selected' : ''}>VALIDANDO</option>
-                                    <option value="Oferta" ${data.statusFinal === 'Oferta' ? 'selected' : ''}>OFERTA</option>
-                                    <option value="Pagado" ${data.statusFinal === 'Pagado' ? 'selected' : ''}>PAGADO</option>
-                                    <option value="Perdido" ${data.statusFinal === 'Perdido' ? 'selected' : ''}>PERDIDO</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 pt-4 border-t border-white/5">
-                                <button onclick="window.updateStatus('${path}', 'contactado', ${!data.contactado})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
-                                    <i class="fa-solid ${data.contactado ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-gray-800'} text-xl"></i>
-                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Contactado</span>
-                                </button>
-                                <button onclick="window.updateStatus('${path}', 'contrato', ${!data.contrato})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
-                                    <i class="fa-solid ${data.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-800'} text-xl"></i>
-                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Firma</span>
-                                </button>
-                                <button onclick="window.updateStatus('${path}', 'visitas', ${!data.visitas})" class="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/5">
-                                    <i class="fa-solid ${data.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i>
-                                    <span class="text-[8px] font-bold text-gray-500 uppercase">Visitas</span>
-                                </button>
-                            </div>
-                        </div>`;
                 });
-
-                container.innerHTML = htmlDesktop || '<tr><td colspan="5" class="p-20 text-center text-gray-600 italic">No hay datos activos.</td></tr>';
-                containerMobile.innerHTML = htmlMobile || '<div class="p-10 text-center text-gray-600 italic">No hay datos activos.</div>';
-                
+                container.innerHTML = htmlDesktop || '<tr><td colspan="6" class="p-20 text-center text-gray-600">No hay datos.</td></tr>';
                 document.getElementById('stat-total').innerText = total;
                 document.getElementById('stat-pending').innerText = pending;
                 document.getElementById('stat-done').innerText = done;
             });
         }
 
-        // ==========================================
-        // BOT 2: LIMPIEZA DE PARTNERS INACTIVOS
-        // ==========================================
-        async function limpiarPartnersInactivos(snapshot) {
-            const hoy = new Date();
-            let eliminados = 0;
-
-            for (const docSnap of snapshot.docs) {
-                const data = docSnap.data();
-                if (!docSnap.ref.path.includes(appId)) continue;
-
-                // Si nunca ha firmado, usamos su fecha de creación
-                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy);
-                const diasInactivo = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
-
-                // REGLA DE ORO: 30 días sin firmas = Se elimina el perfil del socio
-                if (diasInactivo >= 30) {
-                    await deleteDoc(docSnap.ref);
-                    eliminados++;
-                }
-            }
-
-            if (eliminados > 0) {
-                const box = document.getElementById('msg-box-admin');
-                box.innerText = `LIMPIEZA: Se eliminaron ${eliminados} socios inactivos (30 días sin firmas).`;
-                box.style.display = 'block';
-                setTimeout(() => box.style.display = 'none', 5000);
-            }
-        }
-                    });
-
-                    // Si no tiene firmas, se elimina SU PERFIL, pero NO sus referidos
-                    if (!tieneFirmados) {
-                        await deleteDoc(docSnap.ref); 
-                        
-                        try {
-                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
-                        } catch (e) {}
-                        
-                        partnersBorrados++;
-                    }
-                }
-            }
-
-            if (partnersBorrados > 0) {
-                const box = document.getElementById('msg-box-admin');
-                box.innerText = `LIMPIEZA DE PARTNERS: Se eliminó ${partnersBorrados} socio inactivo. Sus referidos siguen en el sistema.`;
-                box.style.display = 'block';
-                setTimeout(() => box.style.display = 'none', 6000);
-            }
-        }
-
         // --- CARGA DE PARTNERS ---
         function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
-            const containerMobile = document.getElementById('admin-partners-cards');
             const q = query(collectionGroup(db, 'profile'));
             onSnapshot(q, (snapshot) => {
-                
-                limpiarPartnersInactivos(snapshot); // <-- EL BOT SE ACTIVA AQUÍ AUTOMÁTICAMENTE
-
-                let htmlDesktop = "";
-                let htmlMobile = "";
+                limpiarPartnersInactivos(snapshot);
+                let html = "";
                 let count = 0, nuevos = 0;
                 let sponsors = new Set();
                 const hoy = new Date();
 
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    if (!path.includes(appId)) return;
-                    
+                    if (!docSnap.ref.path.includes(appId)) return;
                     count++;
                     if (data.sponsorEmail) sponsors.add(data.sponsorEmail);
-                    const fechaCreacion = data.createdAt ? data.createdAt.toDate() : hoy;
-                    const dias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
-                    if (dias <= 30) nuevos++;
-                    let fechaStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "---";
+                    const fecha = data.createdAt ? data.createdAt.toDate() : hoy;
+                    if (Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24)) <= 30) nuevos++;
 
-                    htmlDesktop += `
+                    html += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5">
                             <td class="px-8 py-6">
                                 <div class="font-bold text-white text-base">${data.name || 'Socio'}</div>
                                 <div class="text-[10px] text-gray-500 font-bold">${data.email}</div>
                             </td>
                             <td class="px-8 py-6 text-center text-xs text-purple-400 font-bold">${data.sponsorEmail || 'Admin'}</td>
-                            <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fechaStr}</td>
+                            <td class="px-8 py-6 text-center text-xs text-gray-400 font-bold">${fecha.toLocaleDateString()}</td>
                             <td class="px-8 py-6 text-right">
-                                <button onclick="window.deletePartner('${path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
+                                <button onclick="window.deletePartner('${docSnap.ref.path}')" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase border border-red-500/10 hover:bg-red-600 hover:text-white transition">Eliminar</button>
                             </td>
                         </tr>`;
-
-                    htmlMobile += `
-                        <div class="glass-panel p-5 rounded-2xl mb-3 border-white/5 flex justify-between items-center">
-                            <div>
-                                <div class="font-black text-white text-sm">${data.name || 'Socio'}</div>
-                                <div class="text-[9px] text-gray-500 font-bold mt-0.5">${data.email}</div>
-                                <div class="text-[9px] text-purple-400 font-black uppercase mt-1">Sponsor: ${data.sponsorEmail || 'Admin'}</div>
-                            </div>
-                            <button onclick="window.deletePartner('${path}')" class="bg-red-900/20 text-red-500 p-3 rounded-xl text-xs"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>`;
                 });
-                
-                container.innerHTML = htmlDesktop;
-                containerMobile.innerHTML = htmlMobile;
+                container.innerHTML = html;
                 document.getElementById('stat-partners-total').innerText = count;
                 document.getElementById('stat-partners-nuevos').innerText = nuevos;
                 document.getElementById('stat-partners-sponsors').innerText = sponsors.size;
@@ -274,24 +191,13 @@
 
         window.updateStatus = async (path, field, value) => {
             try { 
-                // Actualizamos el dato del referido
                 await updateDoc(doc(db, path), { [field]: value }); 
-                
-                // SI MARCAs FIRMA (contrato) COMO EXITOSA, RESETEAMOS LOS 30 DÍAS
                 if (field === 'contrato' && value === true) {
                     const pathParts = path.split('/');
-                    const partnerUid = pathParts[3]; // El ID del socio está en la posición 3 de la ruta
-                    
+                    const partnerUid = pathParts[3]; 
                     const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
-                    
-                    await updateDoc(profileRef, { 
-                        lastSuccessAt: serverTimestamp() // Le damos 30 días de vida desde ahora
-                    });
-                    
-                    const box = document.getElementById('msg-box-admin');
-                    box.innerText = "¡FIRMA CONFIRMADA! Reloj del socio reiniciado a 30 días.";
-                    box.style.display = 'block';
-                    setTimeout(() => box.style.display = 'none', 4000);
+                    await updateDoc(profileRef, { lastSuccessAt: serverTimestamp() });
+                    showAdminMsg("¡FIRMA CONFIRMADA! Reloj del socio reiniciado.");
                 }
             } catch (e) { alert("Error: " + e.message); }
         };
@@ -305,27 +211,12 @@
             }
         };
 
-        window.logout = () => {
-            signOut(auth).then(() => {
-                window.location.href = 'ingresopartner.html';
-            }).catch((error) => alert("Error al salir: " + error.message));
-        };
+        window.logout = () => signOut(auth).then(() => window.location.href = 'ingresopartner.html');
 
         window.switchTab = (tab) => {
             document.getElementById('view-negocios').classList.toggle('hidden', tab !== 'negocios');
             document.getElementById('view-partners').classList.toggle('hidden', tab !== 'partners');
-            
-            const btnNeg = document.getElementById('btn-tab-negocios');
-            const btnPart = document.getElementById('btn-tab-partners');
-            
-            if (tab === 'negocios') {
-                btnNeg.className = "bg-blue-600 text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition shadow-lg";
-                btnPart.className = "text-gray-400 hover:text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition";
-            } else {
-                btnNeg.className = "text-gray-400 hover:text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition";
-                btnPart.className = "bg-purple-600 text-white px-5 md:px-6 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest transition shadow-lg";
-                loadAllPartners();
-            }
+            if (tab === 'partners') loadAllPartners();
         };
 
         onAuthStateChanged(auth, (user) => {
