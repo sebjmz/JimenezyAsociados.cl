@@ -462,21 +462,23 @@
     });
 
     // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
+    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
     async function checkVigencia(uid) {
         try {
-            // Buscamos específicamente el documento 'data' en la subcolección 'profile'
             const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile'));
-            
             if (snap.empty) return;
             
-            // Buscamos el documento que se llama "data"
             const docData = snap.docs.find(d => d.id === 'data') || snap.docs[0];
             const data = docData.data();
 
-            // Lógica: Si el Admin marcó firma hoy, lastSuccessAt es HOY.
             const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : new Date());
             const hoy = new Date();
-            const diferenciaDias = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
+            
+            // Normalizamos a la medianoche (00:00) para contar días calendario exactos
+            const baseMidnight = new Date(baseFecha.getFullYear(), baseFecha.getMonth(), baseFecha.getDate());
+            const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            
+            const diferenciaDias = Math.floor((hoyMidnight - baseMidnight) / (1000 * 60 * 60 * 24));
             const diasRestantes = 30 - diferenciaDias;
 
             document.getElementById('status-card').classList.remove('hidden');
@@ -489,7 +491,7 @@
                 countDisplay.className = "text-4xl font-black text-red-500 animate-pulse";
             } else {
                 statusText.innerText = "Socio Vigente y Activo.";
-                countDisplay.className = "text-4xl font-black text-green-500"; // Cambié a verde para que se note el éxito
+                countDisplay.className = "text-4xl font-black text-green-500";
             }
         } catch(e) { console.error("Error vigencia:", e); }
     }
