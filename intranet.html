@@ -257,7 +257,6 @@
                 <p class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Para tu próxima Firma de Contrato</p>
             </div>
         </div>
-
         <!-- Tabla de Datos -->
         <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
@@ -465,32 +464,32 @@
     // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
     async function checkVigencia(uid) {
         try {
-            // Buscamos el documento 'data' dentro de la subcolección 'profile'
-            const profileRef = window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile', 'data');
+            // Buscamos específicamente el documento 'data' en la subcolección 'profile'
             const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile'));
             
             if (snap.empty) return;
-            const data = snap.docs[0].data();
+            
+            // Buscamos el documento que se llama "data"
+            const docData = snap.docs.find(d => d.id === 'data') || snap.docs[0];
+            const data = docData.data();
 
-            // Lógica: Prioridad al último éxito (Firma), si no, fecha de creación
+            // Lógica: Si el Admin marcó firma hoy, lastSuccessAt es HOY.
             const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : new Date());
             const hoy = new Date();
             const diferenciaDias = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
             const diasRestantes = 30 - diferenciaDias;
 
-            const statusCard = document.getElementById('status-card');
+            document.getElementById('status-card').classList.remove('hidden');
             const countDisplay = document.getElementById('days-count');
-            const statusText = document.getElementById('timer-status');
-
-            statusCard.classList.remove('hidden');
             countDisplay.innerText = diasRestantes > 0 ? diasRestantes : 0;
-
+            
+            const statusText = document.getElementById('timer-status');
             if (diasRestantes <= 5) {
                 statusText.innerText = "¡ALERTA: REQUIERES UNA FIRMA PARA SEGUIR!";
                 countDisplay.className = "text-4xl font-black text-red-500 animate-pulse";
             } else {
                 statusText.innerText = "Socio Vigente y Activo.";
-                countDisplay.className = "text-4xl font-black text-orange-500";
+                countDisplay.className = "text-4xl font-black text-green-500"; // Cambié a verde para que se note el éxito
             }
         } catch(e) { console.error("Error vigencia:", e); }
     }
