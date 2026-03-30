@@ -25,7 +25,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // CONFIGURACIÓN OFICIAL
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
         const appId = 'jimenez-portal-oficial'; 
 
@@ -52,9 +51,14 @@
         
         <form id="reg-form" class="space-y-4">
             <input type="text" id="reg-name" required placeholder="Tu Nombre Completo" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition">
+            
             <input type="email" id="reg-email" required placeholder="Tu Correo Electrónico" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition">
+            
+            <input type="tel" id="reg-phone" required placeholder="WhatsApp Personal (Ej: 56912345678)" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition border-green-500/20">
+
             <input type="email" id="reg-sponsor" placeholder="Correo de quien te invitó (Opcional)" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition placeholder:text-gray-600">
-            <input type="password" id="reg-pass" required minlength="6" placeholder="Crea una Contraseña (Min. 6 letras/números)" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition">
+            
+            <input type="password" id="reg-pass" required minlength="6" placeholder="Crea una Contraseña (Min. 6 caracteres)" class="w-full bg-[#0f172a] border border-white/5 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm transition">
             
             <button type="submit" id="btn-registrar" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase tracking-tighter italic mt-4">
                 CREAR MI CUENTA
@@ -76,51 +80,51 @@
 
             const name = document.getElementById('reg-name').value.trim();
             const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const phone = document.getElementById('reg-phone').value.trim();
             const pass = document.getElementById('reg-pass').value;
             let sponsor = document.getElementById('reg-sponsor').value.trim().toLowerCase();
 
-            // Si no pone sponsor, el sistema te asigna a ti como el invitador por defecto
             if (!sponsor) {
                 sponsor = window.fbReg.ADMIN_EMAIL.toLowerCase();
             }
 
             try {
-                // 1. Crear el usuario en Firebase Authentication
+                // 1. Crear usuario en Auth
                 const userCred = await window.fbReg.createUserWithEmailAndPassword(window.fbReg.auth, email, pass);
                 const user = userCred.user;
 
-                // 2. Asignarle el nombre al perfil de Auth
+                // 2. Actualizar nombre visual
                 await window.fbReg.updateProfile(user, { displayName: name });
 
-                // 3. Crear el documento del Perfil para que tú lo veas en admin.html
+                // 3. Crear Perfil en Firestore con TELÉFONO incluido
                 const profileRef = window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'users', user.uid, 'profile', 'data');
                 await window.fbReg.setDoc(profileRef, {
                     name: name,
                     email: email,
+                    phone: phone, // <--- Dato clave para tu Panel Master
                     sponsorEmail: sponsor,
                     createdAt: window.fbReg.serverTimestamp()
                 });
 
-                // 4. Sumar +1 al contador público de la página de inicio (index.html)
+                // 4. Actualizar estadísticas públicas
                 const statsRef = window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'public', 'estadisticas');
                 try {
                     await window.fbReg.updateDoc(statsRef, {
                         totalSocios: window.fbReg.increment(1)
                     });
                 } catch (statsErr) {
-                    // Si el documento de estadísticas no existe la primera vez, lo creamos
                     await window.fbReg.setDoc(statsRef, { totalSocios: 1 }, { merge: true });
                 }
 
-                // 5. Enviar al socio a su nueva Intranet
+                // 5. Redirección
                 window.location.href = 'intranet.html';
 
             } catch (error) {
                 console.error(error);
                 if (error.code === 'auth/email-already-in-use') {
-                    alert("Este correo ya está registrado en el sistema.");
+                    alert("Este correo ya está registrado.");
                 } else {
-                    alert("Ocurrió un error al registrar: " + error.message);
+                    alert("Error en el registro: " + error.message);
                 }
                 btn.innerText = "CREAR MI CUENTA";
                 btn.disabled = false;
