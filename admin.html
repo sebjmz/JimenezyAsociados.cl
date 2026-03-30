@@ -315,7 +315,20 @@ await updateDoc(profileRef, {
                 btnPart.className = "bg-purple-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
             }
         };
-    </script>
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                // 1. Quitar la pantalla de carga
+                document.getElementById('loading-screen').classList.add('hidden');
+                // 2. Mostrar el panel
+                document.getElementById('admin-content').classList.remove('hidden');
+                // 3. Cargar los datos de los clientes
+                loadAllLeads();
+            } else {
+                // Si no es el admin, lo patea al login
+                window.location.href = 'ingresopartner.html';
+            }
+        });
+</script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
