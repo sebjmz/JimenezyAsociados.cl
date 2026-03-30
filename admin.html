@@ -274,7 +274,20 @@
         }
 
         window.updateStatus = async (path, field, value) => {
-            try { await updateDoc(doc(db, path), { [field]: value }); } catch (e) { alert("Error: " + e.message); }
+            try { 
+                await updateDoc(doc(db, path), { [field]: value }); 
+                
+                // SI CONFIRMAS CONTRATO (TRUE), RESETEAMOS SU RELOJ
+                if (field === 'contrato' && value === true) {
+                    const pathParts = path.split('/');
+                    const partnerUid = pathParts[4]; // Extrae el UID del socio
+                    const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
+                    
+                    await updateDoc(profileRef, { 
+                        lastSuccessAt: window.fbReg.serverTimestamp() 
+                    });
+                }
+            } catch (e) { alert("Error: " + e.message); }
         };
 
         window.deletePartner = async (path) => {
