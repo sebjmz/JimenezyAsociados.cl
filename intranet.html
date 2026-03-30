@@ -573,10 +573,21 @@
                     createdAt: window.fb.serverTimestamp()
                 });
 
-                // B. MENSAJE PARA SEBASTIÁN (ADMIN)
-                const adminPhone = "56951134778"; // Tu número
-                const text = `*NUEVA GESTIÓN J&A*%0A%0A*Partner:* ${partnerName}%0A*Cliente:* ${name}%0A*WhatsApp:* ${phone}%0A*Servicio:* ${service}%0A%0A_Favor registrar contacto y dar seguimiento._`;
-                const whatsappUrl = `https://wa.me/${adminPhone}?text=${text}`;
+                // B. MENSAJE PARA SEBASTIÁN (CORREGIDO)
+                const adminPhone = "56951134778"; 
+                
+                // Creamos el texto limpio primero
+                const messageText = `*NUEVA GESTIÓN J&A*
+
+*Partner:* ${partnerName}
+*Cliente:* ${name}
+*WhatsApp:* ${phone}
+*Servicio:* ${service}
+
+_Favor registrar contacto y dar seguimiento._`;
+
+                // Usamos encodeURIComponent para que el "&" y los saltos de línea no rompan el link
+                const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
                 window.closeModal();
                 document.getElementById('form-add').reset();
