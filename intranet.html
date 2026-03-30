@@ -9,200 +9,151 @@
     
     <!-- Firebase SDK -->
     <script type="module">
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { collection, query, onSnapshot, getDocs, collectionGroup, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- FUNCIONES DE INTERFAZ (UI) ---
-    window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
-    window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
+        // CONFIGURACIÓN OFICIAL
+        const firebaseConfig = {
+            apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
+            authDomain: "jimenez-asociados-portal.firebaseapp.com",
+            projectId: "jimenez-asociados-portal",
+            storageBucket: "jimenez-asociados-portal.firebasestorage.app",
+            messagingSenderId: "588021927873",
+            appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appId = 'jimenez-portal-oficial';
+        const ADMIN_EMAIL = "sebjmz@gmail.com"; 
+
+        window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL };
+        // Cambiar entre pestañas de Intranet
+        window.switchIntranetTab = (tab) => {
+    const isAcademia = tab === 'academia';
     
-    window.showMsg = (text) => {
-        const box = document.getElementById('msg-box');
-        box.innerText = text;
-        box.style.display = 'block';
-        setTimeout(() => { box.style.display = 'none'; }, 3000);
-    };
-
-    window.handleLogout = () => {
-        window.fb.signOut(window.fb.auth).then(() => {
-            window.location.href = 'ingresopartner.html';
-        }).catch(e => console.error("Error al salir:", e));
-    };
-
-    // 1. Verificación de Autenticación
-    onAuthStateChanged(window.fb.auth, (user) => {
-        if (!user) {
-            window.location.href = 'ingresopartner.html';
-        } else {
-            const partnerName = user.displayName || user.email.split('@')[0];
-            document.getElementById('partner-display').innerText = partnerName;
-            
-            // DISPARADORES MAESTROS
-            checkVigencia(user.uid); 
-            initDashboard(user.uid, user.email);
-        }
-    });
-
-    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
-    async function checkVigencia(uid) {
-        try {
-            // Buscamos el documento 'data' dentro de la subcolección 'profile'
-            const profileRef = window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile', 'data');
-            const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile'));
-            
-            if (snap.empty) return;
-            const data = snap.docs[0].data();
-
-            // Lógica: Prioridad al último éxito (Firma), si no, fecha de creación
-            const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : new Date());
-            const hoy = new Date();
-            const diferenciaDias = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
-            const diasRestantes = 30 - diferenciaDias;
-
-            const statusCard = document.getElementById('status-card');
-            const countDisplay = document.getElementById('days-count');
-            const statusText = document.getElementById('timer-status');
-
-            statusCard.classList.remove('hidden');
-            countDisplay.innerText = diasRestantes > 0 ? diasRestantes : 0;
-
-            if (diasRestantes <= 5) {
-                statusText.innerText = "¡ALERTA: REQUIERES UNA FIRMA PARA SEGUIR!";
-                countDisplay.className = "text-4xl font-black text-red-500 animate-pulse";
-            } else {
-                statusText.innerText = "Socio Vigente y Activo.";
-                countDisplay.className = "text-4xl font-black text-orange-500";
-            }
-        } catch(e) { console.error("Error vigencia:", e); }
+    // 1. Control de visibilidad total
+    // Si es academia, esconde gestiones y muestra academia. Si no, al revés.
+    document.getElementById('view-academia').classList.toggle('hidden', !isAcademia);
+    document.getElementById('view-gestiones').classList.toggle('hidden', isAcademia);
+    
+    // 2. Colores de los botones para saber dónde estamos
+    const btnGest = document.getElementById('tab-gestiones');
+    const btnAcad = document.getElementById('tab-academia');
+    
+    if(isAcademia) {
+        btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+        btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
+        loadLeaderboard(); 
+    } else {
+        btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
+        btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
     }
+};
 
-    // 3. Cargar Referidos Propios y de la Red (Multinivel)
-    async function initDashboard(uid, userEmail) {
-        const container = document.getElementById('leads-body');
-        try {
-            container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
-
-            const profilesRef = collectionGroup(window.fb.db, 'profile');
-            const profilesSnap = await getDocs(profilesRef);
+        // Copiar scripts al portapapeles
+        window.copyScript = (text) => {
+            navigator.clipboard.writeText(text);
+            window.showMsg("¡Script copiado! Pégalo en WhatsApp.");
+        };
+        async function loadLeaderboard() {
+            const leadsContainer = document.getElementById('leaderboard-leads');
+            const recruitersContainer = document.getElementById('leaderboard-recruiters');
             
-            let redL1 = []; 
-            let redL2 = []; 
-            let emailsL1 = [];
-            
-            profilesSnap.forEach(doc => {
-                const data = doc.data();
-                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
-                    redL1.push(doc.ref.parent.parent.id); 
-                    if(data.email) emailsL1.push(data.email.toLowerCase());
-                }
-            });
-            
-            profilesSnap.forEach(doc => {
-                const data = doc.data();
-                if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
-                    redL2.push(doc.ref.parent.parent.id);
-                }
-            });
+            try {
+                const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
+                const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
+                
+                let userNames = {}; 
+                let userSponsors = {}; // Para saber quién trajo a quién
+                let productivePartners = new Set(); // UIDs de socios con al menos 1 firma
+                let adminUid = ""; 
+                
+                let recruiterStats = {}; 
+                let gestorStats = {};    
 
-            let todosLosReferidos = [];
+                // 1. Mapear nombres y sponsors (Saltando al Admin)
+                profilesSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const uid = docSnap.ref.parent.parent.id;
+                    const email = data.email ? data.email.toLowerCase() : "";
+                    
+                    if (email === window.fb.ADMIN_EMAIL.toLowerCase()) {
+                        adminUid = uid;
+                        return;
+                    }
 
-            const pintarTabla = () => {
-                if (todosLosReferidos.length === 0) {
-                    container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones activas.</td></tr>';
-                    return;
-                }
-
-                const pesos = { '20% (Propio)': 1, '7% (L1)': 2, '3% (L2)': 3 };
-                todosLosReferidos.sort((a, b) => (pesos[a.comision] - pesos[b.comision]) || (b.createdAt - a.createdAt));
-
-                let html = "";
-                todosLosReferidos.forEach(item => {
-                    let progress = 10;
-                    if(item.contactado) progress += 20;
-                    if(item.contrato) progress += 30;
-                    if(item.visitas) progress += 20;
-                    if(item.statusFinal === 'Pagado') progress = 100;
-
-                    let badgeColor = item.comision.includes('20%') ? "bg-blue-600/20 text-blue-400 border-blue-500/30" : 
-                                    (item.comision.includes('7%') ? "bg-purple-600/20 text-purple-400 border-purple-500/30" : "bg-pink-600/20 text-pink-400 border-pink-500/30");
-
-                    html += `
-                        <tr class="hover:bg-white/5 transition border-b border-white/5 group">
-                            <td class="px-8 py-6">
-                                <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
-                                <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'}</div>
-                            </td>
-                            <td class="px-8 py-6 min-w-[120px]">
-                                <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400"><span>${progress}%</span></div>
-                                <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                            </td>
-                            <td class="px-8 py-6 text-center">
-                                <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
-                            </td>
-                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
-                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
-                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i></td>
-                            <td class="px-8 py-6 text-right">
-                                <span class="text-[10px] text-gray-500 font-black uppercase italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'Validando'}</span>
-                            </td>
-                        </tr>`;
+                    userNames[uid] = data.name || email.split('@')[0];
+                    if (data.sponsorEmail) {
+                        userSponsors[uid] = data.sponsorEmail.toLowerCase();
+                    }
                 });
-                container.innerHTML = html;
-            };
 
-            const escucharColeccion = (targetUid, tipoComision) => {
-                const q = query(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', targetUid, 'referidos'));
-                onSnapshot(q, (snapshot) => {
-                    todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
-                    snapshot.forEach(docSnap => {
-                        const item = docSnap.data();
-                        item.uid = targetUid; 
-                        item.comision = tipoComision;
-                        todosLosReferidos.push(item);
+                // 2. Procesar Referidos con FIRMA y detectar Socios Productivos
+                referidosSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const path = docSnap.ref.path;
+                    if (!path.includes(window.fb.appId)) return;
+
+                    const ownerUid = docSnap.ref.parent.parent.id;
+                    
+                    // CRITERIO DE CALIDAD: Solo si tiene firma (contrato === true)
+                    if (data.contrato === true) {
+                        productivePartners.add(ownerUid); // Este socio es "real", tiene producción
+
+                        // Ranking de Gestores (Solo si no es el Admin)
+                        if (ownerUid !== adminUid) {
+                            if (!gestorStats[ownerUid]) {
+                                gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
+                            }
+                            gestorStats[ownerUid].count++;
+                        }
+                    }
+                });
+
+                // 3. Ranking de Reclutadores (Solo cuentan socios PRODUCTIVOS)
+                for (const [invitedUid, sponsorEmail] of Object.entries(userSponsors)) {
+                    // Si el invitado tiene producción Y el sponsor no es el admin
+                    if (productivePartners.has(invitedUid) && sponsorEmail !== window.fb.ADMIN_EMAIL.toLowerCase()) {
+                        if (!recruiterStats[sponsorEmail]) {
+                            recruiterStats[sponsorEmail] = { name: sponsorEmail.split('@')[0], count: 0 };
+                        }
+                        recruiterStats[sponsorEmail].count++;
+                    }
+                }
+
+                // 4. Ordenar Top 3 y Renderizar
+                const topRecruiters = Object.values(recruiterStats).sort((a, b) => b.count - a.count).slice(0, 3);
+                const topGestores = Object.values(gestorStats).sort((a, b) => b.count - a.count).slice(0, 3);
+
+                const renderRank = (dataList, container, label) => {
+                    if (dataList.length === 0) {
+                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4 text-center">Buscando resultados confirmados con firma...</p>';
+                        return;
+                    }
+                    let html = "";
+                    dataList.forEach((t, i) => {
+                        const colors = ['text-yellow-500', 'text-gray-400', 'text-orange-600'];
+                        html += `
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-blue-500/20 transition">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-black ${colors[i]} text-lg italic">#${i+1}</span>
+                                    <span class="font-bold text-[11px] uppercase text-white">${t.name}</span>
+                                </div>
+                                <span class="font-black text-blue-500 text-[10px] tracking-widest">${t.count} ${label}</span>
+                            </div>`;
                     });
-                    pintarTabla();
-                });
-            };
+                    container.innerHTML = html;
+                };
 
-            escucharColeccion(uid, '20% (Propio)');
-            redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
-            redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
+                renderRank(topGestores, leadsContainer, 'FIRMAS');
+                renderRank(topRecruiters, recruitersContainer, 'ACTIVOS');
 
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-red-500">Error de conexión.</td></tr>`;
+            } catch(e) { console.error("Error Leaderboard:", e); }
         }
-    }
-
-    // 4. Envío de Nuevo Referido
-    document.getElementById('form-add').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const user = window.fb.auth.currentUser;
-        const name = document.getElementById('in-name').value;
-        const phone = document.getElementById('in-phone').value;
-        const service = document.getElementById('in-service').value;
-        const partnerName = document.getElementById('partner-display').innerText;
-
-        try {
-            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                name, phone, service,
-                partnerEmail: user.email,
-                contactado: false, contrato: false, visitas: false,
-                statusFinal: 'Validando',
-                createdAt: window.fb.serverTimestamp()
-            });
-
-            const adminPhone = "56951134778"; 
-            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service}`;
-            const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
-
-            window.closeModal();
-            document.getElementById('form-add').reset();
-            window.showMsg("Dato registrado. Notificando...");
-
-            setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1500);
-        } catch (err) { alert("Error: " + err.message); }
-    });
     </script>
 
     <style>
@@ -478,223 +429,200 @@
         </div>
     </div>
 <script type="module">
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { collection, query, onSnapshot, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { collection, query, onSnapshot, getDocs, collectionGroup, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- FUNCIONES DE INTERFAZ (UI) ---
-        window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
-        
-        window.showMsg = (text) => {
-            const box = document.getElementById('msg-box');
-            box.innerText = text;
-            box.style.display = 'block';
-            setTimeout(() => { box.style.display = 'none'; }, 3000);
-        };
-
-        window.handleLogout = () => {
-            window.fb.signOut(window.fb.auth).then(() => {
-                window.location.href = 'ingresopartner.html';
-            }).catch(e => console.error("Error al salir:", e));
-        };
+    // --- FUNCIONES DE INTERFAZ (UI) ---
+    window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
+    window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
     
-        // 1. Verificación de Autenticación
-        onAuthStateChanged(window.fb.auth, (user) => {
-    if (!user) {
-        window.location.href = 'ingresopartner.html';
-    } else {
-        const partnerName = user.displayName || user.email.split('@')[0];
-        document.getElementById('partner-display').innerText = partnerName;
-        
-        initDashboard(user.uid, user.email);
-        
-        // PEGA ESTA LÍNEA AQUÍ PARA ACTIVAR EL RELOJ
-        checkVigencia(user.uid); 
-    }
-});
+    window.showMsg = (text) => {
+        const box = document.getElementById('msg-box');
+        box.innerText = text;
+        box.style.display = 'block';
+        setTimeout(() => { box.style.display = 'none'; }, 3000);
+    };
 
-        // 2. Cargar Referidos Propios y de la Red (Multinivel)
-        async function initDashboard(uid, userEmail) {
-            const container = document.getElementById('leads-body');
-            
-            try {
-                container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
+    window.handleLogout = () => {
+        window.fb.signOut(window.fb.auth).then(() => {
+            window.location.href = 'ingresopartner.html';
+        }).catch(e => console.error("Error al salir:", e));
+    };
 
-async function checkVigencia(uid) {
-    try {
-        const profileRef = window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile');
-        const snap = await window.fb.getDocs(profileRef);
-        const data = snap.docs[0].data();
-
-        const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : data.createdAt.toDate();
-        const hoy = new Date();
-        const diferenciaDias = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
-        const diasRestantes = 30 - diferenciaDias;
-
-        document.getElementById('status-card').classList.remove('hidden');
-        document.getElementById('days-count').innerText = diasRestantes > 0 ? diasRestantes : 0;
-        
-        const statusText = document.getElementById('timer-status');
-        if (diasRestantes <= 5) {
-            statusText.innerText = "¡ALERTA: REQUIERES UNA FIRMA PARA SEGUIR!";
-            document.getElementById('days-count').classList.add('animate-pulse', 'text-red-500');
+    // 1. Verificación de Autenticación
+    onAuthStateChanged(window.fb.auth, (user) => {
+        if (!user) {
+            window.location.href = 'ingresopartner.html';
         } else {
-            statusText.innerText = "Socio Vigente y Activo.";
-        }
-    } catch(e) { console.error("Error vigencia:", e); }
-}
-                
-                const profilesRef = collectionGroup(window.fb.db, 'profile');
-                const profilesSnap = await getDocs(profilesRef);
-                
-                let redL1 = []; 
-                let redL2 = []; 
-                let emailsL1 = [];
-                
-                profilesSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
-                        redL1.push(doc.ref.parent.parent.id); 
-                        if(data.email) emailsL1.push(data.email.toLowerCase());
-                    }
-                });
-                
-                profilesSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
-                        redL2.push(doc.ref.parent.parent.id);
-                    }
-                });
-
-                let todosLosReferidos = [];
-
-                const pintarTabla = () => {
-                    if (todosLosReferidos.length === 0) {
-                        container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones activas.</td></tr>';
-                        return;
-                    }
-
-                    // --- LÓGICA DE PRIORIDAD 10X ---
-                    const pesos = { '20% (Propio)': 1, '7% (L1)': 2, '3% (L2)': 3 };
-                    
-                    todosLosReferidos.sort((a, b) => {
-                        // 1. Primero ordenamos por el nivel de comisión (Jerarquía)
-                        if (pesos[a.comision] !== pesos[b.comision]) {
-                            return pesos[a.comision] - pesos[b.comision];
-                        }
-                        // 2. Si son del mismo nivel, ponemos el más nuevo arriba (Fecha)
-                        return b.createdAt - a.createdAt;
-                    });
-
-                    let html = "";
-                    todosLosReferidos.forEach(item => {
-                        let progress = 10;
-                        if(item.contactado) progress += 20;
-                        if(item.contrato) progress += 30;
-                        if(item.visitas) progress += 20;
-                        if(item.statusFinal === 'Pagado') progress = 100;
-
-                        // Colores de las etiquetas según el nivel
-                        let badgeColor = "bg-blue-600/20 text-blue-400 border-blue-500/30"; // Propio
-                        if(item.comision.includes('7%')) badgeColor = "bg-purple-600/20 text-purple-400 border-purple-500/30";
-                        if(item.comision.includes('3%')) badgeColor = "bg-pink-600/20 text-pink-400 border-pink-500/30";
-
-                        html += `
-                            <tr class="hover:bg-white/5 transition border-b border-white/5 group">
-                                <td class="px-8 py-6">
-                                    <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
-                                    <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'}</div>
-                                </td>
-                                <td class="px-8 py-6 min-w-[120px]">
-                                    <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400"><span>${progress}%</span></div>
-                                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                                </td>
-                                <td class="px-8 py-6 text-center">
-                                    <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
-                                </td>
-                                <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
-                                <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
-                                <td class="px-8 py-6 text-center"><i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i></td>
-                                <td class="px-8 py-6 text-right">
-                                    <span class="text-[10px] text-gray-500 font-black uppercase italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'Validando'}</span>
-                                </td>
-                            </tr>`;
-                    });
-                    container.innerHTML = html;
-                };
-
-                const escucharColeccion = (targetUid, tipoComision) => {
-                    const q = query(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', targetUid, 'referidos'));
-                    onSnapshot(q, (snapshot) => {
-                        todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
-                        snapshot.forEach(docSnap => {
-                            const item = docSnap.data();
-                            item.uid = targetUid; 
-                            item.comision = tipoComision;
-                            todosLosReferidos.push(item);
-                        });
-                        pintarTabla();
-                    });
-                };
-
-                escucharColeccion(uid, '20% (Propio)');
-                redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
-                redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-red-500">Error de conexión.</td></tr>`;
-            }
-        }
-
-        // 3. Envío de Nuevo Referido + SALTO A WHATSAPP ADMIN
-        document.getElementById('form-add').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = window.fb.auth.currentUser;
+            const partnerName = user.displayName || user.email.split('@')[0];
+            document.getElementById('partner-display').innerText = partnerName;
             
-            // Datos del formulario
-            const name = document.getElementById('in-name').value;
-            const phone = document.getElementById('in-phone').value;
-            const service = document.getElementById('in-service').value;
-            const partnerName = document.getElementById('partner-display').innerText;
+            // DISPARADORES MAESTROS
+            checkVigencia(user.uid); 
+            initDashboard(user.uid, user.email);
+        }
+    });
 
-            try {
-                // A. Guardamos en Firebase
-                await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                    name, phone, service,
-                    partnerEmail: user.email,
-                    contactado: false, contrato: false, visitas: false,
-                    statusFinal: 'Validando',
-                    createdAt: window.fb.serverTimestamp()
+    // 2. EL RELOJ DE VIGENCIA (Sincronizado con Admin)
+    async function checkVigencia(uid) {
+        try {
+            // Buscamos el documento 'data' dentro de la subcolección 'profile'
+            const profileRef = window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile', 'data');
+            const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'profile'));
+            
+            if (snap.empty) return;
+            const data = snap.docs[0].data();
+
+            // Lógica: Prioridad al último éxito (Firma), si no, fecha de creación
+            const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : new Date());
+            const hoy = new Date();
+            const diferenciaDias = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
+            const diasRestantes = 30 - diferenciaDias;
+
+            const statusCard = document.getElementById('status-card');
+            const countDisplay = document.getElementById('days-count');
+            const statusText = document.getElementById('timer-status');
+
+            statusCard.classList.remove('hidden');
+            countDisplay.innerText = diasRestantes > 0 ? diasRestantes : 0;
+
+            if (diasRestantes <= 5) {
+                statusText.innerText = "¡ALERTA: REQUIERES UNA FIRMA PARA SEGUIR!";
+                countDisplay.className = "text-4xl font-black text-red-500 animate-pulse";
+            } else {
+                statusText.innerText = "Socio Vigente y Activo.";
+                countDisplay.className = "text-4xl font-black text-orange-500";
+            }
+        } catch(e) { console.error("Error vigencia:", e); }
+    }
+
+    // 3. Cargar Referidos Propios y de la Red (Multinivel)
+    async function initDashboard(uid, userEmail) {
+        const container = document.getElementById('leads-body');
+        try {
+            container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
+
+            const profilesRef = collectionGroup(window.fb.db, 'profile');
+            const profilesSnap = await getDocs(profilesRef);
+            
+            let redL1 = []; 
+            let redL2 = []; 
+            let emailsL1 = [];
+            
+            profilesSnap.forEach(doc => {
+                const data = doc.data();
+                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
+                    redL1.push(doc.ref.parent.parent.id); 
+                    if(data.email) emailsL1.push(data.email.toLowerCase());
+                }
+            });
+            
+            profilesSnap.forEach(doc => {
+                const data = doc.data();
+                if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
+                    redL2.push(doc.ref.parent.parent.id);
+                }
+            });
+
+            let todosLosReferidos = [];
+
+            const pintarTabla = () => {
+                if (todosLosReferidos.length === 0) {
+                    container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones activas.</td></tr>';
+                    return;
+                }
+
+                const pesos = { '20% (Propio)': 1, '7% (L1)': 2, '3% (L2)': 3 };
+                todosLosReferidos.sort((a, b) => (pesos[a.comision] - pesos[b.comision]) || (b.createdAt - a.createdAt));
+
+                let html = "";
+                todosLosReferidos.forEach(item => {
+                    let progress = 10;
+                    if(item.contactado) progress += 20;
+                    if(item.contrato) progress += 30;
+                    if(item.visitas) progress += 20;
+                    if(item.statusFinal === 'Pagado') progress = 100;
+
+                    let badgeColor = item.comision.includes('20%') ? "bg-blue-600/20 text-blue-400 border-blue-500/30" : 
+                                    (item.comision.includes('7%') ? "bg-purple-600/20 text-purple-400 border-purple-500/30" : "bg-pink-600/20 text-pink-400 border-pink-500/30");
+
+                    html += `
+                        <tr class="hover:bg-white/5 transition border-b border-white/5 group">
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'}</div>
+                            </td>
+                            <td class="px-8 py-6 min-w-[120px]">
+                                <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400"><span>${progress}%</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
+                            </td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-right">
+                                <span class="text-[10px] text-gray-500 font-black uppercase italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'Validando'}</span>
+                            </td>
+                        </tr>`;
                 });
+                container.innerHTML = html;
+            };
 
-                // B. MENSAJE PARA SEBASTIÁN (CORREGIDO)
-                const adminPhone = "56951134778"; 
-                
-                // Creamos el texto limpio primero
-                const messageText = `*NUEVA GESTIÓN J&A*
+            const escucharColeccion = (targetUid, tipoComision) => {
+                const q = query(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', targetUid, 'referidos'));
+                onSnapshot(q, (snapshot) => {
+                    todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
+                    snapshot.forEach(docSnap => {
+                        const item = docSnap.data();
+                        item.uid = targetUid; 
+                        item.comision = tipoComision;
+                        todosLosReferidos.push(item);
+                    });
+                    pintarTabla();
+                });
+            };
 
-*Partner:* ${partnerName}
-*Cliente:* ${name}
-*WhatsApp:* ${phone}
-*Servicio:* ${service}
+            escucharColeccion(uid, '20% (Propio)');
+            redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
+            redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
 
-_Favor registrar contacto y dar seguimiento._`;
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-red-500">Error de conexión.</td></tr>`;
+        }
+    }
 
-                // Usamos encodeURIComponent para que el "&" y los saltos de línea no rompan el link
-                const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
+    // 4. Envío de Nuevo Referido
+    document.getElementById('form-add').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = window.fb.auth.currentUser;
+        const name = document.getElementById('in-name').value;
+        const phone = document.getElementById('in-phone').value;
+        const service = document.getElementById('in-service').value;
+        const partnerName = document.getElementById('partner-display').innerText;
 
-                window.closeModal();
-                document.getElementById('form-add').reset();
-                window.showMsg("Dato registrado. Notificando al Administrador...");
+        try {
+            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
+                name, phone, service,
+                partnerEmail: user.email,
+                contactado: false, contrato: false, visitas: false,
+                statusFinal: 'Validando',
+                createdAt: window.fb.serverTimestamp()
+            });
 
-                // C. SALTO AUTOMÁTICO
-                setTimeout(() => {
-                    window.open(whatsappUrl, '_blank');
-                }, 1500);
+            const adminPhone = "56951134778"; 
+            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service}`;
+            const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
-            } catch (err) { alert("Error: " + err.message); }
-        });
-    </script>
+            window.closeModal();
+            document.getElementById('form-add').reset();
+            window.showMsg("Dato registrado. Notificando...");
+
+            setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1500);
+        } catch (err) { alert("Error: " + err.message); }
+    });
+</script>
 </body>
 </html>
