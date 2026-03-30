@@ -267,16 +267,26 @@
         window.updateStatus = async (path, field, value) => {
             try { 
                 await updateDoc(doc(db, path), { [field]: value }); 
+                
+                // Si el admin marca "Firma de contrato"
                 if (field === 'contrato' && value === true) {
                     const pathParts = path.split('/');
                     const partnerUid = pathParts[3]; 
-                    const profileRef = doc(db, 'artifacts', appId, 'users', partnerUid, 'profile', 'data');
-await updateDoc(profileRef, { 
-    lastSuccessAt: serverTimestamp()
-        });
-                    showAdminMsg("¡FIRMA CONFIRMADA! Reloj del socio reiniciado.");
+                    
+                    // Buscamos el perfil del socio sin importar cómo lo haya nombrado Firebase
+                    const profileSnap = await getDocs(collection(db, 'artifacts', appId, 'users', partnerUid, 'profile'));
+                    
+                    if (!profileSnap.empty) {
+                        const profileDocRef = profileSnap.docs[0].ref; // Agarramos el archivo real
+                        await updateDoc(profileDocRef, { 
+                            lastSuccessAt: serverTimestamp() // Inyectamos la nueva fecha
+                        });
+                        showAdminMsg("¡FIRMA CONFIRMADA! Reloj del socio reiniciado a 30 días.");
+                    } else {
+                        alert("Aviso: No se encontró el perfil del socio para reiniciar el reloj.");
+                    }
                 }
-            } catch (e) { alert("Error: " + e.message); }
+            } catch (e) { alert("Error al actualizar: " + e.message); }
         };
 
         window.deletePartner = async (path) => {
