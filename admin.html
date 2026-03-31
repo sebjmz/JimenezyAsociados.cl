@@ -301,7 +301,16 @@
                 }
             } catch (e) { alert("Error al actualizar: " + e.message); }
         };
-
+        window.deleteLead = async (path) => {
+            if (confirm("¿ELIMINAR PERMANENTEMENTE? Esta acción borrará el dato de la base de datos y no se puede deshacer.")) {
+                try { 
+                    await deleteDoc(doc(db, path)); 
+                    showAdminMsg("REGISTRO ELIMINADO TOTALMENTE");
+                } catch (e) { 
+                    alert("Error al eliminar: " + e.message); 
+                }
+            }
+        };
         window.deletePartner = async (path) => {
             if (confirm("¿Eliminar socio?")) {
                 try { 
