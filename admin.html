@@ -98,9 +98,22 @@
                 let htmlMobile = "";
                 let total = 0, pending = 0, done = 0;
 
+                // 1. Extraer y filtrar los datos
+                let docsArray = [];
                 snapshot.forEach(docSnap => {
+                    if (docSnap.ref.path.includes(appId)) docsArray.push(docSnap);
+                });
+
+                // 2. Ordenar cronológicamente (Más reciente primero)
+                docsArray.sort((a, b) => {
+                    const dateA = a.data().createdAt ? a.data().createdAt.toDate().getTime() : 0;
+                    const dateB = b.data().createdAt ? b.data().createdAt.toDate().getTime() : 0;
+                    return dateB - dateA;
+                });
+
+                // 3. Dibujar la tabla en el orden correcto
+                docsArray.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (!docSnap.ref.path.includes(appId)) return;
 
                     total++;
                     if (!data.contactado) pending++;
@@ -216,9 +229,22 @@
                 let sponsors = new Set();
                 const hoy = new Date();
 
+                // 1. Extraer y filtrar los datos
+                let docsArray = [];
                 snapshot.forEach(docSnap => {
+                    if (docSnap.ref.path.includes(appId)) docsArray.push(docSnap);
+                });
+
+                // 2. Ordenar cronológicamente (Más reciente primero)
+                docsArray.sort((a, b) => {
+                    const dateA = a.data().createdAt ? a.data().createdAt.toDate().getTime() : 0;
+                    const dateB = b.data().createdAt ? b.data().createdAt.toDate().getTime() : 0;
+                    return dateB - dateA;
+                });
+
+                // 3. Dibujar la tabla en el orden correcto
+                docsArray.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (!docSnap.ref.path.includes(appId)) return;
                     
                     count++;
                     if (data.sponsorEmail) sponsors.add(data.sponsorEmail);
