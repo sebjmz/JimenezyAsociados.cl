@@ -414,7 +414,10 @@
             
             <form id="form-add" class="space-y-4">
                 <input type="text" id="in-name" required maxlength="60" placeholder="Nombre y Apellido del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
-                <input type="tel" id="in-phone" required placeholder="WhatsApp del Cliente (+569...)" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                <div class="flex items-center w-full bg-[#0f172a] border border-white/10 rounded-xl focus-within:border-blue-500 transition overflow-hidden">
+                    <span class="pl-4 font-black text-blue-500 text-sm tracking-widest">+56 9</span>
+                    <input type="tel" id="in-phone" required maxlength="8" placeholder="12345678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
                 <select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                     <option value="" disabled selected>Tipo de Gestión</option>
                     <option value="Venta">Venta de Propiedad</option>
@@ -631,7 +634,7 @@
         e.preventDefault();
         const user = window.fb.auth.currentUser;
         const name = document.getElementById('in-name').value;
-        const phone = document.getElementById('in-phone').value;
+        const phone = "+569" + document.getElementById('in-phone').value;
         const service = document.getElementById('in-service').value;
         const nota = document.getElementById('in-note').value.trim(); // Capturamos la nota
         const partnerName = document.getElementById('partner-display').innerText;
