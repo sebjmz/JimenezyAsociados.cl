@@ -413,14 +413,14 @@
             <h3 class="text-3xl font-black mb-6 uppercase italic tracking-tight text-white">Nueva <span class="text-blue-500">Referencia</span></h3>
             
             <form id="form-add" class="space-y-4">
-                <input type="text" id="in-name" required placeholder="Nombre del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                <input type="text" id="in-name" required maxlength="60" placeholder="Nombre y Apellido del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                 <input type="tel" id="in-phone" required placeholder="WhatsApp del Cliente (+569...)" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                 <select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                     <option value="" disabled selected>Tipo de Gestión</option>
                     <option value="Venta">Venta de Propiedad</option>
                     <option value="Arriendo">Arriendo</option>
                 </select>
-                <textarea id="in-note" placeholder="Nota adicional (Ej: Horario para llamar, detalles de la propiedad...)" rows="2" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm resize-none"></textarea>
+                <textarea id="in-note" maxlength="150" placeholder="Nota adicional (Ej: Horario para llamar, detalles de la propiedad...)" rows="2" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm resize-none"></textarea>
                 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
                     REGISTRAR Y NOTIFICAR
