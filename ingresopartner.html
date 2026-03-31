@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script type="module">
-        // 1. IMPORTAMOS TODO LO NECESARIO EN UN SOLO BLOQUE
+        // 1. IMPORTAMOS TODO LO NECESARIO EN UN SOLO BLOQUE (Añadimos signOut)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -25,9 +25,8 @@
         const auth = getAuth(app);
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
-        // --- FUNCIÓN PARA RECUPERAR CLAVE (CORREGIDA) ---
+        // --- FUNCIÓN PARA RECUPERAR CLAVE ---
         async function recuperarClave() {
-            // Buscamos el ID "email" que es el que tienes en tu input de abajo
             const emailField = document.getElementById('email'); 
             const email = emailField.value;
 
@@ -59,7 +58,20 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                if (user.email === ADMIN_EMAIL) {
+                // ==========================================
+                // ESCUDO DE VERIFICACIÓN DE CORREO
+                // ==========================================
+                // Si el usuario NO ha verificado su correo y NO es el administrador
+                if (!user.emailVerified && user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                    await signOut(auth); // Lo cerramos inmediatamente por seguridad
+                    alert("⚠️ ACCESO DENEGADO: Aún no has verificado tu cuenta.\n\nPor favor, revisa tu correo electrónico (y tu carpeta de Spam), abre el correo de Jiménez & Asociados y haz clic en el enlace para activar tu acceso.");
+                    btn.innerText = "ENTRAR AL PORTAL";
+                    btn.disabled = false;
+                    return; // Cortamos el código aquí para que no pase a la Intranet
+                }
+
+                // Si pasa el escudo, lo mandamos a su panel
+                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     window.location.href = 'admin.html';
                 } else {
                     localStorage.setItem('active_partner', email.split('@')[0]);
