@@ -420,6 +420,8 @@
                     <option value="Venta">Venta de Propiedad</option>
                     <option value="Arriendo">Arriendo</option>
                 </select>
+                <textarea id="in-note" placeholder="Nota adicional (Ej: Horario para llamar, detalles de la propiedad...)" rows="2" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm resize-none"></textarea>
+                
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
                     REGISTRAR Y NOTIFICAR
                 </button>
@@ -631,11 +633,13 @@
         const name = document.getElementById('in-name').value;
         const phone = document.getElementById('in-phone').value;
         const service = document.getElementById('in-service').value;
+        const nota = document.getElementById('in-note').value.trim(); // Capturamos la nota
         const partnerName = document.getElementById('partner-display').innerText;
 
         try {
             await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
                 name, phone, service,
+                nota: nota || "Sin notas", // Guardamos la nota o un texto por defecto
                 partnerEmail: user.email,
                 contactado: false, contrato: false, visitas: false,
                 statusFinal: 'Validando',
@@ -643,7 +647,8 @@
             });
 
             const adminPhone = "56951134778"; 
-            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service}`;
+            // Agregamos la nota al mensaje de WhatsApp
+            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
             const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
             window.closeModal();
