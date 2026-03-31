@@ -28,7 +28,7 @@
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
         const appId = 'jimenez-portal-oficial'; 
 
-        window.fbReg = { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc, serverTimestamp, increment, updateDoc, ADMIN_EMAIL, appId };
+        window.fbReg = { auth, db, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, doc, setDoc, serverTimestamp, increment, updateDoc, ADMIN_EMAIL, appId };
     </script>
 
     <style>
@@ -101,7 +101,7 @@
 
                 // 3. Enviar correo de verificación
                 // NOTA: Usamos "user" que es la variable que creaste arriba
-                await sendEmailVerification(user); 
+                await window.fbReg.sendEmailVerification(user);                
                 
                 alert("¡Cuenta creada exitosamente! Hemos enviado un enlace de verificación a tu correo. Debes hacer clic en él antes de poder iniciar sesión.");
                 
