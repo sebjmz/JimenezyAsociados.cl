@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";        
         import { getFirestore, doc, setDoc, serverTimestamp, increment, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -85,12 +85,11 @@
             try {
                 // 1. Crear usuario
                 const userCred = await window.fbReg.createUserWithEmailAndPassword(window.fbReg.auth, email, pass);
-                const user = userCred.user;
+                const user = userCred.user; // <-- Aquí definimos "user"
 
                 await window.fbReg.updateProfile(user, { displayName: name });
-
+                
                 // 2. Guardar perfil con teléfono "PENDIENTE"
-                // Esto evita errores de escritura. Capturaremos el teléfono real en el primer envío.
                 const profileRef = window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'users', user.uid, 'profile', 'data');
                 await window.fbReg.setDoc(profileRef, {
                     name: name,
@@ -100,15 +99,14 @@
                     createdAt: window.fbReg.serverTimestamp()
                 });
 
-                // 3. Estadísticas
-                const statsRef = window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'public', 'estadisticas');
-                try {
-                    await window.fbReg.updateDoc(statsRef, { totalSocios: window.fbReg.increment(1) });
-                } catch (statsErr) {
-                    await window.fbReg.setDoc(statsRef, { totalSocios: 1 }, { merge: true });
-                }
-
-                window.location.href = 'intranet.html';
+                // 3. Enviar correo de verificación
+                // NOTA: Usamos "user" que es la variable que creaste arriba
+                await sendEmailVerification(user); 
+                
+                alert("¡Cuenta creada exitosamente! Hemos enviado un enlace de verificación a tu correo. Debes hacer clic en él antes de poder iniciar sesión.");
+                
+                // Opcional: Redirigirlo a la pantalla de login para que ingrese cuando verifique
+                window.location.href = 'ingresopartner.html';
 
             } catch (error) {
                 console.error(error);
