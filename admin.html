@@ -132,9 +132,10 @@
                                         <i class="fa-solid fa-trash-can text-sm"></i>
                                     </button>
                                     <div>
-                                        <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'}</div>
-                                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${data.service} • Hace ${dias} d</div>
-                                        <div class="text-[9px] text-blue-500/50 uppercase font-black italic">Partner: ${data.partnerEmail || 'S/N'}</div>
+                                        <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'} <span class="text-[9px] bg-white/10 px-2 py-0.5 rounded ml-2 font-normal">${data.owner || 'N/D'}</span></div>
+                                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">${data.service} • ${data.tipo || 'N/D'} • ${data.comuna || 'N/D'}</div>
+                                        <div class="text-[9px] text-gray-500 uppercase font-bold mt-0.5">Urgencia: <span class="${data.urgencia === 'Alta' ? 'text-red-400' : data.urgencia === 'Media' ? 'text-yellow-400' : 'text-green-400'}">${data.urgencia || 'N/D'}</span> • Hace ${dias} d</div>
+                                        <div class="text-[9px] text-blue-500/50 uppercase font-black italic mt-1">Partner: ${data.partnerEmail || 'S/N'}</div>
                                     </div>
                                 </div>
                                 ${data.nota && data.nota !== "Sin notas" ? `<div class="text-[10px] text-yellow-500/90 italic mt-2 font-medium bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20 max-w-xs"><i class="fa-solid fa-comment-dots"></i> ${data.nota}</div>` : ''}
@@ -169,13 +170,16 @@
                             <div class="flex justify-between items-start mb-4">
                                 <div class="flex-1">
                                     <div class="text-lg font-black text-white leading-tight">${data.name || 'S/N'}</div>
-                                    <div class="text-[9px] text-gray-400 font-bold uppercase mt-1">${data.service} • Hace ${dias} d</div>
-                                    <div class="text-[11px] text-green-400 font-bold tracking-widest mt-2 flex items-center gap-1">
+                                    <div class="text-[9px] text-gray-400 font-bold uppercase mt-1">${data.service} • ${data.tipo || ''} • ${data.comuna || ''}</div>
+                                    <div class="text-[9px] text-gray-500 uppercase font-bold mt-1">Urgencia: <span class="${data.urgencia === 'Alta' ? 'text-red-400' : data.urgencia === 'Media' ? 'text-yellow-400' : 'text-green-400'}">${data.urgencia || 'N/D'}</span></div>
+                                    <div class="text-[9px] text-gray-500 uppercase font-bold mt-0.5">${data.owner || ''}</div>
+                                    
+                                    <div class="text-[11px] text-green-400 font-bold tracking-widest mt-3 flex items-center gap-1">
                                         <i class="fa-brands fa-whatsapp text-sm"></i> ${data.phone || 'S/N'}
                                     </div>
-                                    <div class="text-[8px] text-blue-500 uppercase font-black mt-2">Socio: ${data.partnerEmail ? data.partnerEmail.split('@')[0] : 'S/N'}</div>
+                                    <div class="text-[8px] text-blue-500 uppercase font-black mt-2">Socio: ${data.partnerEmail ? data.partnerEmail.split('@')[0] : 'S/N'}
                                     ${data.nota && data.nota !== "Sin notas" ? `<div class="text-[10px] text-yellow-500/90 italic mt-3 bg-yellow-500/10 p-3 rounded-xl border border-yellow-500/20"><i class="fa-solid fa-comment-dots"></i> ${data.nota}</div>` : ''}
-                                    
+                                    </div> 
                                 </div>
                                 <a href="https://wa.me/${cleanPhone}" target="_blank" class="bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-2xl shadow-lg shadow-green-900/20 shrink-0 ml-3">
                                     <i class="fa-brands fa-whatsapp text-xl"></i>
