@@ -423,6 +423,56 @@
                     <option value="Venta">Venta de Propiedad</option>
                     <option value="Arriendo">Arriendo</option>
                 </select>
+
+                <select id="in-tipo" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Tipo de Propiedad</option>
+                    <option value="Casa">Casa</option>
+                    <option value="Departamento">Departamento</option>
+                    <option value="Oficina">Oficina</option>
+                    <option value="Local Comercial">Local Comercial</option>
+                    <option value="Parcela">Parcela</option>
+                    <option value="Terreno">Terreno</option>
+                    <option value="Fábrica/Galpón">Fábrica / Galpón</option>
+                    <option value="Penthouse">Penthouse</option>
+                </select>
+
+                <select id="in-comuna" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Comuna Principal</option>
+                    <optgroup label="Región de Valparaíso" class="bg-gray-900">
+                        <option value="Viña del Mar">Viña del Mar</option>
+                        <option value="Concón">Concón</option>
+                        <option value="Reñaca">Reñaca</option>
+                        <option value="Valparaíso">Valparaíso</option>
+                        <option value="Quilpué">Quilpué</option>
+                        <option value="Villa Alemana">Villa Alemana</option>
+                        <option value="Quintero">Quintero</option>
+                        <option value="Algarrobo">Algarrobo</option>
+                        <option value="Otra - Valparaíso">Otra - R. Valparaíso</option>
+                    </optgroup>
+                    <optgroup label="Región Metropolitana" class="bg-gray-900">
+                        <option value="Santiago Centro">Santiago Centro</option>
+                        <option value="Las Condes">Las Condes</option>
+                        <option value="Providencia">Providencia</option>
+                        <option value="Ñuñoa">Ñuñoa</option>
+                        <option value="Vitacura">Vitacura</option>
+                        <option value="Lo Barnechea">Lo Barnechea</option>
+                        <option value="Otra - RM">Otra - R. Metropolitana</option>
+                    </optgroup>
+                    <option value="Otra Región" class="bg-gray-900">Otra Región</option>
+                </select>
+
+                <select id="in-urgencia" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Nivel de Urgencia del Cliente</option>
+                    <option value="Baja">Baja (Solo cotizando/vitrineando)</option>
+                    <option value="Media">Media (Interés normal)</option>
+                    <option value="Alta">Alta (Urgencia por cerrar)</option>
+                </select>
+
+                <select id="in-owner" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>¿Es el Propietario Directo?</option>
+                    <option value="Sí, propietario">Sí, es el dueño directo</option>
+                    <option value="No, representante">No, es un familiar o representante</option>
+                </select>
                 <textarea id="in-note" maxlength="150" placeholder="Nota adicional (Ej: Horario para llamar, detalles de la propiedad...)" rows="2" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm resize-none"></textarea>
                 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
@@ -636,13 +686,19 @@
         const name = document.getElementById('in-name').value;
         const phone = "+569" + document.getElementById('in-phone').value;
         const service = document.getElementById('in-service').value;
-        const nota = document.getElementById('in-note').value.trim(); // Capturamos la nota
+        
+        // --- NUEVOS CAMPOS ---
+        const tipo = document.getElementById('in-tipo').value;
+        const comuna = document.getElementById('in-comuna').value;
+        const urgencia = document.getElementById('in-urgencia').value;
+        const owner = document.getElementById('in-owner').value;
+        const nota = document.getElementById('in-note').value.trim();
         const partnerName = document.getElementById('partner-display').innerText;
 
         try {
             await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                name, phone, service,
-                nota: nota || "Sin notas", // Guardamos la nota o un texto por defecto
+                name, phone, service, tipo, comuna, urgencia, owner,
+                nota: nota || "Sin notas",
                 partnerEmail: user.email,
                 contactado: false, contrato: false, visitas: false,
                 statusFinal: 'Validando',
@@ -650,8 +706,7 @@
             });
 
             const adminPhone = "56951134778"; 
-            // Agregamos la nota al mensaje de WhatsApp
-            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
+            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Dueño Directo:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
             const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
             window.closeModal();
