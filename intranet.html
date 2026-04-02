@@ -327,7 +327,19 @@
                         <tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Conectando con la base de datos segura...</td></tr>
                     </tbody>
                 </table>
-            </div> </div> </div> <div id="view-academia" class="hidden space-y-12 pb-20">
+            </div> </div> </div> 
+        <div id="view-academia" class="hidden space-y-12 pb-20">
+            <div class="glass-panel p-6 rounded-[2rem] border-pink-500/20 bg-pink-500/5 mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-center md:text-left">
+            <h4 class="text-pink-500 font-black text-lg uppercase italic">Invitar a un nuevo Socio</h4>
+            <p class="text-gray-500 text-xs italic">Copia este link para que tu correo aparezca automáticamente como su Sponsor.</p>
+        </div>
+        <button onclick="copyInviteLink()" class="bg-pink-600 hover:bg-pink-700 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition shadow-lg active:scale-95">
+            <i class="fa-solid fa-copy mr-2"></i> COPIAR LINK DE INVITACIÓN
+        </button>
+    </div>
+</div>
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="glass-panel p-8 rounded-[2.5rem] border-blue-500/20">
                     <h4 class="text-blue-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
@@ -845,6 +857,21 @@
             setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1500);
         } catch (err) { alert("Error: " + err.message); }
     });
+    // Función para generar link con referido automático
+window.copyInviteLink = () => {
+    const user = window.fb.auth.currentUser;
+    if (!user) return;
+
+    // Detecta el correo del socio actual
+    const userEmail = user.email;
+    // Crea la URL hacia la página de registro
+    const inviteUrl = window.location.origin + window.location.pathname.replace('intranet.html', 'ingresopartner.html') + '?ref=' + encodeURIComponent(userEmail);
+    
+    const mensajeWhatsApp = `¡Hola! Te invito a unirte como Partner a Jiménez & Asociados. Regístrate con mi link para quedar en mi red: ${inviteUrl}`;
+    
+    navigator.clipboard.writeText(mensajeWhatsApp);
+    window.showMsg("¡Link copiado con tu correo!");
+};
 </script>
 </body>
 </html>
