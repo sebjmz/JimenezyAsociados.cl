@@ -862,15 +862,18 @@ window.copyInviteLink = () => {
     const user = window.fb.auth.currentUser;
     if (!user) return;
 
-    // Detecta el correo del socio actual
     const userEmail = user.email;
-    // Crea la URL hacia la página de registro
-    const inviteUrl = window.location.origin + window.location.pathname.replace('intranet.html', 'ingresopartner.html') + '?ref=' + encodeURIComponent(userEmail);
     
-    const mensajeWhatsApp = `¡Hola! Te invito a unirte como Partner a Jiménez & Asociados. Regístrate con mi link para quedar en mi red: ${inviteUrl}`;
+    // ESTA LÍNEA ES LA QUE CAMBIA: Ahora busca 'registrate.html'
+    const currentPath = window.location.pathname;
+    const folderPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+    const inviteUrl = `${window.location.origin}${folderPath}registrate.html?ref=${encodeURIComponent(userEmail)}`;
     
-    navigator.clipboard.writeText(mensajeWhatsApp);
-    window.showMsg("¡Link copiado con tu correo!");
+    const textoFinal = `¡Hola! Únete a mi equipo de Partners en Jiménez & Asociados. Regístrate aquí: ${inviteUrl}`;
+    
+    navigator.clipboard.writeText(textoFinal).then(() => {
+        window.showMsg("¡Link de REGISTRO copiado con éxito!");
+    });
 };
 </script>
 </body>
