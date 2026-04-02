@@ -61,98 +61,119 @@
         };
         async function loadLeaderboard() {
             const leadsContainer = document.getElementById('leaderboard-leads');
+            const myLeadRankContainer = document.getElementById('my-rank-leads');
             const recruitersContainer = document.getElementById('leaderboard-recruiters');
+            const myRecruiterRankContainer = document.getElementById('my-rank-recruiters');
             
+            const currentUid = window.fb.auth.currentUser.uid;
+            const myPartnerID = "JA-" + currentUid.substring(currentUid.length - 5).toUpperCase();
+
             try {
                 const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
                 const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
                 
                 let userNames = {}; 
-                let userSponsors = {}; // Para saber quién trajo a quién
-                let productivePartners = new Set(); // UIDs de socios con al menos 1 firma
+                let emailToId = {};
+                let userSponsors = {}; 
+                let productivePartners = new Set(); 
                 let adminUid = ""; 
                 
                 let recruiterStats = {}; 
                 let gestorStats = {};    
 
-                // 1. Mapear ALIAS y sponsors (Protegiendo identidad)
                 profilesSnap.forEach(docSnap => {
                     const data = docSnap.data();
                     const uid = docSnap.ref.parent.parent.id;
                     const email = data.email ? data.email.toLowerCase() : "";
-                    
-                    if (email === window.fb.ADMIN_EMAIL.toLowerCase()) {
-                        adminUid = uid;
-                        return;
-                    }
+                    if (email === window.fb.ADMIN_EMAIL.toLowerCase()) { adminUid = uid; return; }
 
-                    // Siempre usamos solo el nombre de usuario del correo (antes del @)
-                    userNames[uid] = email.split('@')[0]; 
-                    
-                    if (data.sponsorEmail) {
-                        userSponsors[uid] = data.sponsorEmail.toLowerCase();
-                    }
+                    const pID = "JA-" + uid.substring(uid.length - 5).toUpperCase();
+                    userNames[uid] = pID;
+                    if(email) emailToId[email] = pID;
+                    if (data.sponsorEmail) userSponsors[uid] = data.sponsorEmail.toLowerCase();
                 });
 
-                // 2. Procesar Referidos con FIRMA y detectar Socios Productivos
                 referidosSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    const path = docSnap.ref.path;
-                    if (!path.includes(window.fb.appId)) return;
-
+                    if (!docSnap.ref.path.includes(window.fb.appId)) return;
                     const ownerUid = docSnap.ref.parent.parent.id;
                     
-                    // CRITERIO DE CALIDAD: Solo si tiene firma (contrato === true)
                     if (data.contrato === true) {
-                        productivePartners.add(ownerUid); // Este socio es "real", tiene producción
-
-                        // Ranking de Gestores (Solo si no es el Admin)
+                        productivePartners.add(ownerUid);
                         if (ownerUid !== adminUid) {
-                            if (!gestorStats[ownerUid]) {
-                                gestorStats[ownerUid] = { name: userNames[ownerUid] || 'Socio', count: 0 };
-                            }
+                            if (!gestorStats[ownerUid]) gestorStats[ownerUid] = { id: userNames[ownerUid], count: 0 };
                             gestorStats[ownerUid].count++;
                         }
                     }
                 });
 
-                // 3. Ranking de Reclutadores (Solo cuentan socios PRODUCTIVOS)
                 for (const [invitedUid, sponsorEmail] of Object.entries(userSponsors)) {
-                    // Si el invitado tiene producción Y el sponsor no es el admin
                     if (productivePartners.has(invitedUid) && sponsorEmail !== window.fb.ADMIN_EMAIL.toLowerCase()) {
                         if (!recruiterStats[sponsorEmail]) {
-                            recruiterStats[sponsorEmail] = { name: sponsorEmail.split('@')[0], count: 0 };
+                            const sID = emailToId[sponsorEmail] || "JA-" + sponsorEmail.split('@')[0].toUpperCase().substring(0,5);
+                            recruiterStats[sponsorEmail] = { id: sID, count: 0 };
                         }
                         recruiterStats[sponsorEmail].count++;
                     }
                 }
 
-                // 4. Ordenar Top 3 y Renderizar
-                const topRecruiters = Object.values(recruiterStats).sort((a, b) => b.count - a.count).slice(0, 3);
-                const topGestores = Object.values(gestorStats).sort((a, b) => b.count - a.count).slice(0, 3);
+                const processRank = (statsObj, container, myContainer, label, isLeads) => {
+                    const fullRank = Object.entries(statsObj)
+                        .map(([uid, data]) => ({ uid, ...data }))
+                        .sort((a, b) => b.count - a.count);
 
-                const renderRank = (dataList, container, label) => {
-                    if (dataList.length === 0) {
-                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4 text-center">Buscando resultados confirmados con firma...</p>';
+                    if (fullRank.length === 0) {
+                        container.innerHTML = '<p class="text-gray-600 italic text-[10px] p-4 text-center">Sin cierres aún.</p>';
+                        myContainer.innerHTML = "";
                         return;
                     }
-                    let html = "";
-                    dataList.forEach((t, i) => {
+
+                    // Renderizar Top 3
+                    let top3Html = "";
+                    fullRank.slice(0, 3).forEach((t, i) => {
                         const colors = ['text-yellow-500', 'text-gray-400', 'text-orange-600'];
-                        html += `
-                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-blue-500/20 transition">
+                        top3Html += `
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border ${t.id === myPartnerID ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/5'}">
                                 <div class="flex items-center gap-3">
                                     <span class="font-black ${colors[i]} text-lg italic">#${i+1}</span>
-                                    <span class="font-bold text-[11px] uppercase text-white">${t.name}</span>
+                                    <span class="font-bold text-[12px] tracking-widest text-white">${t.id} ${t.id === myPartnerID ? '<span class="text-[8px] bg-blue-500 text-white px-1 rounded ml-1">TÚ</span>' : ''}</span>
                                 </div>
                                 <span class="font-black text-blue-500 text-[10px] tracking-widest">${t.count} ${label}</span>
                             </div>`;
                     });
-                    container.innerHTML = html;
+                    container.innerHTML = top3Html;
+
+                    // Tu posición personal
+                    const myIndex = isLeads 
+                        ? fullRank.findIndex(item => item.uid === currentUid)
+                        : fullRank.findIndex(item => item.id === myPartnerID);
+
+                    if (myIndex > 2) {
+                        const me = fullRank[myIndex];
+                        myContainer.innerHTML = `
+                            <div class="flex justify-between items-center bg-blue-600/10 p-4 rounded-2xl border border-blue-500/30">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-black text-blue-500 text-lg italic">#${myIndex + 1}</span>
+                                    <span class="font-bold text-[12px] tracking-widest text-white">${me.id} <span class="text-[8px] bg-blue-500 text-white px-1 rounded ml-1">MI PUESTO</span></span>
+                                </div>
+                                <span class="font-black text-blue-500 text-[10px] tracking-widest">${me.count} ${label}</span>
+                            </div>`;
+                    } else if (myIndex === -1) {
+                        myContainer.innerHTML = `
+                            <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5 opacity-50">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-black text-gray-600 text-lg italic">#--</span>
+                                    <span class="font-bold text-[12px] tracking-widest text-gray-500">${myPartnerID}</span>
+                                </div>
+                                <span class="font-black text-gray-600 text-[10px] tracking-widest">0 ${label}</span>
+                            </div>`;
+                    } else {
+                        myContainer.innerHTML = ""; 
+                    }
                 };
 
-                renderRank(topGestores, leadsContainer, 'FIRMAS');
-                renderRank(topRecruiters, recruitersContainer, 'ACTIVOS');
+                processRank(gestorStats, leadsContainer, myLeadRankContainer, 'FIRMAS', true);
+                processRank(recruiterStats, recruitersContainer, myRecruiterRankContainer, 'ACTIVOS', false);
 
             } catch(e) { console.error("Error Leaderboard:", e); }
         }
@@ -290,16 +311,19 @@
                         <i class="fa-solid fa-trophy"></i> Top Gestores (30 días)
                     </h4>
                     <div id="leaderboard-leads" class="space-y-4">
-                        <p class="text-gray-600 italic text-xs">Calculando ranking de cierres...</p>
-                    </div>
+                        </div>
+                    <div id="my-rank-leads" class="mt-4 pt-4 border-t border-white/10">
+                        </div>
                 </div>
+
                 <div class="glass-panel p-8 rounded-[2.5rem] border-purple-500/20">
                     <h4 class="text-purple-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                         <i class="fa-solid fa-users-rays"></i> Top Reclutadores
                     </h4>
                     <div id="leaderboard-recruiters" class="space-y-4">
-                        <p class="text-gray-600 italic text-xs">Calculando red de socios...</p>
-                    </div>
+                        </div>
+                    <div id="my-rank-recruiters" class="mt-4 pt-4 border-t border-white/10">
+                        </div>
                 </div>
             </div>
             <div class="pt-10">
