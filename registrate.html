@@ -115,6 +115,25 @@
                 btn.disabled = false;
             }
         });
+        // AUTO-RELLENADO DEL SPONSOR
+window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const sponsorEmail = params.get('ref');
+    
+    if (sponsorEmail) {
+        // Busca el input que dice "quien lo invitó" o similar
+        const inputSponsor = document.querySelector('input[placeholder*="invitó"]') || 
+                             document.querySelector('input[name*="sponsorEmail"]') ||
+                             document.getElementById('sponsor-input'); // Reemplaza por tu ID si lo tienes
+                             
+        if (inputSponsor) {
+            inputSponsor.value = decodeURIComponent(sponsorEmail).toLowerCase();
+            inputSponsor.style.border = "2px solid #db2777"; // Borde rosa de confirmación
+            inputSponsor.readOnly = true; // Bloqueado para que no haya errores de tipeo
+            console.log("Sponsor cargado desde link: " + sponsorEmail);
+        }
+    }
+});
     </script>
 </body>
 </html>
