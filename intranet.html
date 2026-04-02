@@ -75,7 +75,7 @@
                 let recruiterStats = {}; 
                 let gestorStats = {};    
 
-                // 1. Mapear nombres y sponsors (Saltando al Admin)
+                // 1. Mapear ALIAS y sponsors (Protegiendo identidad)
                 profilesSnap.forEach(docSnap => {
                     const data = docSnap.data();
                     const uid = docSnap.ref.parent.parent.id;
@@ -86,7 +86,9 @@
                         return;
                     }
 
-                    userNames[uid] = data.name || email.split('@')[0];
+                    // Siempre usamos solo el nombre de usuario del correo (antes del @)
+                    userNames[uid] = email.split('@')[0]; 
+                    
                     if (data.sponsorEmail) {
                         userSponsors[uid] = data.sponsorEmail.toLowerCase();
                     }
@@ -214,9 +216,14 @@
                     <button onclick="switchIntranetTab('gestiones')" id="tab-gestiones" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg">Gestiones</button>
                     <button onclick="switchIntranetTab('academia')" id="tab-academia" class="text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition">Academia</button>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span id="partner-display" class="font-bold text-blue-500 text-[11px]">Cargando...</span>
-                    <span class="text-[8px] text-gray-500 uppercase font-black tracking-widest italic">Socio Activo</span>
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex items-center gap-2">
+                        <span id="partner-display" class="font-bold text-blue-500 text-[11px]">Cargando...</span>
+                        <span class="text-[8px] text-gray-500 uppercase font-black tracking-widest italic">Socio Activo</span>
+                    </div>
+                    <div id="partner-id-display" class="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5 opacity-0 transition-opacity duration-1000">
+                        ID: <span class="text-white">---</span>
+                    </div>
                 </div>
             </div>
 
@@ -542,6 +549,12 @@
         } else {
             const partnerName = user.displayName || user.email.split('@')[0];
             document.getElementById('partner-display').innerText = partnerName;
+            
+            // --- GENERAR Y MOSTRAR ID PERSONAL ---
+            const myPartnerID = "JA-" + user.uid.substring(user.uid.length - 5).toUpperCase();
+            const idBox = document.getElementById('partner-id-display');
+            idBox.querySelector('span').innerText = myPartnerID;
+            idBox.classList.remove('opacity-0'); // Aparece con efecto suave
             
             // DISPARADORES MAESTROS
             checkVigencia(user.uid); 
