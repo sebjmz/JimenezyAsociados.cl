@@ -86,6 +86,21 @@
 
         // Hacemos que la función sea visible para el botón de HTML
         window.recuperarClave = recuperarClave;
+        
+        // >>> PEGA AQUÍ EL PASO 3 (Capturador) <<<
+window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const sponsorReferido = params.get('ref');
+    if (sponsorReferido) {
+        const inputSponsor = document.querySelector('input[placeholder*="invitó"]') || 
+                             document.querySelector('input[name*="sponsor"]');
+        if (inputSponsor) {
+            inputSponsor.value = decodeURIComponent(sponsorReferido).toLowerCase();
+            inputSponsor.style.border = "2px solid #db2777"; 
+            inputSponsor.readOnly = true;
+        }
+    }
+});
     </script>
 
     <style>
