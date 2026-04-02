@@ -121,16 +121,14 @@ window.addEventListener('load', () => {
     const sponsorEmail = params.get('ref');
     
     if (sponsorEmail) {
-        // Busca el input que dice "quien lo invitó" o similar
+        // Busca el cuadro de texto donde se pone el correo del sponsor
         const inputSponsor = document.querySelector('input[placeholder*="invitó"]') || 
-                             document.querySelector('input[name*="sponsorEmail"]') ||
-                             document.getElementById('sponsor-input'); // Reemplaza por tu ID si lo tienes
+                             document.querySelector('input[name*="sponsorEmail"]');
                              
         if (inputSponsor) {
             inputSponsor.value = decodeURIComponent(sponsorEmail).toLowerCase();
-            inputSponsor.style.border = "2px solid #db2777"; // Borde rosa de confirmación
-            inputSponsor.readOnly = true; // Bloqueado para que no haya errores de tipeo
-            console.log("Sponsor cargado desde link: " + sponsorEmail);
+            inputSponsor.style.border = "2px solid #db2777"; // Borde rosa para confirmar
+            inputSponsor.readOnly = true; // Bloqueado para que no lo cambien
         }
     }
 });
