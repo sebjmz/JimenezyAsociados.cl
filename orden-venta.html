@@ -44,15 +44,20 @@
         <h3>Firmas y Documentación</h3>
         <div class="form-group">
             <label>Foto Cédula de Identidad</label>
-            <div class="file-input" onclick="document.getElementById('file_carnet').click()">📸 Tocar para foto del Carnet
-                <input type="file" id="file_carnet" accept="image/*" capture="camera" style="display:none">
+            <div class="file-input" onclick="document.getElementById('file_carnet').click()">
+                📸 Tocar para foto del Carnet<br>
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: bold;">⚠️ Por favor, gira tu teléfono y toma la foto en HORIZONTAL</span>
+                <input type="file" id="file_carnet" accept="image/*" capture="environment" style="display:none">
             </div>
             <img id="prev_carnet" class="preview">
         </div>
+
         <div class="form-group">
             <label>Firma del Mandante</label>
-            <div class="file-input" onclick="document.getElementById('file_firma').click()">✍️ Tocar para foto de la Firma
-                <input type="file" id="file_firma" accept="image/*" capture="camera" style="display:none">
+            <div class="file-input" onclick="document.getElementById('file_firma').click()">
+                ✍️ Tocar para foto de la Firma<br>
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: bold;">⚠️ Por favor, gira tu teléfono y toma la foto en HORIZONTAL</span>
+                <input type="file" id="file_firma" accept="image/*" capture="environment" style="display:none">
             </div>
             <img id="prev_firma" class="preview">
         </div>
