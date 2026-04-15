@@ -30,6 +30,7 @@
         <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
         <div class="form-group"><label>Email para envío de copia</label><input type="email" id="email" required></div>
         <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
+        <div class="form-group"><label>Ciudad</label><input type="text" id="ciudad" placeholder="Ej: Viña del Mar, Concón, Valparaíso" required></div>
 
         <h3>Información de la Propiedad</h3>
         <div class="form-group"><label>Dirección Completa (Calle, Número, Comuna)</label><input type="text" id="direccion" required></div>
@@ -99,25 +100,26 @@
         btn.disabled = true; btn.innerText = "Procesando...";
 
         const formData = {
-            nombre: document.getElementById('nombre').value,
-            rut: document.getElementById('rut').value,
-            email: document.getElementById('email').value,
-            domicilio_mandante: document.getElementById('domicilio').value,
-            direccion: document.getElementById('direccion').value,
-            depto: document.getElementById('depto').value || "S/N",
-            estacionamientos: document.getElementById('estacionamientos').value || "No",
-            bodegas: document.getElementById('bodegas').value || "No",
-            rol: document.getElementById('rol').value || "En trámite",
-            precio: document.getElementById('precio').value,
-            foto_carnet: base64Files['file_carnet'],
-            foto_firma: base64Files['file_firma'],
-            url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
-            url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
-        };
+    nombre: document.getElementById('nombre').value,
+    rut: document.getElementById('rut').value,
+    email: document.getElementById('email').value,
+    domicilio_mandante: document.getElementById('domicilio').value,
+    direccion: document.getElementById('direccion').value,
+    ciudad: document.getElementById('ciudad').value, // <-- AGREGA ESTA LÍNEA
+    depto: document.getElementById('depto').value || "S/N",
+    estacionamientos: document.getElementById('estacionamientos').value || "No",
+    bodegas: document.getElementById('bodegas').value || "No",
+    rol: document.getElementById('rol').value || "En trámite",
+    precio: document.getElementById('precio').value,
+    foto_carnet: base64Files['file_carnet'],
+    foto_firma: base64Files['file_firma'],
+    url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
+    url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
+};
 
         try {
             // DEBES PONER LA NUEVA URL QUE GOOGLE TE DÉ EN EL PASO 3 AQUÍ
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJ4laMPRNQcO7Pw6hYiTmFNSK2dP4Tlslv-XDpM8EGolevXJYITkTAxGY_1Y_y5jyK/exec"; 
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBjz7lF5Ie8SdredaYi1pxBItJPRESCNQOTob1V2KdrAtQ_Py9STwadaYsYNlOFCrT/exec"; 
             
             await fetch(SCRIPT_URL, {
                 method: 'POST',
