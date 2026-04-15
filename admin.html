@@ -353,30 +353,37 @@
         window.logout = () => signOut(auth).then(() => window.location.href = 'ingresopartner.html');
 
         window.switchTab = (tab) => {
-            const isNeg = tab === 'negocios';
-            
-            // 1. Ocultar y Mostrar
-            if (isNeg) {
-                document.getElementById('view-negocios').classList.remove('hidden');
-                document.getElementById('view-partners').classList.add('hidden');
-            } else {
-                document.getElementById('view-negocios').classList.add('hidden');
-                document.getElementById('view-partners').classList.remove('hidden');
-                loadAllPartners(); 
-            }
-            
-            // 2. Colores explícitos
-            const btnNeg = document.getElementById('btn-tab-negocios');
-            const btnPart = document.getElementById('btn-tab-partners');
+    // 1. Definir qué queremos mostrar y qué botones activar
+    const views = {
+        negocios: document.getElementById('view-negocios'),
+        partners: document.getElementById('view-partners'),
+        orden: document.getElementById('view-orden')
+    };
+    const btns = {
+        negocios: document.getElementById('btn-tab-negocios'),
+        partners: document.getElementById('btn-tab-partners'),
+        orden: document.getElementById('btn-tab-orden')
+    };
 
-            if (isNeg) {
-                btnNeg.className = "bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-                btnPart.className = "text-gray-400 bg-transparent hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
-            } else {
-                btnNeg.className = "text-gray-400 bg-transparent hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
-                btnPart.className = "bg-purple-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-            }
-        };
+    // 2. Ocultar todas las vistas y apagar todos los botones
+    Object.keys(views).forEach(key => {
+        if(views[key]) views[key].classList.add('hidden');
+        if(btns[key]) btns[key].className = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
+    });
+
+    // 3. Mostrar solo la pestaña elegida
+    views[tab].classList.remove('hidden');
+    
+    // 4. Aplicar color al botón activo según la pestaña
+    if (tab === 'negocios') {
+        btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    } else if (tab === 'partners') {
+        btns[tab].className = "bg-purple-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+        loadAllPartners();
+    } else if (tab === 'orden') {
+        btns[tab].className = "bg-green-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    }
+};
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 // 1. Quitar la pantalla de carga
@@ -447,9 +454,12 @@
             </div>
             
             <div class="flex gap-2 bg-white/5 p-1 rounded-2xl w-full md:w-auto justify-center">
-                <button id="btn-tab-negocios" onclick="switchTab('negocios')" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none">Negocios</button>
-                <button id="btn-tab-partners" onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">Partners</button>
-            </div>
+    <button id="btn-tab-negocios" onclick="switchTab('negocios')" class="bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none">Negocios</button>
+    <button id="btn-tab-partners" onclick="switchTab('partners')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">Partners</button>
+    <button id="btn-tab-orden" onclick="switchTab('orden')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">
+        <i class="fa-solid fa-file-signature mr-1"></i> Orden Venta
+    </button>
+</div>
 
             <button onclick="logout()" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-2xl hover:bg-red-600 hover:text-white transition w-full md:w-auto">Cerrar Sesión</button>
         </header>
@@ -530,6 +540,11 @@
                 </div>
                 <!-- Contenedor para tarjetas en móvil -->
                 <div id="admin-partners-cards" class="md:hidden flex flex-col gap-4 mt-6 w-full"></div>            </div>
+            <div id="view-orden" class="hidden">
+                <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl bg-white min-h-[85vh]">
+                    <iframe src="orden-venta.html" class="w-full h-[85vh] border-none" title="Formulario Orden de Venta"></iframe>
+                </div>
+            </div>
         </main>
     </div>
 </body>
