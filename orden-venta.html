@@ -129,23 +129,28 @@
             anexos: document.getElementById('anexos').value,
             foto_carnet: base64Files['file_carnet'],
             foto_firma: base64Files['file_firma'],
-            // Tu firma y carnet ya están en el servidor o se sacan de GitHub por URL
-            firma_corredor_url: "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/img/firma-sebastián.png"
+            // Tus fotos reales de GitHub para el contrato
+            url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
+            url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
         };
 
         try {
-            // AQUÍ CONECTARÁS CON LA URL DE TU GOOGLE APPS SCRIPT
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCinE8rGqdA9T0z4e5jLD7tW7dyLsBtkiqaZDb_Eq6yQOIoV59wzBsYi_aBO1hw68G/exec";
+            // Tu URL de Google Apps Script actualizada
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2FvHqUb6pF8jlJexCDEfksno2Z4EYqqBLbafeBokCQUzPfCGcF6B3QeqrRmNYFw/exec";
             
-            const response = await fetch(SCRIPT_URL, {
+            await fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Importante para Google Scripts
+                mode: 'no-cors', // Necesario para Google Scripts
                 body: JSON.stringify(formData)
             });
 
-            status.style.color = "green";
-            status.innerText = "✅ ¡Contrato generado exitosamente! Las copias han sido enviadas a los correos electrónicos.";
-            btn.innerText = "ENVIADO";
+            // Como usamos no-cors, damos un tiempo de espera para confirmar al usuario
+            setTimeout(() => {
+                status.style.color = "green";
+                status.innerText = "✅ ¡Solicitud enviada! El contrato llegará al correo en unos segundos.";
+                btn.innerText = "ENVIADO";
+            }, 2500);
+
         } catch (error) {
             console.error(error);
             status.style.color = "red";
