@@ -105,14 +105,54 @@
     const previews = { 'file_carnet': 'prev_carnet', 'file_firma': 'prev_firma' };
     const base64Files = {};
 
+    // FUNCIÓN NUEVA: Comprimir imagen antes de guardarla
     fileInputs.forEach(id => {
         document.getElementById(id).addEventListener('change', function(e) {
             const file = e.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(event) {
-                document.getElementById(previews[id]).src = event.target.result;
-                document.getElementById(previews[id]).style.display = 'block';
-                base64Files[id] = event.target.result.split(',')[1];
+                const img = new Image();
+                img.onload = function() {
+                    // Creamos un lienzo (canvas) virtual para achicar la foto
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Ancho máximo
+                    const MAX_HEIGHT = 800; // Alto máximo
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculamos las nuevas medidas manteniendo la proporción
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Dibujamos la foto achicada en el lienzo
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convertimos a Base64 pero en formato JPEG con calidad del 60% (ultraligera)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+                    // Mostramos la previsualización al usuario
+                    document.getElementById(previews[id]).src = dataUrl;
+                    document.getElementById(previews[id]).style.display = 'block';
+
+                    // Guardamos la foto ya comprimida para el envío (¡Adiós problemas de memoria!)
+                    base64Files[id] = dataUrl.split(',')[1];
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
@@ -140,27 +180,27 @@
             url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
         };
 
-        // Reemplaza tu bloque de fetch por este:
-try {
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxv72ZlTU5MVBYFz6yAlVCj5I3waXSeBQWdHBhRs4yup68sU4x6jlViJ0Vn5HtNTXXE/exec";
-    
-    // Usamos enviar el JSON como texto plano para evitar bloqueos de CORS de Google
-    await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(formData)
-    });
+        try {
+            // Asegúrate de que esta sea la última URL que te dio el script de Google
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9-jRJSKPWotoTQsXZYzYP_vi1VhiJk_b0HLhYWVKn-KrcLmiwhhm23xxf0MNldzn-/exec";
+            
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(formData)
+            });
 
-    status.style.color = "green";
-    status.innerText = "✅ ¡Solicitud procesada! Revisa tu email en 1 minuto.";
-    btn.innerText = "ENVIADO";
-} catch (error) {
-    console.error(error);
-    status.style.color = "red";
-    status.innerText = "❌ Error en la conexión.";
-    btn.disabled = false;
-}
+            status.style.color = "green";
+            status.innerText = "✅ ¡Solicitud procesada! Revisa tu email en 1 minuto.";
+            btn.innerText = "ENVIADO";
+        } catch (error) {
+            console.error(error);
+            status.style.color = "red";
+            status.innerText = "❌ Error en la conexión.";
+            btn.disabled = false;
+        }
+    };
 </script>
 </body>
 </html>
