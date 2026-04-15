@@ -6,29 +6,17 @@
     <title>Orden de Venta Exclusiva | Jiménez & Asociados</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #1a2a6c;
-            --accent: #b21f1f;
-            --bg: #f4f7f6;
-        }
+        :root { --primary: #1a2a6c; --accent: #b21f1f; --bg: #f4f7f6; }
         body { font-family: 'Roboto', sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
         .container { max-width: 600px; background: white; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { color: var(--primary); text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
         h3 { font-size: 1.1rem; color: var(--accent); margin-top: 25px; border-left: 4px solid var(--accent); padding-left: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        input[type="text"], input[type="number"], input[type="email"], select {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem;
-        }
+        input[type="text"], input[type="number"], input[type="email"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
         .file-input { background: #fafafa; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; text-align: center; cursor: pointer; }
-        .file-input:hover { border-color: var(--primary); }
         .preview { max-width: 100%; height: auto; margin-top: 10px; border-radius: 4px; display: none; }
-        button { 
-            width: 100%; background: var(--primary); color: white; border: none; padding: 15px; 
-            font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 30px;
-            transition: background 0.3s;
-        }
-        button:hover { background: #0d1a4a; }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 30px; }
         #status { text-align: center; margin-top: 20px; font-weight: bold; }
     </style>
 </head>
@@ -36,60 +24,32 @@
 
 <div class="container">
     <h2>ORDEN DE VENTA EXCLUSIVA</h2>
-    <p style="text-align: center; font-size: 0.9rem;">Jiménez & Asociados - Gestión Inmobiliaria</p>
-
     <form id="uploadForm">
         <h3>Datos del Mandante</h3>
-        <div class="form-group">
-            <label>Nombre Completo</label>
-            <input type="text" name="nombre" id="nombre" placeholder="Ej: Sumeet Sangar" required>
-        </div>
-        <div class="form-group">
-            <label>RUT</label>
-            <input type="text" name="rut" id="rut" placeholder="12.345.678-9" required>
-        </div>
-        <div class="form-group">
-            <label>Email para envío de copia</label>
-            <input type="email" name="email" id="email" required>
-        </div>
-        <div class="form-group">
-            <label>Domicilio Particular del Mandante</label>
-            <input type="text" name="domicilio" id="domicilio" placeholder="Dirección completa del propietario" required>
-        </div>
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
+        <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
+        <div class="form-group"><label>Email para envío de copia</label><input type="email" id="email" required></div>
+        <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
 
         <h3>Información de la Propiedad</h3>
-        <div class="form-group">
-            <label>Dirección Completa</label>
-            <input type="text" name="direccion" id="direccion" placeholder="Calle, Número, Depto, Comuna" required>
-        </div>
-        <div class="form-group">
-            <label>Precio de Venta (UF)</label>
-            <input type="number" name="precio" id="precio" placeholder="10000" required>
-        </div>
-        <div class="form-group">
-            <label>Estacionamiento / Bodega</label>
-            <input type="text" name="anexos" id="anexos" placeholder="E-3, E-105, B-77">
-        </div>
-        <div class="form-group">
-            <label>Rol de Avalúo</label>
-            <input type="text" name="rol" id="rol" placeholder="Ej: 1234-56">
-        </div>
+        <div class="form-group"><label>Dirección Completa (Calle, Número, Comuna)</label><input type="text" id="direccion" required></div>
+        <div class="form-group"><label>Departamento (Opcional)</label><input type="text" id="depto" placeholder="Ej: 211"></div>
+        <div class="form-group"><label>Estacionamientos (Opcional)</label><input type="text" id="estacionamientos" placeholder="Ej: E-3"></div>
+        <div class="form-group"><label>Bodegas (Opcional)</label><input type="text" id="bodegas" placeholder="Ej: B-77"></div>
+        <div class="form-group"><label>Rol de Avalúo</label><input type="text" id="rol" placeholder="Ej: 1234-56"></div>
+        <div class="form-group"><label>Precio de Venta (UF)</label><input type="number" id="precio" required></div>
 
         <h3>Firmas y Documentación</h3>
-        
         <div class="form-group">
-            <label>Foto Cédula de Identidad (Mandante)</label>
-            <div class="file-input" onclick="document.getElementById('file_carnet').click()">
-                📸 Tocar para tomar foto del Carnet
+            <label>Foto Cédula de Identidad</label>
+            <div class="file-input" onclick="document.getElementById('file_carnet').click()">📸 Tocar para foto del Carnet
                 <input type="file" id="file_carnet" accept="image/*" capture="camera" style="display:none">
             </div>
             <img id="prev_carnet" class="preview">
         </div>
-
         <div class="form-group">
-            <label>Firma del Mandante (Firmar en papel y fotografiar)</label>
-            <div class="file-input" onclick="document.getElementById('file_firma').click()">
-                ✍️ Tocar para tomar foto de la Firma
+            <label>Firma del Mandante</label>
+            <div class="file-input" onclick="document.getElementById('file_firma').click()">✍️ Tocar para foto de la Firma
                 <input type="file" id="file_firma" accept="image/*" capture="camera" style="display:none">
             </div>
             <img id="prev_firma" class="preview">
@@ -105,51 +65,25 @@
     const previews = { 'file_carnet': 'prev_carnet', 'file_firma': 'prev_firma' };
     const base64Files = {};
 
-    // FUNCIÓN NUEVA: Comprimir imagen antes de guardarla
     fileInputs.forEach(id => {
         document.getElementById(id).addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    // Creamos un lienzo (canvas) virtual para achicar la foto
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Ancho máximo
-                    const MAX_HEIGHT = 800; // Alto máximo
-                    let width = img.width;
-                    let height = img.height;
-
-                    // Calculamos las nuevas medidas manteniendo la proporción
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    // Dibujamos la foto achicada en el lienzo
+                    const MAX_WIDTH = 600; const MAX_HEIGHT = 600;
+                    let width = img.width; let height = img.height;
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
-                    // Convertimos a Base64 pero en formato JPEG con calidad del 60% (ultraligera)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-
-                    // Mostramos la previsualización al usuario
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Comprime la foto
                     document.getElementById(previews[id]).src = dataUrl;
                     document.getElementById(previews[id]).style.display = 'block';
-
-                    // Guardamos la foto ya comprimida para el envío (¡Adiós problemas de memoria!)
                     base64Files[id] = dataUrl.split(',')[1];
                 };
                 img.src = event.target.result;
@@ -162,18 +96,19 @@
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
-        btn.disabled = true;
-        btn.innerText = "Procesando...";
+        btn.disabled = true; btn.innerText = "Procesando...";
 
         const formData = {
             nombre: document.getElementById('nombre').value,
             rut: document.getElementById('rut').value,
             email: document.getElementById('email').value,
-            domicilio_mandante: document.getElementById('domicilio')?.value || "No especificado",
+            domicilio_mandante: document.getElementById('domicilio').value,
             direccion: document.getElementById('direccion').value,
+            depto: document.getElementById('depto').value || "S/N",
+            estacionamientos: document.getElementById('estacionamientos').value || "No",
+            bodegas: document.getElementById('bodegas').value || "No",
+            rol: document.getElementById('rol').value || "En trámite",
             precio: document.getElementById('precio').value,
-            anexos: document.getElementById('anexos').value,
-            rol: document.getElementById('rol')?.value || "Pendiente",
             foto_carnet: base64Files['file_carnet'],
             foto_firma: base64Files['file_firma'],
             url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
@@ -181,8 +116,8 @@
         };
 
         try {
-            // Asegúrate de que esta sea la última URL que te dio el script de Google
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9-jRJSKPWotoTQsXZYzYP_vi1VhiJk_b0HLhYWVKn-KrcLmiwhhm23xxf0MNldzn-/exec";
+            // DEBES PONER LA NUEVA URL QUE GOOGLE TE DÉ EN EL PASO 3 AQUÍ
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJ4laMPRNQcO7Pw6hYiTmFNSK2dP4Tlslv-XDpM8EGolevXJYITkTAxGY_1Y_y5jyK/exec"; 
             
             await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -192,12 +127,11 @@
             });
 
             status.style.color = "green";
-            status.innerText = "✅ ¡Solicitud procesada! Revisa tu email en 1 minuto.";
+            status.innerText = "✅ ¡Contrato generado! Revisa tu correo en breve.";
             btn.innerText = "ENVIADO";
         } catch (error) {
-            console.error(error);
             status.style.color = "red";
-            status.innerText = "❌ Error en la conexión.";
+            status.innerText = "❌ Error en la red.";
             btn.disabled = false;
         }
     };
