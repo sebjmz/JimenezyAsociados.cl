@@ -53,13 +53,14 @@
         </div>
 
         <div class="form-group">
-            <label>Firma del Mandante</label>
-            <div class="file-input" onclick="document.getElementById('file_firma').click()">
-                ✍️ Tocar para foto de la Firma<br>
-                <span style="font-size: 0.75rem; color: var(--accent); font-weight: bold;">⚠️ Por favor, gira tu teléfono y toma la foto en HORIZONTAL</span>
-                <input type="file" id="file_firma" accept="image/*" capture="environment" style="display:none">
+            <label>Firma del Mandante (Firme aquí con el dedo o lápiz)</label>
+            <div style="border: 2px solid #ddd; border-radius: 8px; background: #fff; position: relative; touch-action: none;">
+                <canvas id="signature-pad" width="500" height="200" style="width: 100%; height: 200px; display: block; cursor: crosshair;"></canvas>
             </div>
-            <img id="prev_firma" class="preview">
+            <button type="button" onclick="clearSignature()" style="margin-top: 10px; background: #f4f4f4; color: #666; padding: 8px; font-size: 0.8rem; width: auto; border: 1px solid #ccc;">
+                🧹 Limpiar Firma
+            </button>
+        </div>
         </div>
 
         <button type="submit" id="submitBtn">GENERAR Y FIRMAR CONTRATO</button>
@@ -68,79 +69,116 @@
 </div>
 
 <script>
-    const fileInputs = ['file_carnet', 'file_firma'];
-    const previews = { 'file_carnet': 'prev_carnet', 'file_firma': 'prev_firma' };
-    const base64Files = {};
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
 
-    fileInputs.forEach(id => {
-        document.getElementById(id).addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; const MAX_HEIGHT = 600;
-                    let width = img.width; let height = img.height;
-                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
-                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Comprime la foto
-                    document.getElementById(previews[id]).src = dataUrl;
-                    document.getElementById(previews[id]).style.display = 'block';
-                    base64Files[id] = dataUrl.split(',')[1];
-                };
-                img.src = event.target.result;
+    // Configuración de la pizarra
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    // Funciones de dibujo (Mouse y Touch)
+    function startDrawing(e) {
+        drawing = true;
+        draw(e);
+    }
+    function stopDrawing() {
+        drawing = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // El resto de la lógica de fotos y envío
+    const base64Files = {};
+    document.getElementById('file_carnet').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const cvs = document.createElement('canvas');
+                const MAX = 800;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } }
+                else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+                cvs.width = w; cvs.height = h;
+                cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+                const dataUrl = cvs.toDataURL('image/jpeg', 0.6);
+                document.getElementById('prev_carnet').src = dataUrl;
+                document.getElementById('prev_carnet').style.display = 'block';
+                base64Files['file_carnet'] = dataUrl.split(',')[1];
             };
-            reader.readAsDataURL(file);
-        });
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
     });
 
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
-        btn.disabled = true; btn.innerText = "Procesando...";
+        btn.disabled = true;
+        btn.innerText = "Procesando...";
+
+        // Convertimos la firma de la pizarra a Base64
+        const signatureBase64 = canvas.toDataURL('image/png').split(',')[1];
 
         const formData = {
-    tipo_orden: document.getElementById('tipo_orden').value,
-    nombre: document.getElementById('nombre').value,
-    rut: document.getElementById('rut').value,
-    email: document.getElementById('email').value,
-    domicilio_mandante: document.getElementById('domicilio').value,
-    direccion: document.getElementById('direccion').value,
-    ciudad: document.getElementById('ciudad').value, // <-- AGREGA ESTA LÍNEA
-    depto: document.getElementById('depto').value || "S/N",
-    estacionamientos: document.getElementById('estacionamientos').value || "No",
-    bodegas: document.getElementById('bodegas').value || "No",
-    rol: document.getElementById('rol').value || "En trámite",
-    precio: document.getElementById('precio').value,
-    foto_carnet: base64Files['file_carnet'],
-    foto_firma: base64Files['file_firma'],
-    url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
-    url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
-};
+            tipo_orden: document.getElementById('tipo_orden').value,
+            nombre: document.getElementById('nombre').value.toUpperCase(),
+            rut: document.getElementById('rut').value,
+            email: document.getElementById('email').value,
+            domicilio_mandante: document.getElementById('domicilio').value,
+            direccion: document.getElementById('direccion').value,
+            ciudad: document.getElementById('ciudad').value,
+            depto: document.getElementById('depto').value || "S/N",
+            estacionamientos: document.getElementById('estacionamientos').value || "No",
+            bodegas: document.getElementById('bodegas').value || "No",
+            rol: document.getElementById('rol').value || "En trámite",
+            precio: document.getElementById('precio').value,
+            foto_carnet: base64Files['file_carnet'],
+            foto_firma: signatureBase64, // <-- Aquí enviamos la firma digital
+            url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
+            url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
+        };
 
         try {
-            // DEBES PONER LA NUEVA URL QUE GOOGLE TE DÉ EN EL PASO 3 AQUÍ
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5mg0f2NbNwWCS72E5Xbkq7vHOnt2keMlZ4UTwwNw29KjYHpepDP1zy5feRfRqNatV/exec"; 
-            
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9-jRJSKPWotoTQsXZYzYP_vi1VhiJk_b0HLhYWVKn-KrcLmiwhhm23xxf0MNldzn-/exec";
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(formData)
             });
-
             status.style.color = "green";
-            status.innerText = "✅ ¡Contrato generado! Revisa tu correo en breve.";
+            status.innerText = "✅ ¡Orden de Venta generada y firmada!";
             btn.innerText = "ENVIADO";
         } catch (error) {
             status.style.color = "red";
-            status.innerText = "❌ Error en la red.";
+            status.innerText = "❌ Error al enviar.";
             btn.disabled = false;
         }
     };
