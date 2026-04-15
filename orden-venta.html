@@ -26,6 +26,7 @@
     <h2>ORDEN DE VENTA EXCLUSIVA</h2>
     <form id="uploadForm">
         <h3>Datos del Mandante</h3>
+        <div class="form-group"><label>Tipo de Contrato</label><select id="tipo_orden" required><option value="EXCLUSIVA">Venta Exclusiva</option><option value="NO EXCLUSIVA">Venta NO Exclusiva</option></select></div>
         <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
         <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
         <div class="form-group"><label>Email para envío de copia</label><input type="email" id="email" required></div>
@@ -100,6 +101,7 @@
         btn.disabled = true; btn.innerText = "Procesando...";
 
         const formData = {
+    tipo_orden: document.getElementById('tipo_orden').value,
     nombre: document.getElementById('nombre').value,
     rut: document.getElementById('rut').value,
     email: document.getElementById('email').value,
@@ -119,7 +121,7 @@
 
         try {
             // DEBES PONER LA NUEVA URL QUE GOOGLE TE DÉ EN EL PASO 3 AQUÍ
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3hA9r8xYD5JRSEavpjj90Nt85-ATJxXaMhJrJ320TCaeJxnoOACbH11dhNPCLGAeT/exec"; 
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPzRlfczj8oRPsWEg0HeipuM9SVuko7cYoPJyW_mJoi75vPmh31nbHMvXMbbDLXZS/exec"; 
             
             await fetch(SCRIPT_URL, {
                 method: 'POST',
