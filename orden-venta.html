@@ -140,20 +140,27 @@
             url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
         };
 
-        try {
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybxv2OiKQBWXM3_-SC7CugGt7-ITt6CJWo4f5r6EZN25Hn61avYs3foymed9LaJT9J/exec";
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) });
-            setTimeout(() => {
-                status.style.color = "green";
-                status.innerText = "✅ ¡Enviado! El PDF llegará a tu correo en breve.";
-                btn.innerText = "ENVIADO";
-            }, 2500);
-        } catch (error) {
-            status.style.color = "red";
-            status.innerText = "❌ Error. Revisa la conexión.";
-            btn.disabled = false;
-        }
-    };
+        // Reemplaza tu bloque de fetch por este:
+try {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9-jRJSKPWotoTQsXZYzYP_vi1VhiJk_b0HLhYWVKn-KrcLmiwhhm23xxf0MNldzn-/exec";
+    
+    // Usamos enviar el JSON como texto plano para evitar bloqueos de CORS de Google
+    await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(formData)
+    });
+
+    status.style.color = "green";
+    status.innerText = "✅ ¡Solicitud procesada! Revisa tu email en 1 minuto.";
+    btn.innerText = "ENVIADO";
+} catch (error) {
+    console.error(error);
+    status.style.color = "red";
+    status.innerText = "❌ Error en la conexión.";
+    btn.disabled = false;
+}
 </script>
 </body>
 </html>
