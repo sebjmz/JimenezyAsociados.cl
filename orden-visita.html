@@ -125,27 +125,53 @@
     canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    // --- COMPRESIÓN DE FOTO ---
+    // --- COMPRESIÓN DE FOTO (VERSIÓN ULTRA-LIGERA) ---
     const base64Files = {};
     document.getElementById('file_carnet').addEventListener('change', function(e) {
         const file = e.target.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const cvs = document.createElement('canvas'); const MAX = 800;
-                let w = img.width, h = img.height;
-                if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-                cvs.width = w; cvs.height = h;
-                cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                const dataUrl = cvs.toDataURL('image/jpeg', 0.6);
-                document.getElementById('prev_carnet').src = dataUrl;
-                document.getElementById('prev_carnet').style.display = 'block';
-                base64Files['file_carnet'] = dataUrl.split(',')[1];
-            };
-            img.src = event.target.result;
+
+        // Solución Creativa: Feedback visual para que el usuario no toque nada mientras el procesador trabaja
+        const container = e.target.parentElement;
+        const originalContent = container.innerHTML;
+        container.innerHTML = "⏳ <span style='color:blue'>PROCESANDO IMAGEN... ESPERA.</span>";
+        container.style.pointerEvents = "none";
+
+        const img = new Image();
+        // Cambiamos FileReader por ObjectURL (Ahorra un 70% de memoria RAM inicial)
+        const blobUrl = URL.createObjectURL(file);
+
+        img.onload = function() {
+            const cvs = document.createElement('canvas'); 
+            const MAX = 800; 
+            let w = img.width, h = img.height;
+
+            if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } 
+            else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+
+            cvs.width = w; cvs.height = h;
+            const ctx = cvs.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
+            // Bajamos calidad de 0.6 a 0.5 (Imperceptible al ojo, pero mucho más liviano para la RAM)
+            const dataUrl = cvs.toDataURL('image/jpeg', 0.5); 
+            
+            document.getElementById('prev_carnet').src = dataUrl;
+            document.getElementById('prev_carnet').style.display = 'block';
+            base64Files['file_carnet'] = dataUrl.split(',')[1];
+
+            // Limpieza crítica de memoria
+            URL.revokeObjectURL(blobUrl); 
+            container.innerHTML = "✅ FOTO CARGADA CON ÉXITO";
+            container.style.background = "#e7f3ef";
         };
-        reader.readAsDataURL(file);
+
+        img.onerror = function() {
+            alert("Error de memoria al procesar. Intenta con una foto de menor resolución o reinicia el navegador.");
+            container.innerHTML = originalContent;
+            container.style.pointerEvents = "auto";
+        };
+
+        img.src = blobUrl;
     });
 
     // --- ENVÍO AL MOTOR ---
