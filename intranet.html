@@ -517,10 +517,14 @@
                     <span class="pl-4 font-black text-blue-500 text-sm tracking-widest whitespace-nowrap shrink-0">+56 9</span>
                     <input type="tel" id="in-phone" required maxlength="9" placeholder="1234-5678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm" oninput="let v = this.value.replace(/\D/g, ''); if(v.length > 4) v = v.substring(0,4) + '-' + v.substring(4,8); this.value = v;">
                 </div>
-                <select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
-                    <option value="" disabled selected>Tipo de Gestión</option>
-                    <option value="Venta">Venta de Propiedad</option>
-                    <option value="Arriendo">Arriendo</option>
+                <select id="in-owner" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Relación del Cliente con la Propiedad</option>
+                    <option value="Vendedor">Vendedor (Dueño vende)</option>
+                    <option value="Arrendador">Arrendador (Dueño arrienda)</option>
+                    <option value="Comprador">Comprador (Busca comprar)</option>
+                    <option value="Arrendatario">Arrendatario (Busca arrendar)</option>
+                    <option value="Corredor">Corredor (Canje / Alianza)</option>
+                    <option value="Tercero">Tercero (Dato / Referido externo)</option>
                 </select>
 
                 <select id="in-tipo" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
@@ -837,8 +841,7 @@
         const partnerName = document.getElementById('partner-display').innerText;
 
         try {
-            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                name, phone, service, tipo, comuna, urgencia, owner,
+            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {name, phone, service, tipo, comuna, urgencia, owner, // <--- Este campo ahora guardará "Vendedor", "Comprador", etc.
                 nota: nota || "Sin notas",
                 partnerEmail: user.email,
                 contactado: false, contrato: false, visitas: false,
@@ -847,7 +850,8 @@
             });
 
             const adminPhone = "56951134778"; 
-            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Dueño Directo:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
+            // Busca esta línea dentro del listener de 'form-add'
+            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
             const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
             window.closeModal();
