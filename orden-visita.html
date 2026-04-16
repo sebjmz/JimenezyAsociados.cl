@@ -1,1 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Visita | Jiménez & Asociados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #1a2a6c; --accent: #b21f1f; --bg: #f4f7f6; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 600px; background: white; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        h3 { font-size: 1.1rem; color: var(--accent); margin-top: 25px; border-left: 4px solid var(--accent); padding-left: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"], input[type="email"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .prop-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
+        .file-input { background: #fafafa; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; text-align: center; cursor: pointer; }
+        .preview { max-width: 100%; height: auto; margin-top: 10px; border-radius: 4px; display: none; }
+        button { width: 100%; color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+        .btn-submit { background: var(--primary); }
+        .btn-add { background: #4caf50; font-size: 0.9rem; padding: 10px; margin-top: 0; }
+        #status { text-align: center; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h2>ORDEN DE VISITA</h2>
+    
+    <form id="uploadForm">
+        <h3>Datos del Visitante</h3>
+        <div class="form-group"><label>Ciudad donde se firma</label><input type="text" id="ciudad_firma" placeholder="Ej: Viña del Mar" required></div>
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
+        <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
+        <div class="form-group"><label>Email para copia</label><input type="email" id="email" required></div>
+        <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
+
+        <h3>Propiedades a Visitar</h3>
+        <div id="propiedades-container">
+            <div class="prop-box" id="prop_1">
+                <label>1. Dirección Completa</label><input type="text" id="dir_1" required style="margin-bottom: 8px;">
+                <label>Rol (Opcional)</label><input type="text" id="rol_1" placeholder="Ej: 123-45" style="margin-bottom: 8px;">
+                <label>Comuna/Ciudad</label><input type="text" id="ciu_1" required>
+            </div>
+        </div>
+        <button type="button" class="btn-add" id="btn-add-prop">+ Agregar otra propiedad (Máx. 5)</button>
+
+        <div style="background: #eaf0f6; border-left: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 25px; margin-bottom: 25px; font-size: 0.9rem; color: #444;">
+            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;">📋 Resumen de Visita</h4>
+            <p style="margin: 5px 0;"><strong>Visitante:</strong> <span id="resumen-nombre">...</span></p>
+            <p style="margin: 5px 0;"><strong>Total Propiedades:</strong> <span id="resumen-total">1</span></p>
+            <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+            <p style="margin: 0; font-size: 0.8rem;"><em>* Al firmar, el visitante reconoce la gestión de Jiménez & Asociados y acepta la comisión acordada en caso de concretar la operación (compra/arriendo).</em></p>
+        </div>
+
+        <h3>Firmas y Documentación</h3>
+        
+        <div class="form-group">
+            <label>Foto Cédula de Identidad (Visitante)</label>
+            <div class="file-input" onclick="document.getElementById('file_carnet').click()">
+                📸 Tocar para foto del Carnet<br>
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: bold;">⚠️ Toma la foto en HORIZONTAL</span>
+                <input type="file" id="file_carnet" accept="image/*" capture="environment" style="display:none">
+            </div>
+            <img id="prev_carnet" class="preview">
+        </div>
+
+        <div class="form-group">
+            <label>Firma del Visitante (Dedo o Lápiz)</label>
+            <div style="border: 2px solid #ddd; border-radius: 8px; background: #fff; position: relative; touch-action: none;">
+                <canvas id="signature-pad" width="500" height="200" style="width: 100%; height: 200px; display: block; cursor: crosshair;"></canvas>
+            </div>
+            <button type="button" onclick="clearSignature()" style="margin-top: 10px; background: #f4f4f4; color: #666; padding: 8px; font-size: 0.8rem; width: auto; border: 1px solid #ccc;">🧹 Limpiar Firma</button>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">GENERAR Y FIRMAR VISITA</button>
+    </form>
+    <div id="status"></div>
+</div>
+
+<script>
+    // --- LÓGICA DE PROPIEDADES DINÁMICAS ---
+    let propCount = 1;
+    document.getElementById('btn-add-prop').addEventListener('click', () => {
+        if(propCount < 5) {
+            propCount++;
+            const html = `
+                <div class="prop-box" id="prop_${propCount}">
+                    <label>${propCount}. Dirección Completa</label><input type="text" id="dir_${propCount}" style="margin-bottom: 8px;">
+                    <label>Rol (Opcional)</label><input type="text" id="rol_${propCount}" style="margin-bottom: 8px;">
+                    <label>Comuna/Ciudad</label><input type="text" id="ciu_${propCount}">
+                </div>`;
+            document.getElementById('propiedades-container').insertAdjacentHTML('beforeend', html);
+            document.getElementById('resumen-total').innerText = propCount;
+        }
+        if(propCount === 5) document.getElementById('btn-add-prop').style.display = 'none';
+    });
+
+    document.getElementById('nombre').addEventListener('input', (e) => {
+        document.getElementById('resumen-nombre').innerText = e.target.value.toUpperCase() || '...';
+    });
+
+    // --- LÓGICA DE PIZARRA DIGITAL ---
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.lineCap = "round";
+
+    function startDrawing(e) { drawing = true; draw(e); }
+    function stopDrawing() { drawing = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!drawing) return; e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height;
+        const x = ((e.clientX || e.touches[0].clientX) - rect.left) * scaleX;
+        const y = ((e.clientY || e.touches[0].clientY) - rect.top) * scaleY;
+        ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+    }
+    canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
+    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // --- COMPRESIÓN DE FOTO ---
+    const base64Files = {};
+    document.getElementById('file_carnet').addEventListener('change', function(e) {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const cvs = document.createElement('canvas'); const MAX = 800;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+                cvs.width = w; cvs.height = h;
+                cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+                const dataUrl = cvs.toDataURL('image/jpeg', 0.6);
+                document.getElementById('prev_carnet').src = dataUrl;
+                document.getElementById('prev_carnet').style.display = 'block';
+                base64Files['file_carnet'] = dataUrl.split(',')[1];
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // --- ENVÍO AL MOTOR ---
+    document.getElementById('uploadForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn'); const status = document.getElementById('status');
+        btn.disabled = true; btn.innerText = "Procesando...";
+
+        const formData = {
+            ciudad: document.getElementById('ciudad_firma').value,
+            nombre_visitante: document.getElementById('nombre').value.toUpperCase(),
+            rut_visitante: document.getElementById('rut').value,
+            email: document.getElementById('email').value,
+            domicilio_visitante: document.getElementById('domicilio').value,
+            foto_carnet_visitante: base64Files['file_carnet'],
+            foto_firma_visitante: canvas.toDataURL('image/png').split(',')[1],
+            url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
+            url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
+        };
+
+        // Recopilar hasta 5 propiedades
+        for(let i=1; i<=5; i++) {
+            formData['direccion_'+i] = document.getElementById('dir_'+i) ? document.getElementById('dir_'+i).value : "---";
+            formData['rol_'+i] = document.getElementById('rol_'+i) ? (document.getElementById('rol_'+i).value || "S/N") : "---";
+            formData['ciudad_'+i] = document.getElementById('ciu_'+i) ? document.getElementById('ciu_'+i).value : "---";
+        }
+
+        try {
+            // AQUÍ PEGARÁS LA URL DEL NUEVO MOTOR EN EL PASO 2
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzB4mwQjpt1z8xmHP5zMcHfcN0AUymZ_riX295yY-pA1LZlYnE6c4cbnwcLdXuOA1c6/exec"; 
+            
+            await fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(formData)
+            });
+            status.style.color = "green"; status.innerText = "✅ ¡Orden de Visita generada con éxito!";
+            btn.innerText = "ENVIADO";
+        } catch (error) {
+            status.style.color = "red"; status.innerText = "❌ Error al enviar."; btn.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>
