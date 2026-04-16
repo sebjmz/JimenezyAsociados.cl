@@ -517,7 +517,14 @@
                     <span class="pl-4 font-black text-blue-500 text-sm tracking-widest whitespace-nowrap shrink-0">+56 9</span>
                     <input type="tel" id="in-phone" required placeholder="1234-5678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm">
                 </div>
-
+                
+                <select id="in-service" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
+                    <option value="" disabled selected>Tipo de Operación</option>
+                    <option value="Venta">Venta</option>
+                    <option value="Arriendo">Arriendo</option>
+                    <option value="Administración">Administración</option>
+                </select>
+                
                 <select id="in-tipo" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                     <option value="" disabled selected>Tipo de Propiedad</option>
                     <option value="Casa">Casa</option>
@@ -585,7 +592,6 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 1. CONFIGURACIÓN
     const firebaseConfig = {
         apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
         authDomain: "jimenez-asociados-portal.firebaseapp.com",
@@ -603,141 +609,90 @@
 
     window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL, orderBy, limit };
 
-    // 2. FUNCIONES DE INTERFAZ
     window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
     window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
-    
     window.showMsg = (text) => {
         const box = document.getElementById('msg-box');
-        box.innerText = text;
-        box.style.display = 'block';
+        box.innerText = text; box.style.display = 'block';
         setTimeout(() => { box.style.display = 'none'; }, 3000);
     };
 
-    window.handleLogout = () => {
-        window.fb.signOut(window.fb.auth).then(() => {
-            window.location.href = 'ingresopartner.html';
-        }).catch(e => console.error("Error al salir:", e));
-    };
-
-    // 3. AUTENTICACIÓN Y CARGA
     onAuthStateChanged(window.fb.auth, (user) => {
-        if (!user) {
-            window.location.href = 'ingresopartner.html';
-        } else {
-            const partnerName = user.displayName || user.email.split('@')[0];
-            document.getElementById('partner-display').innerText = partnerName;
+        if (!user) { window.location.href = 'ingresopartner.html'; }
+        else {
+            document.getElementById('partner-display').innerText = user.displayName || user.email.split('@')[0];
             const myPartnerID = "JA-" + user.uid.substring(user.uid.length - 5).toUpperCase();
             document.getElementById('partner-id-display').querySelector('span').innerText = myPartnerID;
             document.getElementById('partner-id-display').classList.remove('opacity-0');
-            
             initLiveFeed();
             initDashboard(user.uid, user.email);
         }
     });
 
-    // 4. ENVÍO DE FORMULARIO (NUEVA REFERENCIA) - REVISADO
-    const formAdd = document.getElementById('form-add');
-    if (formAdd) {
-        formAdd.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log("Iniciando envío..."); // Ver en consola F12
-
-            const user = window.fb.auth.currentUser;
-            if (!user) return alert("Sesión expirada");
-
-            // Captura de datos
+    // --- ENVÍO DE FORMULARIO ---
+    document.getElementById('form-add').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = window.fb.auth.currentUser;
+        
+        try {
             const name = document.getElementById('in-name').value;
-            const rawPhone = document.getElementById('in-phone').value;
-            const phone = "+569" + rawPhone.replace(/\D/g, ''); // Limpia guion para la BD
-            
-            const service = document.getElementById('in-service').value;
+            const phone = "+569" + document.getElementById('in-phone').value.replace(/\D/g, '');
+            const service = document.getElementById('in-service').value; // Ahora sí existirá
             const tipo = document.getElementById('in-tipo').value;
             const comuna = document.getElementById('in-comuna').value;
+            const owner = document.getElementById('in-owner').value;
             const urgencia = document.getElementById('in-urgencia').value;
-            const owner = document.getElementById('in-owner').value; // El nuevo Rol
             const nota = document.getElementById('in-note').value.trim();
-            const partnerName = document.getElementById('partner-display').innerText;
 
-            try {
-                // Guardar en Firebase
-                await window.fb.addDoc(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
-                    name, phone, service, tipo, comuna, urgencia, owner,
-                    nota: nota || "Sin notas",
-                    partnerEmail: user.email,
-                    contactado: false, contrato: false, visitas: false,
-                    statusFinal: 'Validando',
-                    createdAt: window.fb.serverTimestamp()
-                });
+            await window.fb.addDoc(window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
+                name, phone, service, tipo, comuna, owner, urgencia, nota: nota || "Sin notas",
+                partnerEmail: user.email, contactado: false, contrato: false, visitas: false,
+                statusFinal: 'Validando', createdAt: window.fb.serverTimestamp()
+            });
 
-                // Preparar WhatsApp
-                const adminPhone = "56951134778"; 
-                const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
-                const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
+            const message = `*NUEVA GESTIÓN J&A*\n\n*Cliente:* ${name}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Rol:* ${owner}\n*Urgencia:* ${urgencia}\n*Nota:* ${nota || 'Sin notas'}`;
+            window.closeModal();
+            document.getElementById('form-add').reset();
+            window.showMsg("¡Registrado!");
+            setTimeout(() => { window.open(`https://wa.me/56951134778?text=${encodeURIComponent(message)}`, '_blank'); }, 1000);
+        } catch (err) { alert("Error al enviar: " + err.message); }
+    });
 
-                window.closeModal();
-                formAdd.reset();
-                window.showMsg("¡Dato registrado con éxito!");
-                
-                // Abrir WhatsApp después de un pequeño delay
-                setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1000);
-
-            } catch (err) {
-                console.error("Error al registrar:", err);
-                alert("Hubo un error al guardar: " + err.message);
-            }
-        });
-    }
-
-    // 5. LIMPIEZA DE TELÉFONO (LA QUE FUNCIONA FENÓMENO)
+    // --- TELÉFONO FENÓMENO ---
     const phoneInput = document.getElementById('in-phone');
     if (phoneInput) {
         phoneInput.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, ''); 
-            if (v.length > 8) v = v.slice(-8); 
-            if (v.length > 4) {
-                e.target.value = v.substring(0, 4) + '-' + v.substring(4, 8);
-            } else {
-                e.target.value = v;
-            }
-        });
-        phoneInput.addEventListener('paste', (e) => {
-            e.preventDefault();
-            let d = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-            if (d.length >= 8) d = d.slice(-8);
-            phoneInput.value = d;
-            phoneInput.dispatchEvent(new Event('input'));
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.slice(-8);
+            e.target.value = v.length > 4 ? v.substring(0, 4) + '-' + v.substring(4, 8) : v;
         });
     }
 
-    // 6. UTILIDADES (LIVE FEED Y DASHBOARD)
-    async function initLiveFeed() {
-        const q = window.fb.query(window.fb.collectionGroup(window.fb.db, 'referidos'), window.fb.orderBy('createdAt', 'desc'), window.fb.limit(5));
-        window.fb.onSnapshot(q, (snapshot) => {
-            if (snapshot.empty) return;
-            const ticker = document.getElementById('live-ticker');
-            let feedHtml = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                feedHtml += `<div class="flex items-center gap-3"><span class="text-[11px] font-black text-white uppercase">${data.tipo || 'Propiedad'}</span><span class="mx-6 text-white/10">|</span></div>`;
-            });
-            ticker.innerHTML = feedHtml + feedHtml;
-        });
-    }
-
+    // --- CARGA DE TABLA (DASHBOARD) ---
     async function initDashboard(uid, userEmail) {
-        // ... (Tu lógica de carga de tabla se mantiene igual, este bloque es para no saturar)
+        const container = document.getElementById('leads-body');
+        const q = query(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', uid, 'referidos'));
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) { container.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-gray-500 italic">No hay datos.</td></tr>'; return; }
+            let html = "";
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                html += `<tr class="border-b border-white/5"><td class="px-8 py-4 font-bold">${item.name}<br><span class="text-[10px] text-blue-500">${item.service}</span></td><td class="px-8 py-4 text-center">${item.statusFinal}</td><td class="px-8 py-4 text-right">${item.comuna}</td></tr>`;
+            });
+            container.innerHTML = html;
+        });
     }
 
-    window.copyInviteLink = () => {
-        const user = window.fb.auth.currentUser;
-        if (!user) return;
-        const folderPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-        const inviteUrl = `${window.location.origin}${folderPath}registrate.html?ref=${encodeURIComponent(user.email)}`;
-        navigator.clipboard.writeText(`¡Únete a J&A! Regístrate aquí: ${inviteUrl}`).then(() => {
-            window.showMsg("¡Link copiado!");
+    async function initLiveFeed() {
+        const q = query(collectionGroup(window.fb.db, 'referidos'), orderBy('createdAt', 'desc'), limit(5));
+        onSnapshot(q, (snapshot) => {
+            const ticker = document.getElementById('live-ticker');
+            if (!ticker || snapshot.empty) return;
+            let feed = "";
+            snapshot.forEach(d => { feed += `<span class="mx-4 text-[10px] font-black uppercase text-blue-400">${d.data().tipo} en ${d.data().comuna} |</span>`; });
+            ticker.innerHTML = feed + feed;
         });
-    };
+    }
 </script>
 </body>
 </html>
