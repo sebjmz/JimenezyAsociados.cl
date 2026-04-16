@@ -29,7 +29,7 @@
         <div class="form-group"><label>Tipo de Contrato</label><select id="tipo_orden" required><option value="EXCLUSIVA">Venta Exclusiva</option><option value="NO EXCLUSIVA">Venta NO Exclusiva</option></select></div>
         <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
         <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
-        <div class="form-group"><label>Email para envío de copia</label><input type="email" id="in-destinatario-email" autocomplete="off" placeholder="Solo para enviar el PDF" required></div>        
+        <div class="form-group"><label>Email para envío de copia</label><input type="text" id="in-pdf-destino" name="in-pdf-destino" autocomplete="off" placeholder="Dirección de envío" required></div>        
         <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
         <div class="form-group"><label>Ciudad</label><input type="text" id="ciudad" placeholder="Ej: Viña del Mar, Concón, Valparaíso" required></div>
 
@@ -185,7 +185,7 @@
             tipo_orden: document.getElementById('tipo_orden').value,
             nombre: document.getElementById('nombre').value.toUpperCase(),
             rut: document.getElementById('rut').value,
-            email: document.getElementById('in-destinatario-email').value,
+            email: document.getElementById('in-pdf-destino').value,            
             domicilio_mandante: document.getElementById('domicilio').value,
             direccion: document.getElementById('direccion').value,
             ciudad: document.getElementById('ciudad').value,
