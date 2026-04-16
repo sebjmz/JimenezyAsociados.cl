@@ -39,9 +39,11 @@
         <h3>Propiedades a Visitar</h3>
         <div id="propiedades-container">
             <div class="prop-box" id="prop_1">
-                <label>1. Dirección Completa</label><input type="text" id="dir_1" required style="margin-bottom: 8px;">
-                <label>Rol (Opcional)</label><input type="text" id="rol_1" placeholder="Ej: 123-45" style="margin-bottom: 8px;">
-                <label>Comuna/Ciudad</label><input type="text" id="ciu_1" required>
+                <label>1. Propiedad</label>
+                <input type="text" id="dir_1" placeholder="Dirección Completa" required style="margin-bottom: 8px;">
+                <input type="text" id="ciu_1" placeholder="Ciudad / Comuna" required style="margin-bottom: 8px;">
+                <input type="text" id="precio_1" placeholder="Precio (Ej: UF 4.500)" style="margin-bottom: 8px;">
+                <input type="text" id="notas_1" placeholder="Notas (Ej: 3D 2B, Amoblado)">
             </div>
         </div>
         <button type="button" class="btn-add" id="btn-add-prop">+ Agregar otra propiedad (Máx. 5)</button>
@@ -87,9 +89,11 @@
             propCount++;
             const html = `
                 <div class="prop-box" id="prop_${propCount}">
-                    <label>${propCount}. Dirección Completa</label><input type="text" id="dir_${propCount}" style="margin-bottom: 8px;">
-                    <label>Rol (Opcional)</label><input type="text" id="rol_${propCount}" style="margin-bottom: 8px;">
-                    <label>Comuna/Ciudad</label><input type="text" id="ciu_${propCount}">
+                    <label>${propCount}. Propiedad</label>
+                    <input type="text" id="dir_${propCount}" placeholder="Dirección Completa" style="margin-bottom: 8px;">
+                    <input type="text" id="ciu_${propCount}" placeholder="Ciudad / Comuna" style="margin-bottom: 8px;">
+                    <input type="text" id="precio_${propCount}" placeholder="Precio (Ej: UF 4.500)" style="margin-bottom: 8px;">
+                    <input type="text" id="notas_${propCount}" placeholder="Notas (Ej: 3D 2B, Amoblado)">
                 </div>`;
             document.getElementById('propiedades-container').insertAdjacentHTML('beforeend', html);
             document.getElementById('resumen-total').innerText = propCount;
@@ -162,16 +166,17 @@
             url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
         };
 
-        // Recopilar hasta 5 propiedades
+        // Recopilar hasta 5 propiedades incluyendo las notas
         for(let i=1; i<=5; i++) {
             formData['direccion_'+i] = document.getElementById('dir_'+i) ? document.getElementById('dir_'+i).value : "---";
-            formData['rol_'+i] = document.getElementById('rol_'+i) ? (document.getElementById('rol_'+i).value || "S/N") : "---";
             formData['ciudad_'+i] = document.getElementById('ciu_'+i) ? document.getElementById('ciu_'+i).value : "---";
+            formData['precio_'+i] = document.getElementById('precio_'+i) ? (document.getElementById('precio_'+i).value || "---") : "---";
+            formData['notas_'+i] = document.getElementById('notas_'+i) ? (document.getElementById('notas_'+i).value || "---") : "---";
         }
 
         try {
             // AQUÍ PEGARÁS LA URL DEL NUEVO MOTOR EN EL PASO 2
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzB4mwQjpt1z8xmHP5zMcHfcN0AUymZ_riX295yY-pA1LZlYnE6c4cbnwcLdXuOA1c6/exec"; 
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5DcCTkTyJuc4poPhfW2ZthCSTyh-Urj3npWrbXzIJuAoU1WCtKCD-G_pvE-fvab5r/exec"; 
             
             await fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
