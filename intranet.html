@@ -610,46 +610,62 @@
     window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL, orderBy, limit };
 
     // 2. FUNCIONES DE INTERFAZ (UI)
+    window.handleLogout = () => {
+        signOut(auth).then(() => {
+            window.location.href = 'ingresopartner.html';
+        }).catch(e => console.error("Error al salir:", e));
+    };
+
     window.switchIntranetTab = (tab) => {
         const isAcademia = tab === 'academia';
         document.getElementById('view-academia').classList.toggle('hidden', !isAcademia);
         document.getElementById('view-gestiones').classList.toggle('hidden', isAcademia);
+        
         const btnGest = document.getElementById('tab-gestiones');
         const btnAcad = document.getElementById('tab-academia');
+        
         if(isAcademia) {
             btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
             btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
-            // Aquí llamarías a loadLeaderboard si lo tienes definido
+            if (typeof loadLeaderboard === 'function') loadLeaderboard(); 
         } else {
             btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
             btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
         }
     };
 
+    window.copyScript = (text) => {
+        navigator.clipboard.writeText(text);
+        window.showMsg("¡Script copiado! Pégalo en WhatsApp.");
+    };
+
     window.openModal = () => document.getElementById('modal-nuevo').classList.remove('hidden');
     window.closeModal = () => document.getElementById('modal-nuevo').classList.add('hidden');
+    
     window.showMsg = (text) => {
         const box = document.getElementById('msg-box');
-        box.innerText = text; box.style.display = 'block';
+        box.innerText = text;
+        box.style.display = 'block';
         setTimeout(() => { box.style.display = 'none'; }, 3000);
     };
 
-    // 3. LÓGICA DE DASHBOARD Y TABLA PROFESIONAL (RESTURADA AL 100%)
+    // 3. LÓGICA DE DASHBOARD (7 Columnas, Barras de Progreso y Multinivel)
     async function initDashboard(uid, userEmail) {
         const container = document.getElementById('leads-body');
         try {
             container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
-            
+
             const profilesSnap = await getDocs(collectionGroup(db, 'profile'));
             let redL1 = [], redL2 = [], emailsL1 = [];
             
             profilesSnap.forEach(docSnap => {
                 const data = docSnap.data();
-                if (data.sponsorEmail?.toLowerCase() === userEmail.toLowerCase()) {
+                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
                     redL1.push(docSnap.ref.parent.parent.id); 
                     if(data.email) emailsL1.push(data.email.toLowerCase());
                 }
             });
+            
             profilesSnap.forEach(docSnap => {
                 const data = docSnap.data();
                 if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
@@ -664,6 +680,7 @@
                     container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-gray-500 italic">Aún no hay gestiones activas.</td></tr>';
                     return;
                 }
+
                 todosLosReferidos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
                 let html = "";
@@ -678,25 +695,25 @@
                                     (item.comision.includes('7%') ? "bg-purple-600/20 text-purple-400 border-purple-500/30" : "bg-pink-600/20 text-pink-400 border-pink-500/30");
 
                     html += `
-                    <tr class="hover:bg-white/5 transition border-b border-white/5 group">
-                        <td class="px-8 py-6">
-                            <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
-                            <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'} de ${item.tipo || 'Propiedad'}</div>
-                        </td>
-                        <td class="px-8 py-6 min-w-[120px]">
-                            <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400"><span>${progress}%</span></div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                        </td>
-                        <td class="px-8 py-6 text-center">
-                            <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
-                        </td>
-                        <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
-                        <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
-                        <td class="px-8 py-6 text-center"><i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i></td>
-                        <td class="px-8 py-6 text-right">
-                            <span class="text-[10px] text-gray-500 font-black uppercase italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'Validando'}</span>
-                        </td>
-                    </tr>`;
+                        <tr class="hover:bg-white/5 transition border-b border-white/5 group">
+                            <td class="px-8 py-6">
+                                <div class="font-bold text-white text-base">${item.name || 'Sin Nombre'}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-black italic tracking-widest">${item.service || 'Venta'} de ${item.tipo || 'Propiedad'}</div>
+                            </td>
+                            <td class="px-8 py-6 min-w-[120px]">
+                                <div class="flex justify-between items-center mb-1 text-[9px] font-bold text-gray-400"><span>${progress}%</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
+                            </td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-center"><i class="fa-solid ${item.visitas ? 'fa-users text-purple-500' : 'fa-users text-gray-800'} text-xl"></i></td>
+                            <td class="px-8 py-6 text-right">
+                                <span class="text-[10px] text-gray-500 font-black uppercase italic bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">${item.statusFinal || 'Validando'}</span>
+                            </td>
+                        </tr>`;
                 });
                 container.innerHTML = html;
             };
@@ -707,7 +724,8 @@
                     todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
                     snapshot.forEach(docSnap => {
                         const item = docSnap.data();
-                        item.uid = targetUid; item.comision = tipoComision;
+                        item.uid = targetUid; 
+                        item.comision = tipoComision;
                         todosLosReferidos.push(item);
                     });
                     pintarTabla();
@@ -717,57 +735,110 @@
             escucharColeccion(uid, '20% (Propio)');
             redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
             redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
-        } catch(e) { console.error(e); }
+
+        } catch (err) { console.error("Error Dashboard:", err); }
     }
 
-    // 4. ENVÍO DE FORMULARIO (MANTENIENDO TODOS LOS CAMPOS)
-    document.getElementById('form-add').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        try {
+    // 4. ENVÍO DE FORMULARIO (NUEVA REFERENCIA)
+    const formAdd = document.getElementById('form-add');
+    if (formAdd) {
+        formAdd.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
             const name = document.getElementById('in-name').value;
             const phone = "+569" + document.getElementById('in-phone').value.replace(/\D/g, '');
             const service = document.getElementById('in-service').value;
             const tipo = document.getElementById('in-tipo').value;
             const comuna = document.getElementById('in-comuna').value;
-            const owner = document.getElementById('in-owner').value; // El nuevo Rol
             const urgencia = document.getElementById('in-urgencia').value;
+            const owner = document.getElementById('in-owner').value;
             const nota = document.getElementById('in-note').value.trim();
             const partnerName = document.getElementById('partner-display').innerText;
 
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'), {
-                name, phone, service, tipo, comuna, owner, urgencia, nota: nota || "Sin notas",
-                partnerEmail: user.email, contactado: false, contrato: false, visitas: false,
-                statusFinal: 'Validando', createdAt: serverTimestamp()
-            });
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'), {
+                    name, phone, service, tipo, comuna, urgencia, owner,
+                    nota: nota || "Sin notas",
+                    partnerEmail: user.email,
+                    contactado: false, contrato: false, visitas: false,
+                    statusFinal: 'Validando',
+                    createdAt: serverTimestamp()
+                });
 
-            const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas'}`;
-            window.closeModal();
-            document.getElementById('form-add').reset();
-            window.showMsg("¡Dato registrado!");
-            setTimeout(() => { window.open(`https://wa.me/56951134778?text=${encodeURIComponent(messageText)}`, '_blank'); }, 1000);
-        } catch (err) { alert("Error: " + err.message); }
-    });
+                const adminPhone = "56951134778"; 
+                const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
+                const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
-    // 5. LIMPIEZA DE TELÉFONO (LOGICA "FENÓMENO" DE LOS ÚLTIMOS 8)
-    const phoneInput = document.getElementById('in-phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, ''); 
-            if (v.length > 8) v = v.slice(-8); 
-            e.target.value = v.length > 4 ? v.substring(0, 4) + '-' + v.substring(4, 8) : v;
+                window.closeModal();
+                formAdd.reset();
+                window.showMsg("¡Dato registrado!");
+                setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1000);
+            } catch (err) { alert("Error al registrar: " + err.message); }
         });
     }
 
-    // 6. AUTENTICACIÓN
+    // 5. LIMPIEZA DE TELÉFONO (Últimos 8 Dígitos)
+    const phoneInput = document.getElementById('in-phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.slice(-8); 
+            e.target.value = v.length > 4 ? v.substring(0, 4) + '-' + v.substring(4, 8) : v;
+        });
+        phoneInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            let d = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+            if (d.length >= 8) d = d.slice(-8);
+            phoneInput.value = d;
+            phoneInput.dispatchEvent(new Event('input'));
+        });
+    }
+
+    // 6. AUTENTICACIÓN Y CARGA INICIAL
     onAuthStateChanged(auth, (user) => {
-        if (!user) { window.location.href = 'ingresopartner.html'; }
-        else {
-            document.getElementById('partner-display').innerText = user.displayName || user.email.split('@')[0];
+        if (!user) {
+            window.location.href = 'ingresopartner.html';
+        } else {
+            const partnerName = user.displayName || user.email.split('@')[0];
+            document.getElementById('partner-display').innerText = partnerName;
+            
             const myPartnerID = "JA-" + user.uid.substring(user.uid.length - 5).toUpperCase();
-            document.getElementById('partner-id-display').querySelector('span').innerText = myPartnerID;
-            document.getElementById('partner-id-display').classList.remove('opacity-0');
+            const idBox = document.getElementById('partner-id-display');
+            idBox.querySelector('span').innerText = myPartnerID;
+            idBox.classList.remove('opacity-0');
+            
             initDashboard(user.uid, user.email);
+            initLiveFeed();
         }
     });
+
+    async function initLiveFeed() {
+        const q = query(collectionGroup(db, 'referidos'), orderBy('createdAt', 'desc'), limit(5));
+        onSnapshot(q, (snapshot) => {
+            const ticker = document.getElementById('live-ticker');
+            if(!ticker || snapshot.empty) return;
+            document.getElementById('live-feed-container').classList.remove('hidden');
+            let feedHtml = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                feedHtml += `<div class="flex items-center gap-3"><span class="text-[11px] font-black text-white uppercase">${data.tipo || 'Propiedad'}</span><span class="mx-6 text-white/10">|</span></div>`;
+            });
+            ticker.innerHTML = feedHtml + feedHtml;
+        });
+    }
+
+    window.copyInviteLink = () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        const folderPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        const inviteUrl = `${window.location.origin}${folderPath}registrate.html?ref=${encodeURIComponent(user.email)}`;
+        navigator.clipboard.writeText(`¡Únete a J&A! Regístrate aquí: ${inviteUrl}`).then(() => {
+            window.showMsg("¡Link de registro copiado!");
+        });
+    };
 </script>
+</body>
+</html>
+    
