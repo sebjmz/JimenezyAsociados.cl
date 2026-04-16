@@ -41,6 +41,16 @@
         <div class="form-group"><label>Rol de Avalúo</label><input type="text" id="rol" placeholder="Ej: 1234-56"></div>
         <div class="form-group"><label>Precio de Venta (UF)</label><input type="number" id="precio" required></div>
 
+        <div style="background: #eaf0f6; border-left: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.9rem; color: #444;">
+            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px; font-size: 1rem;">📋 Resumen del Acuerdo</h4>
+            <p style="margin: 5px 0;"><strong>Propiedad:</strong> <span id="resumen-dir">...</span></p>
+            <p style="margin: 5px 0;"><strong>Precio de Venta:</strong> UF <span id="resumen-precio">...</span></p>
+            <p style="margin: 5px 0;"><strong>Tipo de Gestión:</strong> Venta <span id="resumen-tipo">EXCLUSIVA</span></p>
+            <p style="margin: 5px 0;"><strong>Vigencia:</strong> 90 días corridos (renovables).</p>
+            <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+            <p style="margin: 0; font-size: 0.8rem; color: #666;"><em>* Al firmar a continuación, usted autoriza a Jiménez & Asociados a comercializar esta propiedad bajo estas condiciones. Una copia legal completa llegará automáticamente a su correo electrónico.</em></p>
+        </div>
+        
         <h3>Firmas y Documentación</h3>
         <div class="form-group">
             <label>Foto Cédula de Identidad</label>
@@ -142,6 +152,25 @@
         reader.readAsDataURL(file);
     });
 
+    // Actualización del Resumen en Tiempo Real
+    const inputDir = document.getElementById('direccion');
+    const inputPrecio = document.getElementById('precio');
+    const inputTipo = document.getElementById('tipo_orden'); // Asumiendo que agregaste este campo antes
+
+    inputDir.addEventListener('input', () => {
+        document.getElementById('resumen-dir').innerText = inputDir.value || '...';
+    });
+    
+    inputPrecio.addEventListener('input', () => {
+        document.getElementById('resumen-precio').innerText = inputPrecio.value || '...';
+    });
+
+    if(inputTipo) {
+        inputTipo.addEventListener('change', () => {
+            document.getElementById('resumen-tipo').innerText = inputTipo.value;
+        });
+    }
+    
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
