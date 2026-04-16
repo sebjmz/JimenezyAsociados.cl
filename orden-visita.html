@@ -34,11 +34,8 @@
         <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
         <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
         
-        <div class="form-group">
-            <label>Email para copia</label>
-            <input type="text" id="in-copia-email" autocomplete="off" placeholder="Dirección para el PDF" required>
-        </div>
-
+        <div class="form-group"><label>Email para copia</label><input type="text" id="in-pdf-destino" autocomplete="off" placeholder="Dirección para el PDF" required></div>
+        
         <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
 
         <h3>Propiedades a Visitar</h3>
@@ -92,14 +89,7 @@
     document.getElementById('btn-add-prop').addEventListener('click', () => {
         if(propCount < 5) {
             propCount++;
-            const html = `
-                <div class="prop-box" id="prop_${propCount}">
-                    <label>${propCount}. Propiedad</label>
-                    <input type="text" id="dir_${propCount}" placeholder="Dirección Completa" style="margin-bottom: 8px;">
-                    <input type="text" id="ciu_${propCount}" placeholder="Ciudad / Comuna" style="margin-bottom: 8px;">
-                    <input type="text" id="precio_${propCount}" placeholder="Precio (Ej: UF 4.500)" style="margin-bottom: 8px;">
-                    <input type="text" id="notas_${propCount}" placeholder="Notas (Ej: 3D 2B, Amoblado)">
-                </div>`;
+            const html = `<div class="prop-box" id="prop_${propCount}"><label>${propCount}. Propiedad</label><input type="text" id="dir_${propCount}" placeholder="Dirección Completa" style="margin-bottom: 8px;"><input type="text" id="ciu_${propCount}" placeholder="Ciudad / Comuna" style="margin-bottom: 8px;"><input type="text" id="precio_${propCount}" placeholder="Precio (Ej: UF 4.500)" style="margin-bottom: 8px;"><input type="text" id="notas_${propCount}" placeholder="Notas (Ej: 3D 2B, Amoblado)"></div>`;
             document.getElementById('propiedades-container').insertAdjacentHTML('beforeend', html);
             document.getElementById('resumen-total').innerText = propCount;
         }
@@ -130,59 +120,65 @@
     canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    // --- COMPRESIÓN DE FOTO (CREATIVIDAD: DECODIFICACIÓN NATIVA) ---
-    const base64Files = {};
-    document.getElementById('file_carnet').addEventListener('change', async function(e) {
-        const file = e.target.files[0]; if(!file) return;
+    // --- LA SOLUCIÓN CREATIVA: CARGA DIFERIDA ---
+    let rawFile = null;
+    document.getElementById('file_carnet').addEventListener('change', function(e) {
+        rawFile = e.target.files[0]; 
+        if(!rawFile) return;
 
-        const container = e.target.parentElement;
-        container.innerHTML = "⏳ <span style='color:blue'>OPTIMIZANDO MEMORIA...</span>";
-
-        try {
-            // El secreto: Redimensionar ANTES de cargar en la RAM. 
-            // Esto evita que el móvil colapse con fotos de muchos megapíxeles.
-            const bitmap = await createImageBitmap(file, { resizeWidth: 600 });
-            
-            const cvs = document.createElement('canvas');
-            cvs.width = bitmap.width;
-            cvs.height = bitmap.height;
-            
-            const tempCtx = cvs.getContext('2d');
-            tempCtx.drawImage(bitmap, 0, 0);
-
-            // Calidad 0.4 para asegurar que el envío sea liviano
-            const dataUrl = cvs.toDataURL('image/jpeg', 0.4);
-            
-            document.getElementById('prev_carnet').src = dataUrl;
-            document.getElementById('prev_carnet').style.display = 'block';
-            base64Files['file_carnet'] = dataUrl.split(',')[1];
-
-            // LIBERACIÓN TOTAL INMEDIATA
-            bitmap.close();
-            cvs.width = cvs.height = 0; 
-            
-            container.innerHTML = "✅ FOTO LISTA";
-            container.style.background = "#e7f3ef";
-        } catch (err) {
-            console.error(err);
-            alert("Error de memoria. Intenta cerrar otras aplicaciones abiertas en tu celular.");
-            container.innerHTML = "📸 Reintentar Foto";
-        }
+        // Mostramos preview usando BlobURL (Cuesta 0 de RAM)
+        const preview = document.getElementById('prev_carnet');
+        preview.src = URL.createObjectURL(rawFile);
+        preview.style.display = 'block';
+        
+        // Feedback visual
+        e.target.parentElement.innerHTML = "✅ FOTO CAPTURADA (Se procesará al enviar)";
+        e.target.parentElement.style.background = "#e7f3ef";
     });
 
-    // --- ENVÍO ---
+    // --- COMPRESIÓN SOLO AL ENVIAR (ULTRAMEMORY SAVER) ---
+    async function compressImage(file) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const cvs = document.createElement('canvas');
+                const MAX = 800;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+                cvs.width = w; cvs.height = h;
+                const tempCtx = cvs.getContext('2d');
+                tempCtx.drawImage(img, 0, 0, w, h);
+                const data = cvs.toDataURL('image/jpeg', 0.4).split(',')[1];
+                
+                // Limpieza total antes de salir de la función
+                URL.revokeObjectURL(img.src);
+                cvs.width = cvs.height = 0;
+                resolve(data);
+            };
+        });
+    }
+
+    // --- ENVÍO AL MOTOR ---
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn'); const status = document.getElementById('status');
-        btn.disabled = true; btn.innerText = "Procesando...";
+        if(!rawFile) { alert("Por favor, toma la foto del carnet."); return; }
+
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+        btn.disabled = true; 
+        btn.innerText = "COMPRIMIENDO Y ENVIANDO...";
+
+        // Comprimimos justo antes de mandar (aquí es el único pico de RAM)
+        const fotoBase64 = await compressImage(rawFile);
 
         const formData = {
             ciudad: document.getElementById('ciudad_firma').value,
             nombre_visitante: document.getElementById('nombre').value.toUpperCase(),
             rut_visitante: document.getElementById('rut').value,
-            email: document.getElementById('in-copia-email').value, // ID actualizado
+            email: document.getElementById('in-pdf-destino').value,
             domicilio_visitante: document.getElementById('domicilio').value,
-            foto_carnet_visitante: base64Files['file_carnet'],
+            foto_carnet_visitante: fotoBase64,
             foto_firma_visitante: canvas.toDataURL('image/png').split(',')[1],
             url_firma_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/firma.png",
             url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
