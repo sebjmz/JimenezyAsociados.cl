@@ -768,9 +768,9 @@
                 });
 
                 const adminPhone = "56951134778"; 
-                const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
+                const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name} (${owner})\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
                 const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
-
+                
                 window.closeModal();
                 formAdd.reset();
                 window.showMsg("¡Dato registrado!");
