@@ -33,7 +33,12 @@
         <div class="form-group"><label>Ciudad donde se firma</label><input type="text" id="ciudad_firma" placeholder="Ej: Viña del Mar" required></div>
         <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
         <div class="form-group"><label>RUT</label><input type="text" id="rut" required></div>
-        <div class="form-group"><label>Email para copia</label><input type="email" id="email" required></div>
+        
+        <div class="form-group">
+            <label>Email para copia</label>
+            <input type="text" id="in-copia-email" autocomplete="off" placeholder="Dirección para el PDF" required>
+        </div>
+
         <div class="form-group"><label>Domicilio Particular</label><input type="text" id="domicilio" required></div>
 
         <h3>Propiedades a Visitar</h3>
@@ -82,7 +87,7 @@
 </div>
 
 <script>
-    // --- LÓGICA DE PROPIEDADES DINÁMICAS ---
+    // --- LÓGICA DE PROPIEDADES ---
     let propCount = 1;
     document.getElementById('btn-add-prop').addEventListener('click', () => {
         if(propCount < 5) {
@@ -105,7 +110,7 @@
         document.getElementById('resumen-nombre').innerText = e.target.value.toUpperCase() || '...';
     });
 
-    // --- LÓGICA DE PIZARRA DIGITAL ---
+    // --- LÓGICA DE FIRMA ---
     const canvas = document.getElementById('signature-pad');
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -125,56 +130,47 @@
     canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    // --- COMPRESIÓN DE FOTO (VERSIÓN ULTRA-LIGERA) ---
+    // --- COMPRESIÓN DE FOTO (CREATIVIDAD: DECODIFICACIÓN NATIVA) ---
     const base64Files = {};
-    document.getElementById('file_carnet').addEventListener('change', function(e) {
+    document.getElementById('file_carnet').addEventListener('change', async function(e) {
         const file = e.target.files[0]; if(!file) return;
 
-        // Solución Creativa: Feedback visual para que el usuario no toque nada mientras el procesador trabaja
         const container = e.target.parentElement;
-        const originalContent = container.innerHTML;
-        container.innerHTML = "⏳ <span style='color:blue'>PROCESANDO IMAGEN... ESPERA.</span>";
-        container.style.pointerEvents = "none";
+        container.innerHTML = "⏳ <span style='color:blue'>OPTIMIZANDO MEMORIA...</span>";
 
-        const img = new Image();
-        // Cambiamos FileReader por ObjectURL (Ahorra un 70% de memoria RAM inicial)
-        const blobUrl = URL.createObjectURL(file);
+        try {
+            // El secreto: Redimensionar ANTES de cargar en la RAM. 
+            // Esto evita que el móvil colapse con fotos de muchos megapíxeles.
+            const bitmap = await createImageBitmap(file, { resizeWidth: 600 });
+            
+            const cvs = document.createElement('canvas');
+            cvs.width = bitmap.width;
+            cvs.height = bitmap.height;
+            
+            const tempCtx = cvs.getContext('2d');
+            tempCtx.drawImage(bitmap, 0, 0);
 
-        img.onload = function() {
-            const cvs = document.createElement('canvas'); 
-            const MAX = 800; 
-            let w = img.width, h = img.height;
-
-            if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } 
-            else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-
-            cvs.width = w; cvs.height = h;
-            const ctx = cvs.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-
-            // Bajamos calidad de 0.6 a 0.5 (Imperceptible al ojo, pero mucho más liviano para la RAM)
-            const dataUrl = cvs.toDataURL('image/jpeg', 0.5); 
+            // Calidad 0.4 para asegurar que el envío sea liviano
+            const dataUrl = cvs.toDataURL('image/jpeg', 0.4);
             
             document.getElementById('prev_carnet').src = dataUrl;
             document.getElementById('prev_carnet').style.display = 'block';
             base64Files['file_carnet'] = dataUrl.split(',')[1];
 
-            // Limpieza crítica de memoria
-            URL.revokeObjectURL(blobUrl); 
-            container.innerHTML = "✅ FOTO CARGADA CON ÉXITO";
+            // LIBERACIÓN TOTAL INMEDIATA
+            bitmap.close();
+            cvs.width = cvs.height = 0; 
+            
+            container.innerHTML = "✅ FOTO LISTA";
             container.style.background = "#e7f3ef";
-        };
-
-        img.onerror = function() {
-            alert("Error de memoria al procesar. Intenta con una foto de menor resolución o reinicia el navegador.");
-            container.innerHTML = originalContent;
-            container.style.pointerEvents = "auto";
-        };
-
-        img.src = blobUrl;
+        } catch (err) {
+            console.error(err);
+            alert("Error de memoria. Intenta cerrar otras aplicaciones abiertas en tu celular.");
+            container.innerHTML = "📸 Reintentar Foto";
+        }
     });
 
-    // --- ENVÍO AL MOTOR ---
+    // --- ENVÍO ---
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn'); const status = document.getElementById('status');
@@ -184,7 +180,7 @@
             ciudad: document.getElementById('ciudad_firma').value,
             nombre_visitante: document.getElementById('nombre').value.toUpperCase(),
             rut_visitante: document.getElementById('rut').value,
-            email: document.getElementById('email').value,
+            email: document.getElementById('in-copia-email').value, // ID actualizado
             domicilio_visitante: document.getElementById('domicilio').value,
             foto_carnet_visitante: base64Files['file_carnet'],
             foto_firma_visitante: canvas.toDataURL('image/png').split(',')[1],
@@ -192,7 +188,6 @@
             url_carnet_sebas: "https://raw.githubusercontent.com/sebjmz/JimenezyAsociados.cl/main/img/20260415_133801.jpg"
         };
 
-        // Recopilar hasta 5 propiedades incluyendo las notas
         for(let i=1; i<=5; i++) {
             formData['direccion_'+i] = document.getElementById('dir_'+i) ? document.getElementById('dir_'+i).value : "---";
             formData['ciudad_'+i] = document.getElementById('ciu_'+i) ? document.getElementById('ciu_'+i).value : "---";
@@ -201,9 +196,7 @@
         }
 
         try {
-            // AQUÍ PEGARÁS LA URL DEL NUEVO MOTOR EN EL PASO 2
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGTzy2jlwmz-zL2lzlhdKWTEFe50XglGVbAtuopQtIbyuqM4AVLM7hjx7eGC28l-Nx/exec"; 
-            
             await fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain' },
