@@ -134,6 +134,7 @@
                                     <div>
                                         <div class="font-bold text-white text-base">${data.name || 'Sin Nombre'} <span class="text-[9px] bg-white/10 px-2 py-0.5 rounded ml-2 font-normal">${data.owner || 'N/D'}</span></div>
                                         <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">${data.service} • ${data.tipo || 'N/D'} • ${data.comuna || 'N/D'}</div>
+                                        <div class="text-[9px] text-blue-300 font-bold uppercase mt-1">ROL: ${data.owner || 'No definido'} </div>
                                         <div class="text-[9px] text-gray-500 uppercase font-bold mt-0.5">Urgencia: <span class="${data.urgencia === 'Alta' ? 'text-red-400' : data.urgencia === 'Media' ? 'text-yellow-400' : 'text-green-400'}">${data.urgencia || 'N/D'}</span> • Hace ${dias} d</div>
                                         <div class="text-[9px] text-blue-500/50 uppercase font-black italic mt-1">Partner: ${data.partnerEmail || 'S/N'}</div>
                                     </div>
