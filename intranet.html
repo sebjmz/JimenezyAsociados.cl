@@ -517,6 +517,7 @@
                     <span class="pl-4 font-black text-blue-500 text-sm tracking-widest whitespace-nowrap shrink-0">+56 9</span>
                     <input type="tel" id="in-phone" required maxlength="9" placeholder="1234-5678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm" oninput="let v = this.value.replace(/\D/g, ''); if(v.length > 4) v = v.substring(0,4) + '-' + v.substring(4,8); this.value = v;">
                 </div>
+                
                 <select id="in-owner" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                     <option value="" disabled selected>Relación del Cliente con la Propiedad</option>
                     <option value="Vendedor">Vendedor (Dueño vende)</option>
@@ -571,11 +572,6 @@
                     <option value="Alta">Alta (Urgencia por cerrar)</option>
                 </select>
 
-                <select id="in-owner" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
-                    <option value="" disabled selected>¿Es el Propietario Directo?</option>
-                    <option value="Sí, propietario">Sí, es el dueño directo</option>
-                    <option value="No, representante">No, es un familiar o representante</option>
-                </select>
                 <textarea id="in-note" maxlength="150" placeholder="Nota adicional (Ej: Horario para llamar, detalles de la propiedad...)" rows="2" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm resize-none"></textarea>
                 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-black text-lg transition shadow-xl shadow-blue-900/40 uppercase italic mt-2">
