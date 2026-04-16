@@ -515,7 +515,7 @@
                 <input type="text" id="in-name" required maxlength="60" placeholder="Nombre y Apellido del Cliente" class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
                 <div class="flex items-center w-full bg-[#0f172a] border border-white/10 rounded-xl focus-within:border-blue-500 transition overflow-hidden">
                     <span class="pl-4 font-black text-blue-500 text-sm tracking-widest whitespace-nowrap shrink-0">+56 9</span>
-                    <input type="tel" id="in-phone" required maxlength="9" placeholder="1234-5678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm" oninput="let v = this.value.replace(/\D/g, ''); if(v.length > 4) v = v.substring(0,4) + '-' + v.substring(4,8); this.value = v;">
+                    <input type="tel" id="in-phone" required placeholder="1234-5678" class="w-full bg-transparent p-4 focus:outline-none text-white font-bold text-sm">
                 </div>
 
                 <select id="in-tipo" required class="w-full bg-[#0f172a] border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold text-sm">
@@ -825,10 +825,10 @@
         e.preventDefault();
         const user = window.fb.auth.currentUser;
         const name = document.getElementById('in-name').value;
+        // Aquí limpiamos el guion antes de enviar a la base de datos
         const phone = "+569" + document.getElementById('in-phone').value.replace(/\D/g, '');
         const service = document.getElementById('in-service').value;
         
-        // --- NUEVOS CAMPOS ---
         const tipo = document.getElementById('in-tipo').value;
         const comuna = document.getElementById('in-comuna').value;
         const urgencia = document.getElementById('in-urgencia').value;
@@ -837,7 +837,8 @@
         const partnerName = document.getElementById('partner-display').innerText;
 
         try {
-            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {name, phone, service, tipo, comuna, urgencia, owner, // <--- Este campo ahora guardará "Vendedor", "Comprador", etc.
+            await window.fb.addDoc(collection(window.fb.db, 'artifacts', window.fb.appId, 'users', user.uid, 'referidos'), {
+                name, phone, service, tipo, comuna, urgencia, owner,
                 nota: nota || "Sin notas",
                 partnerEmail: user.email,
                 contactado: false, contrato: false, visitas: false,
@@ -846,7 +847,6 @@
             });
 
             const adminPhone = "56951134778"; 
-            // Busca esta línea dentro del listener de 'form-add'
             const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name}\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Rol:* ${owner}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
             const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
 
@@ -857,24 +857,59 @@
             setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1500);
         } catch (err) { alert("Error: " + err.message); }
     });
-    // Función para generar link con referido automático
-window.copyInviteLink = () => {
-    const user = window.fb.auth.currentUser;
-    if (!user) return;
 
-    const userEmail = user.email;
-    
-    // ESTA LÍNEA ES LA QUE CAMBIA: Ahora busca 'registrate.html'
-    const currentPath = window.location.pathname;
-    const folderPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-    const inviteUrl = `${window.location.origin}${folderPath}registrate.html?ref=${encodeURIComponent(userEmail)}`;
-    
-    const textoFinal = `¡Hola! Únete a mi equipo de Partners en Jiménez & Asociados. Regístrate aquí: ${inviteUrl}`;
-    
-    navigator.clipboard.writeText(textoFinal).then(() => {
-        window.showMsg("¡Link de REGISTRO copiado con éxito!");
-    });
-};
+    // Función para generar link con referido automático
+    window.copyInviteLink = () => {
+        const user = window.fb.auth.currentUser;
+        if (!user) return;
+        const userEmail = user.email;
+        const currentPath = window.location.pathname;
+        const folderPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+        const inviteUrl = `${window.location.origin}${folderPath}registrate.html?ref=${encodeURIComponent(userEmail)}`;
+        const textoFinal = `¡Hola! Únete a mi equipo de Partners en Jiménez & Asociados. Regístrate aquí: ${inviteUrl}`;
+        
+        navigator.clipboard.writeText(textoFinal).then(() => {
+            window.showMsg("¡Link de REGISTRO copiado con éxito!");
+        });
+    }; // <--- AQUÍ TERMINA LA FUNCIÓN DE COPIAR
+
+    // --- LIMPIEZA MAESTRA DE TELÉFONO (SOLUCIÓN DEFINITIVA) ---
+    const phoneInput = document.getElementById('in-phone');
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            // 1. Extraer solo los números
+            let value = e.target.value.replace(/\D/g, ''); 
+
+            // 2. EL TRUCO: Si hay 8 o más dígitos, tomamos SIEMPRE los ÚLTIMOS 8.
+            // Esto elimina automáticamente el +569, el 569 o el 9 inicial.
+            if (value.length > 8) {
+                value = value.slice(-8); 
+            }
+
+            // 3. Formatear visualmente como 1234-5678
+            if (value.length > 4) {
+                e.target.value = value.substring(0, 4) + '-' + value.substring(4, 8);
+            } else {
+                e.target.value = value;
+            }
+        });
+
+        phoneInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            let pasteData = (e.clipboardData || window.clipboardData).getData('text');
+            let cleanNumber = pasteData.replace(/\D/g, '');
+            
+            // Al pegar, forzamos quedarnos con los últimos 8 de inmediato
+            if (cleanNumber.length >= 8) {
+                cleanNumber = cleanNumber.slice(-8);
+            }
+            
+            phoneInput.value = cleanNumber;
+            phoneInput.dispatchEvent(new Event('input'));
+        });
+    }
+
 </script>
 </body>
 </html>
