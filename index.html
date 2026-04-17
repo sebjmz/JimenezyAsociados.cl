@@ -367,19 +367,42 @@ function cerrarModalCaptacion() {
     contenido.classList.add('translate-y-10');
 }
 
+// REEMPLAZA SOLO ESTA FUNCIÓN DENTRO DE TU ETIQUETA <script>
 function enviarLead(event) {
-    event.preventDefault(); // Evita que la página se recargue
+    event.preventDefault(); 
     const email = document.getElementById('email-lead').value;
     
-    // Aquí enviarás el dato a Make.com o Firebase en el futuro
-    console.log("Correo capturado para informe:", email);
-    
-    // Reemplaza el formulario con un mensaje de éxito visual
-    const formContainer = document.getElementById('form-container');
-    formContainer.innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i><p class="text-white font-bold text-lg">¡Excelente!</p><p class="text-gray-400 text-sm mt-2">Hemos registrado tu solicitud. Te enviaremos la información pronto.</p></div>';
-    
-    // Cierra el modal automáticamente después de 3.5 segundos
-    setTimeout(cerrarModalCaptacion, 3500);
+    // IMPORTANTE: Pega aquí la URL que copiaste de Make
+    const webhookURL = "https://hook.us2.make.com/4x39blscqaux66rmmgyw9xthkra2nhu5"; 
+
+    // Enviando la información al puente (Make.com)
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            correo_cliente: email,
+            fecha_captacion: new Date().toLocaleString(),
+            origen: "Portal Web - Popup Central"
+        })
+    })
+    .then(response => {
+        // Una vez que Make confirma que recibió el dato, mostramos el éxito al usuario
+        const formContainer = document.getElementById('form-container');
+        formContainer.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i>
+                <p class="text-white font-bold text-lg">¡Solicitud Recibida!</p>
+                <p class="text-gray-400 text-sm mt-2">Estamos procesando tu informe técnico.</p>
+            </div>`;
+        
+        setTimeout(cerrarModalCaptacion, 3500);
+    })
+    .catch(error => {
+        console.error('Error al enviar:', error);
+        alert("Hubo un problema técnico. Por favor, contáctanos por WhatsApp.");
+    });
 }
 
 // ==========================================
