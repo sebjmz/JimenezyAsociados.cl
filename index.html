@@ -236,6 +236,31 @@
         </div>
     </footer>
 
+    <div id="modal-captacion" class="fixed inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 bg-black/80 backdrop-blur-md">
+        <div id="modal-content-box" class="glass-card transform translate-y-10 transition-transform duration-500 border border-blue-500/50 p-8 md:p-10 rounded-3xl max-w-md w-[90%] mx-auto relative shadow-[0_0_50px_rgba(59,130,246,0.15)] bg-[#0a0a0a]">
+        
+                <button onclick="cerrarModalCaptacion()" class="absolute top-4 right-5 text-gray-400 hover:text-white text-2xl transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+                </button>
+        
+                <div class="text-center mb-6">
+                    <div class="text-blue-500 text-4xl mb-4"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <h3 class="text-2xl font-bold uppercase tracking-widest text-white mb-2">Descubre el valor de tu propiedad</h3>
+                    <p class="text-gray-400 text-sm">Ingresa tu correo para recibir un pre-informe comercial de tu sector totalmente gratis.</p>
+                </div>
+        
+            <div id="form-container">
+                <form onsubmit="enviarLead(event)" class="space-y-4">
+                    <input type="email" id="email-lead" placeholder="Tu correo principal..." required class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition transform hover:scale-105 uppercase tracking-tighter shadow-lg shadow-blue-900/40">
+                        Enviar Informe
+                    </button>
+                </form>
+                <p class="text-[11px] text-gray-500 text-center mt-4 italic">* Tu información es gestionada bajo estricta confidencialidad.</p>
+            </div>
+        </div>
+    </div>
+        
     <script>
         // Títulos disruptivos dinámicos
         const titles = [
@@ -308,6 +333,58 @@
                 ease: "power4.out"
             });
         });
-    </script>
-</body>
+        // ==========================================
+// INICIO DEL NUEVO CÓDIGO: Lógica del Modal
+// ==========================================
+
+let modalTriggered = false; // Evita que aparezca más de una vez por visita
+
+window.addEventListener('scroll', () => {
+    // Calcula el porcentaje exacto del scroll actual
+    const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+    const porcentajeScroll = (window.scrollY / scrollTotal) * 100;
+
+    // Si pasa el 50% y la ventana no se ha activado antes
+    if (porcentajeScroll >= 50 && !modalTriggered) {
+        abrirModalCaptacion();
+        modalTriggered = true; 
+    }
+});
+
+function abrirModalCaptacion() {
+    const modal = document.getElementById('modal-captacion');
+    const contenido = document.getElementById('modal-content-box');
+    
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    contenido.classList.remove('translate-y-10');
+}
+
+function cerrarModalCaptacion() {
+    const modal = document.getElementById('modal-captacion');
+    const contenido = document.getElementById('modal-content-box');
+    
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    contenido.classList.add('translate-y-10');
+}
+
+function enviarLead(event) {
+    event.preventDefault(); // Evita que la página se recargue
+    const email = document.getElementById('email-lead').value;
+    
+    // Aquí enviarás el dato a Make.com o Firebase en el futuro
+    console.log("Correo capturado para informe:", email);
+    
+    // Reemplaza el formulario con un mensaje de éxito visual
+    const formContainer = document.getElementById('form-container');
+    formContainer.innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i><p class="text-white font-bold text-lg">¡Excelente!</p><p class="text-gray-400 text-sm mt-2">Hemos registrado tu solicitud. Te enviaremos la información pronto.</p></div>';
+    
+    // Cierra el modal automáticamente después de 3.5 segundos
+    setTimeout(cerrarModalCaptacion, 3500);
+}
+
+// ==========================================
+// FIN DEL NUEVO CÓDIGO: Lógica del Modal
+// ==========================================
+        </script>
+    </body>
 </html>
