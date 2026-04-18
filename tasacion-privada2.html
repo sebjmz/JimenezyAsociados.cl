@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SISTEMA DE EVALUACIÓN PATRIMONIAL | JIMÉNEZ & ASOCIADOS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;800&family=Lexend:wght@300;400;700&display=swap');
+
+        :root {
+            --brand-blue: #2563eb;
+            --brand-dark: #020617;
+            --glass: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--brand-dark); 
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        h1, h2, .font-brand { font-family: 'Lexend', sans-serif; }
+
+        /* Efecto Glassmorphism Avanzado */
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(37, 99, 235, 0.3);
+            box-shadow: 0 0 40px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Inputs Estilo "Stealth" */
+        .input-premium {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-premium:focus {
+            border-color: var(--brand-blue);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Labels Técnicos */
+        .label-micro {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* Animación de Carga de Valores */
+        .odometer {
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Botón de Acción */
+        .btn-action {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            border-radius: 14px;
+            padding: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-10 flex flex-col items-center">
+
+    <div class="max-w-6xl w-full">
+        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-white/5 pb-8">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter">
+                    JIMÉNEZ<span class="text-blue-500 font-light">&</span>ASOCIADOS
+                </h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-[5px] mt-2">Real Estate Intelligence • Región de Valparaíso</p>
+            </div>
+            <div class="text-right mt-6 md:mt-0">
+                <span class="label-micro">Referencia Actualizada</span>
+                <div class="text-xl font-bold text-white tabular-nums">UF $39.890</div>
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            <aside class="lg:col-span-7 space-y-6">
+                <div class="glass-panel p-8">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-blue-500 text-sm"></i>
+                        Parámetros de Evaluación Técnica
+                    </h2>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="label-micro">Tipo de Propiedad</label>
+                            <select id="tipo" class="input-premium" onchange="actualizarLabels()">
+                                <option value="departamento">Departamento (Copropiedad)</option>
+                                <option value="casa" selected>Casa Habitacional</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label-micro">Comuna</label>
+                            <select id="comuna" class="input-premium" onchange="cargarZonas()">
+                                <option value="">Seleccione...</option>
+                                <option value="vina">Viña del Mar</option>
+                                <option value="concon">Concón (Pendiente datos)</option>
+                                <option value="valpo">Valparaíso (Pendiente datos)</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="label-micro">Área Homogénea (Sector SII)</label>
+                            <select id="zona" class="input-premium" disabled onchange="calcular()">
+                                <option value="">Seleccione Comuna primero...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="h-px bg-white/5 my-8"></div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label id="labelUtil" class="label-micro">Metros Útiles (m²)</label>
+                            <input type="number" id="util" class="input-premium" value="0" oninput="calcular()">
+                        </div>
+                        <div>
+                            <label id="labelExtra" class="label-micro">Metros Terreno (m²)</label>
+                            <input type="number" id="extra" class="input-premium" value="0" oninput="calcular()">
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="lg:col-span-5 flex flex-col gap-6">
+                <div class="glass-panel p-10 flex flex-col justify-center items-center text-center">
+                    <span class="label-micro mb-6">Valor Comercial Estimado (2.5x)</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="resUF" class="odometer text-7xl font-black">0</span>
+                        <span class="text-2xl font-bold text-blue-500">UF</span>
+                    </div>
+                    <div id="resCLP" class="text-xl text-slate-500 mt-6 font-light tabular-nums opacity-0 transition-opacity duration-700">
+                        $ 0
+                    </div>
+
+                    <div class="w-full mt-10 pt-8 border-t border-white/5 grid grid-cols-2 gap-4 text-left">
+                        <div>
+                            <span class="label-micro !mb-1">Avalúo Fiscal</span>
+                            <p id="fiscalUF" class="text-sm font-bold text-slate-400">0 UF</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="label-micro !mb-1">Precisión</span>
+                            <p class="text-sm font-bold text-blue-500">Nivel Pericial</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="enviarPropuesta()" class="btn-action w-full">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    SOLICITAR VALIDACIÓN TÉCNICA
+                </button>
+            </section>
+        </div>
+    </div>
+    <script>
+    /**
+     * DATABASE GEOGRÁFICA DE ALTA PRECISIÓN - JIMÉNEZ & ASOCIADOS
+     * Fuente: Reavalúo SII 2022 + Factor Comercial 2026 (2.5x)
+     * * Esta estructura de datos contiene el 'Valor Suelo' por Área Homogénea (AH).
+     * El sistema selecciona automáticamente el valor según el sector.
+     */
+
+    const DATABASE_ZONAS = {
+        vina: {
+            nombre: "Viña del Mar",
+            sectores: {
+                // Datos extraídos de VUT_V_VINA_DEL_MAR.pdf
+                "Reñaca Norte / Borde Mar (Premium)": { vut: 752075, factor: 2.8 }, 
+                "Reñaca Centro / Sector Comercial": { vut: 879165, factor: 2.5 },
+                "Jardín del Mar (Residencial)": { vut: 512361, factor: 2.6 },
+                "Gómez Carreño (Faja 1)": { vut: 375661, factor: 2.4 },
+                "Gómez Carreño (Interior)": { vut: 154595, factor: 2.3 },
+                "Miraflores Bajo": { vut: 535707, factor: 2.5 },
+                "Plan de Viña (Poniente - Lujo)": { vut: 1027651, factor: 2.9 },
+                "Plan de Viña (Centro)": { vut: 638772, factor: 2.5 },
+                "Agua Santa / San Huberto": { vut: 452893, factor: 2.4 },
+                "Chorrillos / Miraflores Alto": { vut: 254595, factor: 2.4 },
+                "Santa Inés": { vut: 594373, factor: 2.3 }
+            }
+        },
+        concon: {
+            nombre: "Concón",
+            sectores: {
+                // Datos extraídos de VUT_V_CONCON.pdf
+                "Costa Montemar (Alta Densidad)": { vut: 250037, factor: 3.2 }, 
+                "Bosques de Montemar (Exclusivo)": { vut: 219950, factor: 2.9 },
+                "Concón Sur / Residencial": { vut: 144307, factor: 2.6 },
+                "Borde Mar / Higuerillas": { vut: 156273, factor: 3.0 },
+                "Concón Viejo / Centro": { vut: 130019, factor: 2.4 },
+                "La Isla / Rural Industrial": { vut: 3215, factor: 2.0 },
+                "Sector Enap / Refinería": { vut: 4465, factor: 1.8 }
+            }
+        },
+        valpo: {
+            nombre: "Valparaíso",
+            sectores: {
+                // Datos extraídos de VUT_V_VALPARAISO.pdf
+                "Cerro Alegre / Concepción (Turístico)": { vut: 632593, factor: 3.0 },
+                "Plan Valparaíso (Comercial Bancario)": { vut: 1172851, factor: 2.5 },
+                "Playa Ancha (Borde Costero)": { vut: 407381, factor: 2.4 },
+                "Cerro Bellavista / Florida": { vut: 291114, factor: 2.4 },
+                "Curauma / Placilla (Crecimiento)": { vut: 99122, factor: 2.5 },
+                "Laguna Verde (Zonas AH)": { vut: 23480, factor: 2.2 },
+                "Cerro Los Placeres (Sector UTFSM)": { vut: 149843, factor: 2.4 },
+                "Barón / Recreo Alto": { vut: 94478, factor: 2.4 }
+            }
+        }
+    };
+
+    /**
+     * CONSTANTES TÉCNICAS (ACTUALIZACIÓN 2026)
+     */
+    const UF_VALOR = 39890;
+    const MULTIPLIQUER_COMERCIAL_BASE = 2.5;
+
+    /**
+     * FUNCIÓN DE CARGA DINÁMICA DE SECTORES
+     */
+    function cargarZonas() {
+        const comunaSelect = document.getElementById('comuna').value;
+        const zonaSelect = document.getElementById('zona');
+        
+        zonaSelect.innerHTML = '<option value="">Seleccionando Sector Técnico...</option>';
+        
+        if (comunaSelect && DATABASE_ZONAS[comunaSelect]) {
+            zonaSelect.disabled = false;
+            const sectores = DATABASE_ZONAS[comunaSelect].sectores;
+            
+            let options = '<option value="">Elija el Sector Específico...</option>';
+            for (let nombre in sectores) {
+                // Guardamos el VUT y el Factor en el valor para el cálculo
+                const vut = sectores[nombre].vut;
+                const factor = sectores[nombre].factor;
+                options += `<option value="${vut}|${factor}">${nombre}</option>`;
+            }
+            zonaSelect.innerHTML = options;
+        } else {
+            zonaSelect.disabled = true;
+            zonaSelect.innerHTML = '<option value="">Seleccione Comuna primero...</option>';
+        }
+    }
+      /**
+ * MOTOR DE VALORACIÓN DE EDIFICACIÓN - JIMÉNEZ & ASOCIADOS
+ * Basado en Anexo 2 Resol. 209 (SII 2026)
+ * -----------------------------------------------------------------------
+ * Esta sección procesa la materialidad y el estado de la construcción
+ * para sumarlo al valor del terreno procesado en la Parte 2.
+ */
+
+const GPU_2026 = {
+    // Valores unitarios por m2 (Pesos CLP) - Tabla 5.4 Tradicionales
+    departamento: { // Clase B (Hormigón Armado)
+        1: 505761, // Calidad Superior (Lujo)
+        2: 373305, // Calidad Media-Superior
+        3: 271032, // Calidad Media
+        4: 181293, // Calidad Económica
+        5: 124310  // Calidad Básica
+    },
+    casa: { // Clase C (Albañilería / Ladrillo)
+        1: 419014, // Calidad Superior
+        2: 302194, // Calidad Media-Superior
+        3: 201123, // Calidad Media
+        4: 114675, // Calidad Económica
+        5: 89610   // Calidad Básica
+    }
+};
+
+// Coeficiente de Depreciación (Tabla 33 del Estudio de Precios 2022)
+// Se castiga un 0.8% anual según metodología oficial para Clase B/C.
+function calcularDepreciacion(clase, edad) {
+    let tasaAnual = 0.008; // 0.8% para concreto/ladrillo
+    let depreciacionAcumulada = tasaAnual * edad;
+    
+    // El SII topa la depreciación en 0.4 (conserva el 40% del valor)
+    let factorRetencion = 1 - Math.min(depreciacionAcumulada, 0.60);
+    return factorRetencion;
+}
+
+/**
+ * FUNCIÓN MAESTRA DE CÁLCULO
+ * Aquí implementamos tu estrategia: Base 2.0x + Ajustes de Atributos
+ */
+function calcular() {
+    // 1. Obtención de datos de Suelo (VUT extraído en Parte 2)
+    const zonaData = document.getElementById('zona').value.split('|');
+    if (zonaData.length < 2) return;
+    
+    const vutFiscal = parseFloat(zonaData[0]); // Valor del suelo por m2 (SII)
+    const m2Terreno = parseFloat(document.getElementById('extra').value) || 0;
+    
+    // 2. Obtención de datos de Edificación
+    const tipo = document.getElementById('tipo').value;
+    const m2Utiles = parseFloat(document.getElementById('util').value) || 0;
+    const calidad = 1; // Por defecto Superior para portal Premium (ajustable)
+    
+    // 3. Cálculo de Avalúo Fiscal Base (SII puro)
+    let avaluoTerrenoFiscal = vutFiscal * m2Terreno;
+    let valorUnitarioEdif = GPU_2026[tipo][calidad];
+    
+    // Aplicamos depreciación (Asumimos 10 años promedio para el simulador)
+    let factorVidaUtil = calcularDepreciacion(tipo, 10);
+    let avaluoEdifFiscal = (m2Utiles * valorUnitarioEdif) * factorVidaUtil;
+    
+    let avaluoTotalFiscalPesos = avaluoTerrenoFiscal + avaluoEdifFiscal;
+    let avaluoTotalFiscalUF = avaluoTotalFiscalPesos / UF_VALOR;
+
+    // --- ESTRATEGIA JIMÉNEZ: EL MULTIPLICADOR COMERCIAL ---
+    // Partimos de un 2.0x fijo (Tu base de mercado)
+    let multiplicador = 2.0;
+
+    // 4. PREMIOS POR ATRIBUTOS (Los que llevan el valor a 2.5x o 3x)
+    const factorVista = parseFloat(document.getElementById('vista').value); // Ej: 1.30 (Frontal)
+    const factorOrienta = parseFloat(document.getElementById('orienta').value); // Ej: 1.08 (N.Poniente)
+    const factorEstado = parseFloat(document.getElementById('estado').value); // Ej: 1.10 (Nuevo)
+    
+    // Los atributos multiplican el valor comercial, no el fiscal
+    // Ejemplo: 2.0x * 1.30 (Vista) * 1.08 (Sol) = 2.8x
+    let valorComercialUF = avaluoTotalFiscalUF * multiplicador * factorVista * factorOrienta * factorEstado;
+
+    // 5. ACTUALIZACIÓN DE INTERFAZ
+    actualizarResultados(avaluoTotalFiscalUF, valorComercialUF);
+}
+
+function actualizarResultados(fiscal, comercial) {
+    // Efecto Odometer para las UF
+    gsap.to(resObj, {
+        val: comercial,
+        duration: 2,
+        ease: "power4.out",
+        onUpdate: () => {
+            document.getElementById('resUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
+            document.getElementById('fiscalUF').innerText = Math.round(fiscal).toLocaleString('es-CL') + " UF";
+        },
+        onComplete: () => {
+            const elCLP = document.getElementById('resCLP');
+            elCLP.innerText = "$ " + Math.round(comercial * UF_VALOR).toLocaleString('es-CL');
+            elCLP.style.opacity = 1;
+        }
+    });
+}
+      /**
+ * AMPLIACIÓN DE DATABASE GEOGRÁFICA - SECTOR INTERIOR
+ * Fuente: Reavalúo SII 2022 (Actualizado a UF $39.890)
+ * -----------------------------------------------------------------------
+ * En este bloque sumamos Quilpué, Villa Alemana y Limache con sus 
+ * valores de suelo específicos (VUT).
+ */
+
+// Extendemos el objeto DATABASE_ZONAS definido en la Parte 2
+Object.assign(DATABASE_ZONAS, {
+    quilpue: {
+        nombre: "Quilpué",
+        sectores: {
+            // Datos extraídos de VUT_V_QUILPUE.pdf
+            "Quilpué Centro (Eje Comercial)": { vut: 283435, factor: 2.2 },
+            "Paso Hondo (Sector Residencial)": { vut: 216639, factor: 2.4 },
+            "Los Pinos / Teniente Merino": { vut: 191457, factor: 2.3 },
+            "El Belloto Centro": { vut: 142878, factor: 2.1 },
+            "El Belloto Norte / Sur": { vut: 82155, factor: 2.0 },
+            "Marga Marga (Zonas de Expansión)": { vut: 66081, factor: 2.2 }
+        }
+    },
+    v_alemana: {
+        nombre: "Villa Alemana",
+        sectores: {
+            // Datos extraídos de VUT_V_VILLA_ALEMANA.pdf
+            "Villa Alemana Centro (Céntrico)": { vut: 240214, factor: 2.1 },
+            "Peñablanca (Sectores Nuevos)": { vut: 154308, factor: 2.3 },
+            "Huanhualí / Sector Sur": { vut: 150379, factor: 2.2 },
+            "El Carmen / Rumie": { vut: 119839, factor: 2.1 },
+            "Gumercindo / Las Américas": { vut: 61616, factor: 2.0 }
+        }
+    },
+    limache: {
+        nombre: "Limache",
+        sectores: {
+            // Datos extraídos de VUT_V_LIMACHE.pdf
+            "San Francisco de Limache (Comercial)": { vut: 136270, factor: 2.4 },
+            "Limache Viejo (Histórico)": { vut: 116624, factor: 2.1 },
+            "Los Laureles / Sector Rural Urbano": { vut: 110195, factor: 2.2 },
+            "Sector Estación": { vut: 77690, factor: 2.3 },
+            "Zonas de Parcelación (AH Especial)": { vut: 51258, factor: 2.5 }
+        }
+    }
+});
+
+/**
+ * REFINAMIENTO DEL MOTOR DE CÁLCULO: LA ESCALA JIMÉNEZ
+ * El valor parte en 2.0x y escala según atributos.
+ */
+function calcularEscalamientoComercial(avaluoFiscalUF) {
+    // 1. Base fija de mercado (2.0x)
+    let multiplicadorBase = 2.0;
+    
+    // 2. Factores que agregan valor (Premios)
+    const factorVista = parseFloat(document.getElementById('vista').value) || 1.0;
+    const factorOrienta = parseFloat(document.getElementById('orienta').value) || 1.0;
+    const factorEstado = parseFloat(document.getElementById('estado').value) || 1.0;
+    
+    // 3. Cálculo del multiplicador final dinámico
+    // Si la propiedad tiene Vista Mar (+30%), Orientación NP (+8%) y está Nueva (+10%)
+    // El multiplicador escala: 2.0 * 1.30 * 1.08 * 1.10 = 3.08x
+    let multiplicadorFinal = multiplicadorBase * factorVista * factorOrienta * factorEstado;
+    
+    // Topamos el multiplicador para mantener coherencia comercial
+    multiplicadorFinal = Math.min(multiplicadorFinal, 3.5);
+
+    let valorComercialFinal = avaluoFiscalUF * multiplicadorFinal;
+    
+    return {
+        multiplicador: multiplicadorFinal.toFixed(2),
+        valorFinal: valorComercialFinal
+    };
+}
+
+/**
+ * ACTUALIZACIÓN DE INTERFAZ CON FEEDBACK TÉCNICO
+ */
+function actualizarUIConEscala(fiscalUF, comercialUF, multiplicador) {
+    // Animación del número principal
+    gsap.to(resObj, {
+        val: comercialUF,
+        duration: 1.5,
+        ease: "power2.out",
+        onUpdate: () => {
+            document.getElementById('resUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
+        }
+    });
+
+    // Mostramos el multiplicador resultante para dar transparencia
+    const infoComercial = `Ratio de Mercado: ${multiplicador}x sobre el avalúo fiscal`;
+    console.log(infoComercial); // Podemos agregar un elemento en el HTML para mostrar esto
+
+    // Valor en Pesos
+    const elCLP = document.getElementById('resCLP');
+    const valorCLP = Math.round(comercialUF * UF_VALOR);
+    elCLP.innerText = "$ " + valorCLP.toLocaleString('es-CL');
+    elCLP.style.opacity = 1;
+
+    // Actualizamos el Avalúo Fiscal de referencia
+    document.getElementById('fiscalUF').innerText = Math.round(fiscalUF).toLocaleString('es-CL') + " UF";
+}
+      /**
+ * COMPLETACIÓN DE DATABASE GEOGRÁFICA - LITORAL Y ZONA SUR
+ * Fuente: Reavalúo SII 2022 + Actualización de Mercado Jiménez & Asociados
+ * -----------------------------------------------------------------------
+ */
+
+Object.assign(DATABASE_ZONAS, {
+    litoral_norte: {
+        nombre: "Puchuncaví / Zapallar / Papudo",
+        sectores: {
+            // Datos extraídos de VUT_V_ZAPALLAR.pdf y VUT_V_PAPUDO.pdf
+            "Zapallar Pueblo (Sector HAA033)": { vut: 861734, factor: 3.2 }, 
+            "Cachagua / El Golf (Exclusivo)": { vut: 780550, factor: 3.4 },
+            "Maitencillo / Marbella (Sector VSS055)": { vut: 110373, factor: 3.1 },
+            "Papudo / Punta Puyai (HAM042)": { vut: 628485, factor: 2.8 },
+            "Papudo Centro (HBB019)": { vut: 83048, factor: 2.4 },
+            "Puchuncaví / Maitencillo Pueblo": { vut: 45722, factor: 2.2 }
+        }
+    },
+    algarrobo: {
+        nombre: "Algarrobo / El Quisco",
+        sectores: {
+            // Datos extraídos de VUT_V_ALGARROBO.pdf
+            "Algarrobo Norte / San Alfonso (HAA023)": { vut: 505804, factor: 2.9 },
+            "Algarrobo Centro / Mirador (CMB043)": { vut: 450066, factor: 2.6 },
+            "El Quisco / Isla Negra (Borde Mar)": { vut: 185027, factor: 2.4 },
+            "El Tabo / Las Cruces": { vut: 85370, factor: 2.2 }
+        }
+    },
+    san_antonio: {
+        nombre: "San Antonio / Santo Domingo",
+        sectores: {
+            // Datos extraídos de VUT_V_SAN_ANTONIO.pdf
+            "Santo Domingo (Rocas - CMM009)": { vut: 151713, factor: 3.2 },
+            "San Antonio (Sector TBB810)": { vut: 168418, factor: 2.1 },
+            "Llolleo / Barrancas": { vut: 74193, factor: 2.0 }
+        }
+    },
+    casablanca: {
+        nombre: "Casablanca",
+        sectores: {
+            // Datos extraídos de VUT_V_CASABLANCA.pdf
+            "Casablanca Centro (HAB049)": { vut: 112393, factor: 2.2 },
+            "Quintay / Tunquén (Borde Mar)": { vut: 88540, factor: 3.0 },
+            "Lo Vásquez / Rural": { vut: 11752, factor: 2.1 }
+        }
+    }
+});
+
+/**
+ * CIERRE DEL MOTOR - FUNCIONES DE INTERFAZ Y REPORTE
+ */
+
+function actualizarLabels() {
+    const tipo = document.getElementById('tipo').value;
+    const lblUtil = document.getElementById('labelUtil');
+    const lblExtra = document.getElementById('labelExtra');
+    
+    if (tipo === 'casa') {
+        lblUtil.innerText = "Superficie Construida (m²)";
+        lblExtra.innerText = "Superficie Terreno Total (m²)";
+    } else {
+        lblUtil.innerText = "Superficie Útil Interior (m²)";
+        lblExtra.innerText = "Superficie Terraza / Balcón (m²)";
+    }
+    calcular();
+}
+
+/**
+ * GENERACIÓN DE MENSAJE DE CAPTACIÓN (WHATSAPP PREMIUM)
+ * Incluye el desglose técnico para que el lead llegue pre-calificado.
+ */
+function enviarPropuesta() {
+    const totalUF = document.getElementById('resUF').innerText;
+    const fiscalUF = document.getElementById('fiscalUF').innerText;
+    const sector = document.getElementById('zona').options[document.getElementById('zona').selectedIndex]?.text || "No definido";
+    const tipo = document.getElementById('tipo').value;
+    
+    // Calculamos el ratio final para tu información
+    const ratio = (parseInt(totalUF.replace(/\./g, '')) / parseInt(fiscalUF.replace(/\./g, ''))).toFixed(2);
+
+    const mensaje = `*EVALUACIÓN PATRIMONIAL - JIMÉNEZ & ASOCIADOS*%0A%0A` +
+        `*Activo:* ${tipo.toUpperCase()}%0A` +
+        `*Ubicación:* ${sector}%0A` +
+        `*Valor Estimado:* ${totalUF} UF%0A` +
+        `*Avalúo Fiscal:* ${fiscalUF}%0A` +
+        `*Ratio de Mercado:* ${ratio}x%0A%0A` +
+        `Solicito validación técnica en terreno para confirmar atributos de Vista, Orientación y Conservación.`;
+
+    window.open(`https://wa.me/56951134778?text=${mensaje}`, '_blank');
+}
+
+// Inicialización de la UI con GSAP para el efecto "Grandes Ligas"
+document.addEventListener('DOMContentLoaded', () => {
+    gsap.from(".glass-panel", {
+        opacity: 0,
+        y: 50,
+        duration: 1.2,
+        stagger: 0.2,
+        ease: "power4.out"
+    });
+    
+    console.log("Sistema Jiménez & Asociados V2.6 cargado con éxito.");
+});
+
+</script>
+</body>
+</html>
