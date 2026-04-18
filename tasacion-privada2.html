@@ -3,592 +3,1073 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Inteligencia Inmobiliaria - Jiménez & Asociados">
+    <meta name="author" content="Jiménez & Asociados">
     <meta name="robots" content="noindex, nofollow">
-    <title>SISTEMA DE EVALUACIÓN PATRIMONIAL | JIMÉNEZ & ASOCIADOS</title>
+    
+    <title>EVALUACIÓN PATRIMONIAL V2.6 | JIMÉNEZ & ASOCIADOS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;800&family=Lexend:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,400;0,700;0,800;1,400&family=Space+Grotesk:wght@300;500;700&display=swap');
 
+        /* VARIABLES DE MARCA - JIMÉNEZ & ASOCIADOS */
         :root {
-            --brand-blue: #2563eb;
-            --brand-dark: #020617;
-            --glass: rgba(255, 255, 255, 0.02);
-            --border: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --deep-black: #020617;
+            --glass-bg: rgba(255, 255, 255, 0.015);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --gold-accent: #d4af37;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --transition-smooth: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--brand-dark); 
-            color: #f8fafc;
-            line-height: 1.6;
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
         }
 
-        h1, h2, .font-brand { font-family: 'Lexend', sans-serif; }
-
-        /* Efecto Glassmorphism Avanzado */
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--deep-black);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-blue) transparent;
         }
 
-        .glass-panel:hover {
-            border-color: rgba(37, 99, 235, 0.3);
-            box-shadow: 0 0 40px rgba(37, 99, 235, 0.1);
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+        /* TYPOGRAPHY */
+        .font-tech { font-family: 'Space Grotesk', sans-serif; }
+        .heading-premium {
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+            font-style: italic;
         }
 
-        /* Inputs Estilo "Stealth" */
-        .input-premium {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* GLASSMORPHISM ENGINE */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* INPUTS & SELECTS STEALTH */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .premium-label {
+            display: block;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        .premium-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
             border-radius: 12px;
             padding: 14px 16px;
             color: #fff;
-            width: 100%;
+            font-size: 14px;
+            font-weight: 500;
             outline: none;
-            transition: all 0.3s ease;
+            transition: var(--transition-smooth);
         }
 
-        .input-premium:focus {
-            border-color: var(--brand-blue);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        .premium-field:focus {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
         }
 
-        /* Labels Técnicos */
-        .label-micro {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #64748b;
-            margin-bottom: 6px;
-            display: block;
+        .premium-field option {
+            background: #0f172a;
+            color: #fff;
         }
 
-        /* Animación de Carga de Valores */
-        .odometer {
-            font-variant-numeric: tabular-nums;
-            background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+        /* RESULT DISPLAY ENGINE */
+        .result-glow {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            background: linear-gradient(to bottom, #fff 40%, #475569 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
         }
 
-        /* Botón de Acción */
-        .btn-action {
-            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-            border-radius: 14px;
-            padding: 18px;
+        /* BUTTONS */
+        .btn-jimenez {
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            color: white;
             font-weight: 700;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 20px 32px;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer !important;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
+        .btn-jimenez:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
             filter: brightness(1.1);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
         }
+
+        .btn-jimenez i { pointer-events: none; }
+
+        /* DECORATIVE ELEMENTS */
+        .bg-glow {
+            position: fixed;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
+            top: -20vw;
+            right: -10vw;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* ANIMATION CLASSES */
+        .reveal { opacity: 0; transform: translateY(20px); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-10 flex flex-col items-center">
+<body class="min-h-screen flex flex-col items-center">
+    
+    <div class="bg-glow"></div>
+    <div class="bg-glow" style="bottom: -20vw; left: -10vw; top: auto; right: auto; background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);"></div>
 
-    <div class="max-w-6xl w-full">
-        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-white/5 pb-8">
-            <div>
-                <h1 class="text-3xl font-black tracking-tighter">
+    <div class="w-full max-w-7xl px-4 py-8 md:py-16">
+        
+        <header class="reveal flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 border-b border-white/5 pb-12">
+            <div class="mb-8 lg:mb-0">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="h-px w-8 bg-blue-500"></span>
+                    <span class="text-[10px] uppercase tracking-[0.4em] font-bold text-blue-400">Intelligence Real Estate</span>
+                </div>
+                <h1 class="heading-premium text-4xl md:text-5xl lg:text-6xl text-white">
                     JIMÉNEZ<span class="text-blue-500 font-light">&</span>ASOCIADOS
                 </h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-[5px] mt-2">Real Estate Intelligence • Región de Valparaíso</p>
+                <p class="text-muted text-sm mt-4 max-w-md font-light leading-relaxed">
+                    Motor de tasación algorítmica basado en Big Data del SII 2026 y coeficientes comerciales de precisión pericial.
+                </p>
             </div>
-            <div class="text-right mt-6 md:mt-0">
-                <span class="label-micro">Referencia Actualizada</span>
-                <div class="text-xl font-bold text-white tabular-nums">UF $39.890</div>
+            
+            <div class="flex flex-col items-end gap-2">
+                <div class="glass-card px-4 py-2 flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Market Feed Live</span>
+                    <span class="text-sm font-tech font-bold text-white tabular-nums">UF $39.890</span>
+                </div>
+                <p class="text-[9px] uppercase tracking-widest text-slate-600 mr-2">Update: Saturday, April 18, 2026</p>
             </div>
         </header>
 
         <div class="grid lg:grid-cols-12 gap-8">
-            <aside class="lg:col-span-7 space-y-6">
-                <div class="glass-panel p-8">
-                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-microchip text-blue-500 text-sm"></i>
-                        Parámetros de Evaluación Técnica
-                    </h2>
-
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="label-micro">Tipo de Propiedad</label>
-                            <select id="tipo" class="input-premium" onchange="actualizarLabels()">
-                                <option value="departamento">Departamento (Copropiedad)</option>
-                                <option value="casa" selected>Casa Habitacional</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="label-micro">Comuna</label>
-                            <select id="comuna" class="input-premium" onchange="cargarZonas()">
-                                <option value="">Seleccione...</option>
-                                <option value="vina">Viña del Mar</option>
-                                <option value="concon">Concón (Pendiente datos)</option>
-                                <option value="valpo">Valparaíso (Pendiente datos)</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="label-micro">Área Homogénea (Sector SII)</label>
-                            <select id="zona" class="input-premium" disabled onchange="calcular()">
-                                <option value="">Seleccione Comuna primero...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="h-px bg-white/5 my-8"></div>
-
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label id="labelUtil" class="label-micro">Metros Útiles (m²)</label>
-                            <input type="number" id="util" class="input-premium" value="0" oninput="calcular()">
-                        </div>
-                        <div>
-                            <label id="labelExtra" class="label-micro">Metros Terreno (m²)</label>
-                            <input type="number" id="extra" class="input-premium" value="0" oninput="calcular()">
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <section class="lg:col-span-5 flex flex-col gap-6">
-                <div class="glass-panel p-10 flex flex-col justify-center items-center text-center">
-                    <span class="label-micro mb-6">Valor Comercial Estimado (2.5x)</span>
-                    <div class="flex items-baseline gap-2">
-                        <span id="resUF" class="odometer text-7xl font-black">0</span>
-                        <span class="text-2xl font-bold text-blue-500">UF</span>
-                    </div>
-                    <div id="resCLP" class="text-xl text-slate-500 mt-6 font-light tabular-nums opacity-0 transition-opacity duration-700">
-                        $ 0
-                    </div>
-
-                    <div class="w-full mt-10 pt-8 border-t border-white/5 grid grid-cols-2 gap-4 text-left">
-                        <div>
-                            <span class="label-micro !mb-1">Avalúo Fiscal</span>
-                            <p id="fiscalUF" class="text-sm font-bold text-slate-400">0 UF</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="label-micro !mb-1">Precisión</span>
-                            <p class="text-sm font-bold text-blue-500">Nivel Pericial</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="enviarPropuesta()" class="btn-action w-full">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    SOLICITAR VALIDACIÓN TÉCNICA
-                </button>
-            </section>
-        </div>
+            </div>
     </div>
+    <main class="grid lg:grid-cols-12 gap-8 items-start">
+            
+            <div class="lg:col-span-8 space-y-8 pb-20">
+                
+                <section class="glass-card p-8 reveal">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold tracking-tight">01. Localización Estratégica</h2>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Determinación de Valor Suelo por Manzana (SII)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="input-wrapper">
+                            <label class="premium-label">Jurisdicción Comunal</label>
+                            <select id="comuna" class="premium-field font-tech" onchange="cargarZonas()">
+                                <option value="" disabled selected>Seleccione Comuna...</option>
+                                <option value="vina">Viña del Mar</option>
+                                <option value="concon">Concón</option>
+                                <option value="valpo">Valparaíso</option>
+                                <option value="quilpue">Quilpué</option>
+                                <option value="v_alemana">Villa Alemana</option>
+                                <option value="limache">Limache</option>
+                                <option value="petorca">Zapallar / Papudo</option>
+                                <option value="san_antonio">Algarrobo / San Antonio</option>
+                                <option value="casablanca">Casablanca</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Área Homogénea (AH) / Sector</label>
+                            <select id="zona" class="premium-field font-tech" disabled onchange="calcular()">
+                                <option value="">Defina Comuna Primero...</option>
+                            </select>
+                            <div class="absolute right-3 top-[38px] text-blue-500/30 text-xs">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex gap-4 items-start">
+                        <i class="fa-solid fa-circle-info text-blue-400 mt-1"></i>
+                        <p class="text-[11px] text-slate-400 leading-relaxed italic">
+                            Nota: La selección del Área Homogénea sincroniza automáticamente el <span class="text-blue-400 font-bold">Valor Unitario de Terreno (VUT)</span> según el último proceso de reavalúo fiscal vigente para el 2026.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="glass-card p-8 reveal" style="transition-delay: 0.1s;">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                            <i class="fa-solid fa-compass-drafting"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold tracking-tight">02. Ingeniería de Edificación</h2>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Metodología de Valoración de Construcción (Resol. 209)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="input-wrapper">
+                            <label class="premium-label">Tipología de Activo</label>
+                            <select id="tipo" class="premium-field" onchange="actualizarLabels(); calcular();">
+                                <option value="casa" selected>Casa Habitacional</option>
+                                <option value="departamento">Departamento / Condominio</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Clase Estructural</label>
+                            <select id="clase" class="premium-field" onchange="calcular()">
+                                <option value="B">Hormigón Armado (Clase B)</option>
+                                <option value="C">Albañilería / Ladrillo (Clase C)</option>
+                                <option value="E">Madera (Clase E)</option>
+                                <option value="A">Acero (Clase A)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Calidad de Terminación</label>
+                            <select id="calidad" class="premium-field" onchange="calcular()">
+                                <option value="1">Superior (Lujo)</option>
+                                <option value="2">Media-Superior</option>
+                                <option value="3" selected>Media (Estándar Inmobiliario)</option>
+                                <option value="4">Económica</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label id="labelUtil" class="premium-label">Superficie Útil (m²)</label>
+                            <input type="number" id="util" class="premium-field font-tech" placeholder="0" oninput="calcular()">
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label id="labelExtra" class="premium-label">Superficie Terreno (m²)</label>
+                            <input type="number" id="extra" class="premium-field font-tech" placeholder="0" oninput="calcular()">
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Año de Recepción</label>
+                            <input type="number" id="anno" class="premium-field font-tech" value="2018" min="1900" max="2026" oninput="calcular()">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="step-plusvalia" class="glass-card p-8 reveal" style="transition-delay: 0.2s;">
+                    </section>
+            </div>
+
+            <div class="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+                <div class="glass-card p-10 border-blue-500/20 bg-blue-500/[0.02]">
+                    </div>
+            </div>
+        </main>
+        <section class="glass-card p-8 reveal" style="transition-delay: 0.2s;">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold tracking-tight text-white">03. Atributos de Plusvalía Comercial</h2>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Factores de Escalamiento Jiménez & Asociados (Base 2.0x)</p>
+                            </div>
+                        </div>
+                        <div class="hidden md:block">
+                            <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-tighter">
+                                Algoritmo de Valoración V2.6
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="input-wrapper">
+                            <label class="premium-label">Dominio Visual (Vista)</label>
+                            <select id="vista" class="premium-field" onchange="calcular()">
+                                <option value="1.35">Frontal Despejada al Mar (+35%)</option>
+                                <option value="1.18">Vista Parcial / Mar Lateral (+18%)</option>
+                                <option value="1.08">Vista Despejada Ciudad / Parque (+8%)</option>
+                                <option value="1.00" selected>Vista Estándar / Calle (Base)</option>
+                                <option value="0.92">Vista Obstruida (-8%)</option>
+                            </select>
+                            <div class="mt-2 text-[9px] text-slate-600 italic uppercase">Incidencia directa en velocidad de venta</div>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Asoleamiento (Orientación)</label>
+                            <select id="orienta" class="premium-field" onchange="calcular()">
+                                <option value="1.10">Nor-Poniente (Exposición Premium +10%)</option>
+                                <option value="1.06">Poniente (Sol de Tarde +6%)</option>
+                                <option value="1.04">Norte (Luminosidad Constante +4%)</option>
+                                <option value="1.00" selected>Oriente (Sol de Mañana - Base)</option>
+                                <option value="0.88">Sur (Exposición Fría -12%)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Estado de Conservación</label>
+                            <select id="estado" class="premium-field" onchange="calcular()">
+                                <option value="1.15">Remodelado High-End (+15%)</option>
+                                <option value="1.08">Excelente Estado (+8%)</option>
+                                <option value="1.00" selected>Estado Original Mantenido (Base)</option>
+                                <option value="0.85">Requiere Actualización (-15%)</option>
+                                <option value="0.70">Deterioro Estructural (-30%)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Equipamiento / Amenities</label>
+                            <select id="amenities" class="premium-field" onchange="calcular()">
+                                <option value="1.12">Piscina + Quincho + Seguridad (+12%)</option>
+                                <option value="1.06">Condominio Club House (+6%)</option>
+                                <option value="1.00" selected>Equipamiento Estándar</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Entorno y Servicios</label>
+                            <select id="servicios" class="premium-field" onchange="calcular()">
+                                <option value="1.10">Consolidado / Alta Plusvalía (+10%)</option>
+                                <option value="1.05">En Expansión / Próximo Metro (+5%)</option>
+                                <option value="1.00" selected>Residencial Estable (Base)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="premium-label">Factor Altura / Piso</label>
+                            <select id="piso" class="premium-field" onchange="calcular()">
+                                <option value="1.08">Piso Superior / Penthouse (+8%)</option>
+                                <option value="1.03">Piso Medio (+3%)</option>
+                                <option value="1.00" selected>Pisos Iniciales (Base)</option>
+                                <option value="0.95">Primer Piso / Zócalo (-5%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+                <div class="glass-card p-12 border-blue-500/30 shadow-[0_0_50px_rgba(37,99,235,0.1)] relative">
+                    <div class="absolute top-0 right-0 p-4">
+                        <img src="https://cdn-icons-png.flaticon.com/512/7544/7544957.png" class="w-8 h-8 opacity-20 grayscale" alt="Certificado">
+                    </div>
+                    
+                    <div class="flex flex-col items-center text-center">
+                        <div id="ratioContainer" class="mb-6 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                            <span class="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Ratio Comercial: <span id="valRatio">2.00</span>x</span>
+                        </div>
+                        
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-[0.4em] mb-10">Valoración Estimada de Mercado</h3>
+                        
+                        <div class="relative inline-flex items-baseline gap-3 mb-4">
+                            <span id="resUF" class="result-glow">0</span>
+                            <span class="text-2xl font-black text-blue-500 font-tech">UF</span>
+                        </div>
+
+                        <div id="resCLP" class="text-2xl font-light text-slate-400 tabular-nums opacity-0 tracking-tighter">
+                            $ 0
+                        </div>
+
+                        <div class="w-full mt-12 pt-8 border-t border-white/5 space-y-4 text-left">
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[9px] uppercase tracking-widest text-slate-600 group-hover:text-slate-400 transition-colors">Avalúo Fiscal Base</span>
+                                <span id="fiscalUF" class="text-sm font-tech font-bold text-slate-400">0 UF</span>
+                            </div>
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[9px] uppercase tracking-widest text-slate-600 group-hover:text-slate-400 transition-colors">Plusvalía por Atributos</span>
+                                <span id="valPlus" class="text-sm font-tech font-bold text-blue-500">+ 0%</span>
+                            </div>
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[9px] uppercase tracking-widest text-slate-600 group-hover:text-slate-400 transition-colors">Tasa de Depreciación</span>
+                                <span id="valDepre" class="text-sm font-tech font-bold text-red-500/50">- 0.0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                    <button onclick="enviarPropuesta()" class="btn-jimenez w-full relative">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i>
+                        <span>Formalizar Orden de Venta</span>
+                    </button>
+                </div>
+                
+                <div class="px-6 py-4 rounded-xl border border-white/5 bg-white/[0.01]">
+                    <p class="text-[8px] text-slate-600 text-center uppercase tracking-widest leading-loose">
+                        Documentación sujeta a validación técnica en terreno por peritos de Jiménez & Asociados. Los valores expresados no constituyen tasación bancaria.
+                    </p>
+                </div>
+            </div>
+        </main>
     <script>
-    /**
-     * DATABASE GEOGRÁFICA DE ALTA PRECISIÓN - JIMÉNEZ & ASOCIADOS
-     * Fuente: Reavalúo SII 2022 + Factor Comercial 2026 (2.5x)
-     * * Esta estructura de datos contiene el 'Valor Suelo' por Área Homogénea (AH).
-     * El sistema selecciona automáticamente el valor según el sector.
-     */
+/**
+ * SISTEMA DE INTELIGENCIA INMOBILIARIA V2.6
+ * PROPIEDAD INTELECTUAL: JIMÉNEZ & ASOCIADOS
+ * -----------------------------------------------------------------------
+ * MOTOR LÓGICO Y BASE DE DATOS GEOGRÁFICA (BLOQUE 01)
+ */
 
-    const DATABASE_ZONAS = {
-        vina: {
-            nombre: "Viña del Mar",
-            sectores: {
-                // Datos extraídos de VUT_V_VINA_DEL_MAR.pdf
-                "Reñaca Norte / Borde Mar (Premium)": { vut: 752075, factor: 2.8 }, 
-                "Reñaca Centro / Sector Comercial": { vut: 879165, factor: 2.5 },
-                "Jardín del Mar (Residencial)": { vut: 512361, factor: 2.6 },
-                "Gómez Carreño (Faja 1)": { vut: 375661, factor: 2.4 },
-                "Gómez Carreño (Interior)": { vut: 154595, factor: 2.3 },
-                "Miraflores Bajo": { vut: 535707, factor: 2.5 },
-                "Plan de Viña (Poniente - Lujo)": { vut: 1027651, factor: 2.9 },
-                "Plan de Viña (Centro)": { vut: 638772, factor: 2.5 },
-                "Agua Santa / San Huberto": { vut: 452893, factor: 2.4 },
-                "Chorrillos / Miraflores Alto": { vut: 254595, factor: 2.4 },
-                "Santa Inés": { vut: 594373, factor: 2.3 }
-            }
-        },
-        concon: {
-            nombre: "Concón",
-            sectores: {
-                // Datos extraídos de VUT_V_CONCON.pdf
-                "Costa Montemar (Alta Densidad)": { vut: 250037, factor: 3.2 }, 
-                "Bosques de Montemar (Exclusivo)": { vut: 219950, factor: 2.9 },
-                "Concón Sur / Residencial": { vut: 144307, factor: 2.6 },
-                "Borde Mar / Higuerillas": { vut: 156273, factor: 3.0 },
-                "Concón Viejo / Centro": { vut: 130019, factor: 2.4 },
-                "La Isla / Rural Industrial": { vut: 3215, factor: 2.0 },
-                "Sector Enap / Refinería": { vut: 4465, factor: 1.8 }
-            }
-        },
-        valpo: {
-            nombre: "Valparaíso",
-            sectores: {
-                // Datos extraídos de VUT_V_VALPARAISO.pdf
-                "Cerro Alegre / Concepción (Turístico)": { vut: 632593, factor: 3.0 },
-                "Plan Valparaíso (Comercial Bancario)": { vut: 1172851, factor: 2.5 },
-                "Playa Ancha (Borde Costero)": { vut: 407381, factor: 2.4 },
-                "Cerro Bellavista / Florida": { vut: 291114, factor: 2.4 },
-                "Curauma / Placilla (Crecimiento)": { vut: 99122, factor: 2.5 },
-                "Laguna Verde (Zonas AH)": { vut: 23480, factor: 2.2 },
-                "Cerro Los Placeres (Sector UTFSM)": { vut: 149843, factor: 2.4 },
-                "Barón / Recreo Alto": { vut: 94478, factor: 2.4 }
-            }
+// 1. VARIABLES DE ESTADO GLOBAL
+const UF_VALOR = 39890;
+const MULTIPLICADOR_BASE = 2.0; // Tu estrategia de partida conservadora
+let resObj = { val: 0 };
+
+/**
+ * DATABASE MAESTRA DE ÁREAS HOMOGÉNEAS (AH)
+ * Fuente: Reavalúo SII 2022 - Valores actualizados a moneda 2026.
+ * Los nombres de sectores han sido optimizados para impacto comercial.
+ */
+const DATABASE_ZONAS = {
+    vina: {
+        nombre: "Viña del Mar",
+        sectores: {
+            // Datos extraídos de VUT_V_VINA_DEL_MAR.pdf
+            "CAB460 | Reñaca Norte / Borde Mar (Alta Plusvalía)": { vut: 752075, area: "CAB460" },
+            "CAM400 | Plan de Viña (Sector Poniente / Lujo)": { vut: 1027651, area: "CAM400" },
+            "CMM078 | Libertad / Casino (Eje Comercial Premium)": { vut: 879165, area: "CMM078" },
+            "CMM161 | Miraflores Bajo (Residencial Consolidado)": { vut: 535707, area: "CMM161" },
+            "CMM077 | Plan de Viña Centro (Eje Comercial)": { vut: 638772, area: "CMM077" },
+            "CMM079 | Jardín del Mar (Residencial Alta Gama)": { vut: 512361, area: "CMM079" },
+            "CMB124 | Santa Inés (Sector Alta Demanda)": { vut: 594373, area: "CMB124" },
+            "XAM003 | Agua Santa / San Huberto (Vistas Mar)": { vut: 452893, area: "XAM003" },
+            "CMB146 | Gómez Carreño (Faja 1 / Principal)": { vut: 375661, area: "CMB146" },
+            "XAB012 | Chorrillos / Miraflores Alto (Conectividad)": { vut: 254595, area: "XAB012" },
+            "XBM085 | Recreo / Sector Borde Cerros": { vut: 83051, area: "XBM085" },
+            "XBB044 | Achupallas / Villa Independencia": { vut: 19096, area: "XBB044" }
         }
-    };
+    },
+    concon: {
+        nombre: "Concón",
+        sectores: {
+            // Datos extraídos de VUT_V_CONCON.pdf
+            "EMB025 | Costa Montemar (Vertical Luxury)": { vut: 250037, area: "EMB025" },
+            "CAM063 | Bosques de Montemar (Exclusivo Residencial)": { vut: 219950, area: "CAM063" },
+            "VSS085 | Borde Mar / Higuerillas (Ribera Marítima)": { vut: 156273, area: "VSS085" },
+            "CBB068 | Concón Sur / Playa Amarilla": { vut: 144307, area: "CBB068" },
+            "EMB031 | Concón Viejo / Centro Urbano": { vut: 130019, area: "EMB031" },
+            "EMB053 | Los Romeros / Sector Tradicional": { vut: 161274, area: "EMB053" },
+            "EMM016 | Caleta de Concón (Zona Gastronómica)": { vut: 210000, area: "EMM016" },
+            "VSS091 | Sector Magallanes / Conectividad": { vut: 80012, area: "VSS091" },
+            "EMB089 | Sector Industrial / Refinería": { vut: 4465, area: "EMB089" },
+            "SSS087 | La Isla (Zonas de Expansión)": { vut: 1429, area: "SSS087" }
+        }
+    }
+};
 
-    /**
-     * CONSTANTES TÉCNICAS (ACTUALIZACIÓN 2026)
-     */
-    const UF_VALOR = 39890;
-    const MULTIPLIQUER_COMERCIAL_BASE = 2.5;
-
-    /**
-     * FUNCIÓN DE CARGA DINÁMICA DE SECTORES
-     */
-    function cargarZonas() {
-        const comunaSelect = document.getElementById('comuna').value;
-        const zonaSelect = document.getElementById('zona');
-        
-        zonaSelect.innerHTML = '<option value="">Seleccionando Sector Técnico...</option>';
-        
+/**
+ * LOGICA DE INTERFAZ DINÁMICA
+ * Sincroniza la base de datos geográfica con el selector del usuario.
+ */
+function cargarZonas() {
+    const comunaSelect = document.getElementById('comuna').value;
+    const zonaSelect = document.getElementById('zona');
+    
+    // Reset preventivo de UI
+    zonaSelect.innerHTML = '<option value="">Cargando matriz de sectores...</option>';
+    
+    // Delay de 300ms para simular procesamiento de Big Data (Efecto Premium)
+    setTimeout(() => {
         if (comunaSelect && DATABASE_ZONAS[comunaSelect]) {
             zonaSelect.disabled = false;
             const sectores = DATABASE_ZONAS[comunaSelect].sectores;
             
-            let options = '<option value="">Elija el Sector Específico...</option>';
-            for (let nombre in sectores) {
-                // Guardamos el VUT y el Factor en el valor para el cálculo
-                const vut = sectores[nombre].vut;
-                const factor = sectores[nombre].factor;
-                options += `<option value="${vut}|${factor}">${nombre}</option>`;
-            }
+            let options = '<option value="" disabled selected>Seleccione Micro-Zona Específica...</option>';
+            
+            // Ordenamos alfabéticamente los nombres para mejor UX
+            const keys = Object.keys(sectores).sort();
+            
+            keys.forEach(key => {
+                const data = sectores[key];
+                // Inyectamos el VUT como valor para facilitar el cálculo directo
+                options += `<option value="${data.vut}">${key}</option>`;
+            });
+            
             zonaSelect.innerHTML = options;
-        } else {
-            zonaSelect.disabled = true;
-            zonaSelect.innerHTML = '<option value="">Seleccione Comuna primero...</option>';
+            
+            // Animación de entrada con GSAP para el selector
+            gsap.fromTo(zonaSelect, 
+                { borderColor: "rgba(59, 130, 246, 0.5)", x: -5 },
+                { borderColor: "rgba(255, 255, 255, 0.08)", x: 0, duration: 0.5 }
+            );
         }
-    }
-      /**
- * MOTOR DE VALORACIÓN DE EDIFICACIÓN - JIMÉNEZ & ASOCIADOS
- * Basado en Anexo 2 Resol. 209 (SII 2026)
- * -----------------------------------------------------------------------
- * Esta sección procesa la materialidad y el estado de la construcción
- * para sumarlo al valor del terreno procesado en la Parte 2.
- */
-
-const GPU_2026 = {
-    // Valores unitarios por m2 (Pesos CLP) - Tabla 5.4 Tradicionales
-    departamento: { // Clase B (Hormigón Armado)
-        1: 505761, // Calidad Superior (Lujo)
-        2: 373305, // Calidad Media-Superior
-        3: 271032, // Calidad Media
-        4: 181293, // Calidad Económica
-        5: 124310  // Calidad Básica
-    },
-    casa: { // Clase C (Albañilería / Ladrillo)
-        1: 419014, // Calidad Superior
-        2: 302194, // Calidad Media-Superior
-        3: 201123, // Calidad Media
-        4: 114675, // Calidad Económica
-        5: 89610   // Calidad Básica
-    }
-};
-
-// Coeficiente de Depreciación (Tabla 33 del Estudio de Precios 2022)
-// Se castiga un 0.8% anual según metodología oficial para Clase B/C.
-function calcularDepreciacion(clase, edad) {
-    let tasaAnual = 0.008; // 0.8% para concreto/ladrillo
-    let depreciacionAcumulada = tasaAnual * edad;
-    
-    // El SII topa la depreciación en 0.4 (conserva el 40% del valor)
-    let factorRetencion = 1 - Math.min(depreciacionAcumulada, 0.60);
-    return factorRetencion;
+    }, 300);
 }
 
 /**
- * FUNCIÓN MAESTRA DE CÁLCULO
- * Aquí implementamos tu estrategia: Base 2.0x + Ajustes de Atributos
+ * GESTIÓN DE ETIQUETAS DE INTERFAZ
+ * Ajusta la terminología según la tipología seleccionada (Deptos vs Casas)
  */
-function calcular() {
-    // 1. Obtención de datos de Suelo (VUT extraído en Parte 2)
-    const zonaData = document.getElementById('zona').value.split('|');
-    if (zonaData.length < 2) return;
-    
-    const vutFiscal = parseFloat(zonaData[0]); // Valor del suelo por m2 (SII)
-    const m2Terreno = parseFloat(document.getElementById('extra').value) || 0;
-    
-    // 2. Obtención de datos de Edificación
+function actualizarLabels() {
     const tipo = document.getElementById('tipo').value;
-    const m2Utiles = parseFloat(document.getElementById('util').value) || 0;
-    const calidad = 1; // Por defecto Superior para portal Premium (ajustable)
-    
-    // 3. Cálculo de Avalúo Fiscal Base (SII puro)
-    let avaluoTerrenoFiscal = vutFiscal * m2Terreno;
-    let valorUnitarioEdif = GPU_2026[tipo][calidad];
-    
-    // Aplicamos depreciación (Asumimos 10 años promedio para el simulador)
-    let factorVidaUtil = calcularDepreciacion(tipo, 10);
-    let avaluoEdifFiscal = (m2Utiles * valorUnitarioEdif) * factorVidaUtil;
-    
-    let avaluoTotalFiscalPesos = avaluoTerrenoFiscal + avaluoEdifFiscal;
-    let avaluoTotalFiscalUF = avaluoTotalFiscalPesos / UF_VALOR;
+    const lblUtil = document.getElementById('labelUtil');
+    const lblExtra = document.getElementById('labelExtra');
+    const panelPiso = document.getElementById('piso').parentElement;
 
-    // --- ESTRATEGIA JIMÉNEZ: EL MULTIPLICADOR COMERCIAL ---
-    // Partimos de un 2.0x fijo (Tu base de mercado)
-    let multiplicador = 2.0;
-
-    // 4. PREMIOS POR ATRIBUTOS (Los que llevan el valor a 2.5x o 3x)
-    const factorVista = parseFloat(document.getElementById('vista').value); // Ej: 1.30 (Frontal)
-    const factorOrienta = parseFloat(document.getElementById('orienta').value); // Ej: 1.08 (N.Poniente)
-    const factorEstado = parseFloat(document.getElementById('estado').value); // Ej: 1.10 (Nuevo)
+    if (tipo === 'departamento') {
+        lblUtil.innerText = "Superficie Útil Interior (m²)";
+        lblExtra.innerText = "Superficie Terrazas (m²)";
+        // Animamos la aparición del selector de piso para departamentos
+        gsap.to(panelPiso, { opacity: 1, display: "block", duration: 0.4 });
+    } else {
+        lblUtil.innerText = "Superficie Construida (m²)";
+        lblExtra.innerText = "Superficie Terreno Total (m²)";
+        // Ocultamos el selector de piso para casas (no aplica habitualmente)
+        gsap.to(panelPiso, { opacity: 0, display: "none", duration: 0.4 });
+    }
     
-    // Los atributos multiplican el valor comercial, no el fiscal
-    // Ejemplo: 2.0x * 1.30 (Vista) * 1.08 (Sol) = 2.8x
-    let valorComercialUF = avaluoTotalFiscalUF * multiplicador * factorVista * factorOrienta * factorEstado;
-
-    // 5. ACTUALIZACIÓN DE INTERFAZ
-    actualizarResultados(avaluoTotalFiscalUF, valorComercialUF);
+    // Forzamos recalculo automático al cambiar el tipo
+    calcular();
 }
-
-function actualizarResultados(fiscal, comercial) {
-    // Efecto Odometer para las UF
-    gsap.to(resObj, {
-        val: comercial,
-        duration: 2,
-        ease: "power4.out",
-        onUpdate: () => {
-            document.getElementById('resUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
-            document.getElementById('fiscalUF').innerText = Math.round(fiscal).toLocaleString('es-CL') + " UF";
-        },
-        onComplete: () => {
-            const elCLP = document.getElementById('resCLP');
-            elCLP.innerText = "$ " + Math.round(comercial * UF_VALOR).toLocaleString('es-CL');
-            elCLP.style.opacity = 1;
-        }
-    });
-}
-      /**
- * AMPLIACIÓN DE DATABASE GEOGRÁFICA - SECTOR INTERIOR
- * Fuente: Reavalúo SII 2022 (Actualizado a UF $39.890)
+        /**
+ * SISTEMA DE INTELIGENCIA INMOBILIARIA V2.6
+ * BLOQUE DE DATOS GEOGRÁFICOS 02: VALPARAÍSO, QUILPUÉ, VILLA ALEMANA, LIMACHE
  * -----------------------------------------------------------------------
- * En este bloque sumamos Quilpué, Villa Alemana y Limache con sus 
- * valores de suelo específicos (VUT).
+ * Este módulo extiende la capacidad del DATABASE_ZONAS integrando
+ * la matriz de precios por m2 del SII para el núcleo regional.
  */
 
-// Extendemos el objeto DATABASE_ZONAS definido en la Parte 2
 Object.assign(DATABASE_ZONAS, {
+    valpo: {
+        nombre: "Valparaíso",
+        sectores: {
+            // Datos procesados de VUT_V_VALPARAISO.pdf
+            "CAA140 | Plan Valparaíso (Centro Financiero / Comercial)": { vut: 1172851, area: "CAA140", perfil: "Comercial-Lujo" },
+            "CMA228 | Avenida Brasil / Entorno Universitario": { vut: 901204, area: "CMA228", perfil: "Institucional" },
+            "CAA019 | Cerro Alegre / Concepción (Zona Patrimonial)": { vut: 632593, area: "CAA019", perfil: "Turístico-Premium" },
+            "CMM009 | Playa Ancha (Sector Borde Costero / Gran Bretaña)": { vut: 407381, area: "CMM009", perfil: "Residencial-Consolidado" },
+            "CAM129 | Cerro Bellavista / Cerro Florida (Vistas Mar)": { vut: 291114, area: "CAM129", perfil: "Bohemio-Vista" },
+            "CMB072 | Cerro Los Placeres (Sector UTFSM)": { vut: 149843, area: "CMB072", perfil: "Universitario" },
+            "CMB307 | Curauma / Placilla (Desarrollo Residencial Nuevo)": { vut: 99122, area: "CMB307", perfil: "Suburbano-Expansión" },
+            "CMB063 | Barón / Recreo Alto (Conectividad Viña)": { vut: 94478, area: "CMB063", perfil: "Residencial-Mixto" },
+            "WSS295 | Laguna Verde (Sector Costa Central)": { vut: 23480, area: "WSS295", perfil: "Rural-Turístico" },
+            "XBB025 | Cerro San Roque / Rocuant": { vut: 106801, area: "XBB025", perfil: "Habitacional" }
+        }
+    },
     quilpue: {
         nombre: "Quilpué",
         sectores: {
-            // Datos extraídos de VUT_V_QUILPUE.pdf
-            "Quilpué Centro (Eje Comercial)": { vut: 283435, factor: 2.2 },
-            "Paso Hondo (Sector Residencial)": { vut: 216639, factor: 2.4 },
-            "Los Pinos / Teniente Merino": { vut: 191457, factor: 2.3 },
-            "El Belloto Centro": { vut: 142878, factor: 2.1 },
-            "El Belloto Norte / Sur": { vut: 82155, factor: 2.0 },
-            "Marga Marga (Zonas de Expansión)": { vut: 66081, factor: 2.2 }
+            // Datos procesados de VUT_V_QUILPUE.pdf
+            "CMB034 | Quilpué Centro (Núcleo Comercial / Estación)": { vut: 283435, area: "CMB034", perfil: "Comercial" },
+            "CAB401 | Paso Hondo (Residencial Alta Plusvalía)": { vut: 216639, area: "CAB401", perfil: "Exclusivo" },
+            "CMB033 | Los Pinos (Sector Residencial Consolidado)": { vut: 191457, area: "CMB033", perfil: "Residencial-Premium" },
+            "CMB086 | El Belloto Centro (Eje Comercial / Portal)": { vut: 142878, area: "CMB086", perfil: "Mixto" },
+            "XBB024 | El Belloto Norte (Zonas Habitacionales)": { vut: 82155, area: "XBB024", perfil: "Residencial-Medio" },
+            "CMB028 | Marga Marga / Valle del Sol": { vut: 66081, area: "CMB028", perfil: "Expansión" },
+            "XBB011 | El Belloto Sur (Sectores Periféricos)": { vut: 14288, area: "XBB011", perfil: "Económico" },
+            "WSS056 | Colliguay / Zonas Rurales": { vut: 31969, area: "WSS056", perfil: "Rural" }
         }
     },
     v_alemana: {
         nombre: "Villa Alemana",
         sectores: {
-            // Datos extraídos de VUT_V_VILLA_ALEMANA.pdf
-            "Villa Alemana Centro (Céntrico)": { vut: 240214, factor: 2.1 },
-            "Peñablanca (Sectores Nuevos)": { vut: 154308, factor: 2.3 },
-            "Huanhualí / Sector Sur": { vut: 150379, factor: 2.2 },
-            "El Carmen / Rumie": { vut: 119839, factor: 2.1 },
-            "Gumercindo / Las Américas": { vut: 61616, factor: 2.0 }
+            // Datos procesados de VUT_V_VILLA_ALEMANA.pdf
+            "CMB043 | Villa Alemana Centro (Área Comercial Estación)": { vut: 240214, area: "CMB043", perfil: "Comercial" },
+            "HBB002 | Peñablanca (Sector Residencial Nor-Oriente)": { vut: 154308, area: "HBB002", perfil: "Residencial-Nuevo" },
+            "HBB001 | Huanhualí / Sector Sur (Consolidado)": { vut: 150379, area: "HBB001", perfil: "Residencial-Tradicional" },
+            "CMB109 | El Carmen / Sector Rumie": { vut: 119839, area: "CMB109", perfil: "Mixto" },
+            "HBB004 | Gumercindo / Las Américas": { vut: 61616, area: "HBB004", perfil: "Habitacional-Medio" },
+            "WSS074 | Quebrada Escobares / Rural Urbana": { vut: 37506, area: "WSS074", perfil: "Parcelación" }
         }
     },
     limache: {
         nombre: "Limache",
         sectores: {
-            // Datos extraídos de VUT_V_LIMACHE.pdf
-            "San Francisco de Limache (Comercial)": { vut: 136270, factor: 2.4 },
-            "Limache Viejo (Histórico)": { vut: 116624, factor: 2.1 },
-            "Los Laureles / Sector Rural Urbano": { vut: 110195, factor: 2.2 },
-            "Sector Estación": { vut: 77690, factor: 2.3 },
-            "Zonas de Parcelación (AH Especial)": { vut: 51258, factor: 2.5 }
+            // Datos procesados de VUT_V_LIMACHE.pdf
+            "HMM061 | San Francisco de Limache (Eje Comercial / Avenida)": { vut: 136270, area: "HMM061", perfil: "Comercial-Premium" },
+            "HMM066 | Limache Viejo (Casco Histórico / Plaza)": { vut: 116624, area: "HMM066", perfil: "Tradicional" },
+            "HBB009 | Los Laureles (Entorno Natural / Residencial)": { vut: 110195, area: "HBB009", perfil: "Residencial-Alta-Demanda" },
+            "HBB004 | Sector Estación / Conectividad Merval": { vut: 77690, area: "HBB004", perfil: "Mixto" },
+            "HBB017 | Zonas de Parcelación (AH Habitacional Rural)": { vut: 51258, area: "HBB017", perfil: "Agrícola-Residencial" }
         }
     }
 });
 
 /**
- * REFINAMIENTO DEL MOTOR DE CÁLCULO: LA ESCALA JIMÉNEZ
- * El valor parte en 2.0x y escala según atributos.
+ * REGLAS TÉCNICAS DE DEPRECIACIÓN Y FACTORES DE AJUSTE
+ * Estas funciones aplican la minucia técnica del Estudio de Precios 2022.
  */
-function calcularEscalamientoComercial(avaluoFiscalUF) {
-    // 1. Base fija de mercado (2.0x)
-    let multiplicadorBase = 2.0;
-    
-    // 2. Factores que agregan valor (Premios)
-    const factorVista = parseFloat(document.getElementById('vista').value) || 1.0;
-    const factorOrienta = parseFloat(document.getElementById('orienta').value) || 1.0;
-    const factorEstado = parseFloat(document.getElementById('estado').value) || 1.0;
-    
-    // 3. Cálculo del multiplicador final dinámico
-    // Si la propiedad tiene Vista Mar (+30%), Orientación NP (+8%) y está Nueva (+10%)
-    // El multiplicador escala: 2.0 * 1.30 * 1.08 * 1.10 = 3.08x
-    let multiplicadorFinal = multiplicadorBase * factorVista * factorOrienta * factorEstado;
-    
-    // Topamos el multiplicador para mantener coherencia comercial
-    multiplicadorFinal = Math.min(multiplicadorFinal, 3.5);
 
-    let valorComercialFinal = avaluoFiscalUF * multiplicadorFinal;
+/**
+ * Calcula el coeficiente de depreciación basado en el material predominante.
+ * Según Tabla 33 (Estudio 2022), para Clase B y C, el castigo es de 0.8% anual.
+ * Jiménez & Asociados utiliza un límite de retención del 40% (máxima depreciación 60%).
+ */
+function aplicarMetodologiaDepreciacion(annoRecepcion, claseEstructural) {
+    const annoActual = 2026;
+    const edadEfectiva = Math.max(0, annoActual - annoRecepcion);
+    
+    // Tasa de depreciación anual según materialidad oficial
+    let tasaAnual = 0.008; // 0.8% anual base
+    
+    if (claseEstructural === 'E') tasaAnual = 0.012; // Madera deprecia más rápido (1.2%)
+    if (claseEstructural === 'A') tasaAnual = 0.005; // Acero mantiene mejor valor (0.5%)
+
+    const depreciacionTotal = edadEfectiva * tasaAnual;
+    
+    // El coeficiente guía de edad (CGE) nunca baja del 40% del valor de reposición
+    const factorEdad = 1 - Math.min(depreciacionTotal, 0.60);
     
     return {
-        multiplicador: multiplicadorFinal.toFixed(2),
-        valorFinal: valorComercialFinal
+        factor: factorEdad,
+        perdida: (depreciacionTotal * 100).toFixed(1)
     };
 }
 
 /**
- * ACTUALIZACIÓN DE INTERFAZ CON FEEDBACK TÉCNICO
+ * Ajuste por Superficie Terreno (Economía de Escala)
+ * En terrenos de gran tamaño, el valor unitario tiende a disminuir levemente.
+ * Jiménez & Asociados aplica un factor suavizado para no castigar excesivamente.
  */
-function actualizarUIConEscala(fiscalUF, comercialUF, multiplicador) {
-    // Animación del número principal
-    gsap.to(resObj, {
-        val: comercialUF,
-        duration: 1.5,
-        ease: "power2.out",
-        onUpdate: () => {
-            document.getElementById('resUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
-        }
-    });
-
-    // Mostramos el multiplicador resultante para dar transparencia
-    const infoComercial = `Ratio de Mercado: ${multiplicador}x sobre el avalúo fiscal`;
-    console.log(infoComercial); // Podemos agregar un elemento en el HTML para mostrar esto
-
-    // Valor en Pesos
-    const elCLP = document.getElementById('resCLP');
-    const valorCLP = Math.round(comercialUF * UF_VALOR);
-    elCLP.innerText = "$ " + valorCLP.toLocaleString('es-CL');
-    elCLP.style.opacity = 1;
-
-    // Actualizamos el Avalúo Fiscal de referencia
-    document.getElementById('fiscalUF').innerText = Math.round(fiscalUF).toLocaleString('es-CL') + " UF";
+function factorEscalaTerreno(m2Totales) {
+    if (m2Totales <= 500) return 1.0;
+    if (m2Totales <= 2000) return 0.95;
+    if (m2Totales <= 5000) return 0.88;
+    return 0.80; // Terrenos de gran extensión (lotes)
 }
-      /**
- * COMPLETACIÓN DE DATABASE GEOGRÁFICA - LITORAL Y ZONA SUR
- * Fuente: Reavalúo SII 2022 + Actualización de Mercado Jiménez & Asociados
+        /**
+ * SISTEMA DE INTELIGENCIA INMOBILIARIA V2.6
+ * BLOQUE DE DATOS GEOGRÁFICOS 03: LITORAL NORTE, LITORAL SUR Y CASABLANCA
  * -----------------------------------------------------------------------
+ * Integración de zonas de alta exclusividad y balnearios consolidados.
  */
 
 Object.assign(DATABASE_ZONAS, {
-    litoral_norte: {
-        nombre: "Puchuncaví / Zapallar / Papudo",
+    petorca: {
+        nombre: "Zapallar / Papudo",
         sectores: {
-            // Datos extraídos de VUT_V_ZAPALLAR.pdf y VUT_V_PAPUDO.pdf
-            "Zapallar Pueblo (Sector HAA033)": { vut: 861734, factor: 3.2 }, 
-            "Cachagua / El Golf (Exclusivo)": { vut: 780550, factor: 3.4 },
-            "Maitencillo / Marbella (Sector VSS055)": { vut: 110373, factor: 3.1 },
-            "Papudo / Punta Puyai (HAM042)": { vut: 628485, factor: 2.8 },
-            "Papudo Centro (HBB019)": { vut: 83048, factor: 2.4 },
-            "Puchuncaví / Maitencillo Pueblo": { vut: 45722, factor: 2.2 }
-        }
-    },
-    algarrobo: {
-        nombre: "Algarrobo / El Quisco",
-        sectores: {
-            // Datos extraídos de VUT_V_ALGARROBO.pdf
-            "Algarrobo Norte / San Alfonso (HAA023)": { vut: 505804, factor: 2.9 },
-            "Algarrobo Centro / Mirador (CMB043)": { vut: 450066, factor: 2.6 },
-            "El Quisco / Isla Negra (Borde Mar)": { vut: 185027, factor: 2.4 },
-            "El Tabo / Las Cruces": { vut: 85370, factor: 2.2 }
+            // Datos procesados de VUT_V_ZAPALLAR.pdf y VUT_V_PAPUDO.pdf
+            "HAA033 | Zapallar Pueblo (Sector El Golf / Exclusivo)": { vut: 861734, area: "HAA033", perfil: "Ultra-Premium" },
+            "HAA078 | Zapallar / Aguas Claras (Alta Plusvalía)": { vut: 313260, area: "HAA078", perfil: "Premium" },
+            "VSS055 | Maitencillo / Marbella (Condominio Mar)": { vut: 110373, area: "VSS055", perfil: "Residencial-Playa" },
+            "VSS054 | Maitencillo Sur / Laguna (Urbano)": { vut: 55722, area: "VSS054", perfil: "Turístico" },
+            "HAM042 | Papudo / Punta Puyai (Borde Costero)": { vut: 628485, area: "HAM042", perfil: "Residencial-Lujo" },
+            "HBB019 | Papudo Centro (Casco Histórico)": { vut: 83048, area: "HBB019", perfil: "Tradicional" },
+            "ESS063 | Cachagua / Sector Interior": { vut: 81262, area: "ESS063", perfil: "Residencial" }
         }
     },
     san_antonio: {
-        nombre: "San Antonio / Santo Domingo",
+        nombre: "Algarrobo / San Antonio",
         sectores: {
-            // Datos extraídos de VUT_V_SAN_ANTONIO.pdf
-            "Santo Domingo (Rocas - CMM009)": { vut: 151713, factor: 3.2 },
-            "San Antonio (Sector TBB810)": { vut: 168418, factor: 2.1 },
-            "Llolleo / Barrancas": { vut: 74193, factor: 2.0 }
+            // Datos procesados de VUT_V_ALGARROBO.pdf y VUT_V_SAN_ANTONIO.pdf
+            "HAA023 | Algarrobo Norte / San Alfonso (Resort)": { vut: 505804, area: "HAA023", perfil: "Turístico-Premium" },
+            "CMB043 | Algarrobo Centro / Mirador (Comercial)": { vut: 450066, area: "CMB043", perfil: "Comercial" },
+            "HMM044 | El Quisco / Isla Negra (Borde Mar)": { vut: 185027, area: "HMM044", perfil: "Patrimonial" },
+            "CMM009 | Santo Domingo (Rocas de Santo Domingo)": { vut: 151713, area: "CMM009", perfil: "Exclusivo-Tradicional" },
+            "TBB810 | San Antonio Centro (Eje Comercial)": { vut: 168418, area: "TBB810", perfil: "Comercial-Portuario" },
+            "HMM052 | El Tabo / Las Cruces (Sector Urbano)": { vut: 85370, area: "HMM052", perfil: "Residencial" }
         }
     },
     casablanca: {
         nombre: "Casablanca",
         sectores: {
-            // Datos extraídos de VUT_V_CASABLANCA.pdf
-            "Casablanca Centro (HAB049)": { vut: 112393, factor: 2.2 },
-            "Quintay / Tunquén (Borde Mar)": { vut: 88540, factor: 3.0 },
-            "Lo Vásquez / Rural": { vut: 11752, factor: 2.1 }
+            // Datos procesados de VUT_V_CASABLANCA.pdf
+            "HAB049 | Casablanca Centro (Núcleo Urbano)": { vut: 112393, area: "HAB049", perfil: "Urbano-Servicios" },
+            "VSS059 | Quintay / Tunquén (Litoral Casablanca)": { vut: 8930, area: "VSS059", perfil: "Rural-Exclusivo" },
+            "EBB520 | Sector Lo Vásquez / Ruta 68": { vut: 24825, area: "EBB520", perfil: "Agro-Industrial" }
         }
     }
 });
 
 /**
- * CIERRE DEL MOTOR - FUNCIONES DE INTERFAZ Y REPORTE
+ * -----------------------------------------------------------------------
+ * EL MOTOR MATEMÁTICO (CORE CALCULATION ENGINE)
+ * -----------------------------------------------------------------------
+ * Implementa la Estrategia Jiménez de Escalamiento Comercial (2.0x a 3.0x).
  */
 
-function actualizarLabels() {
-    const tipo = document.getElementById('tipo').value;
-    const lblUtil = document.getElementById('labelUtil');
-    const lblExtra = document.getElementById('labelExtra');
-    
-    if (tipo === 'casa') {
-        lblUtil.innerText = "Superficie Construida (m²)";
-        lblExtra.innerText = "Superficie Terreno Total (m²)";
-    } else {
-        lblUtil.innerText = "Superficie Útil Interior (m²)";
-        lblExtra.innerText = "Superficie Terraza / Balcón (m²)";
+function calcular() {
+    // 1. Captura de Inputs Técnicos
+    const vutSeleccionado = parseFloat(document.getElementById('zona').value) || 0;
+    const m2Utiles = parseFloat(document.getElementById('util').value) || 0;
+    const m2Extra = parseFloat(document.getElementById('extra').value) || 0;
+    const tipoActivo = document.getElementById('tipo').value;
+    const claseEstructural = document.getElementById('clase').value;
+    const calidadTerminacion = document.getElementById('calidad').value;
+    const annoRecepcion = parseInt(document.getElementById('anno').value) || 2026;
+
+    // Validación de integridad de datos
+    if (vutSeleccionado === 0 || m2Utiles === 0) {
+        actualizarUIFeedback(0, 0, 0);
+        return;
     }
-    calcular();
+
+    // --- FASE 1: DETERMINACIÓN DEL AVALÚO FISCAL (MÉTODO SII) ---
+    
+    // A. Valor Suelo (SII)
+    // Aplicamos el factor de escala de terreno para sitios grandes
+    const fEscala = factorEscalaTerreno(m2Extra);
+    const avaluoTerrenoFiscal = m2Extra * vutSeleccionado * fEscala;
+
+    // B. Valor Edificación (Resolución 209 SII 2026)
+    // Obtenemos el valor por m2 según Clase y Calidad
+    let vucSii = GPU_2026[tipoActivo][calidadTerminacion] || 250000;
+    
+    // Ajuste por Clase Estructural (Diferenciales técnicos)
+    const factorClase = { 'A': 1.15, 'B': 1.05, 'C': 1.00, 'E': 0.85 };
+    vucSii = vucSii * (factorClase[claseEstructural] || 1.0);
+
+    // Aplicamos depreciación oficial por edad
+    const depreciacion = aplicarMetodologiaDepreciacion(annoRecepcion, claseEstructural);
+    const avaluoEdifFiscal = (m2Utiles * vucSii) * depreciacion.factor;
+
+    const avaluoTotalFiscalPesos = avaluoTerrenoFiscal + avaluoEdifFiscal;
+    const avaluoTotalFiscalUF = avaluoTotalFiscalPesos / UF_VALOR;
+
+    // --- FASE 2: ESCALAMIENTO COMERCIAL (ESTRATEGIA JIMÉNEZ) ---
+
+    // A. Multiplicador Base de Mercado (Partimos en 2.0x)
+    let multiplicadorFinal = MULTIPLICADOR_BASE;
+
+    // B. Captura de Atributos de Plusvalía (Los "Premios")
+    const fVista = parseFloat(document.getElementById('vista').value) || 1.0;
+    const fOrienta = parseFloat(document.getElementById('orienta').value) || 1.0;
+    const fEstado = parseFloat(document.getElementById('estado').value) || 1.0;
+    const fAmenities = parseFloat(document.getElementById('amenities').value) || 1.0;
+    const fServicios = parseFloat(document.getElementById('servicios').value) || 1.0;
+    const fPiso = (tipoActivo === 'departamento') ? (parseFloat(document.getElementById('piso').value) || 1.0) : 1.0;
+
+    // C. El Factor Acumulativo de Jiménez & Asociados
+    // Cada atributo premium multiplica la base, pudiendo llegar al 3.0x o 3.5x
+    multiplicadorFinal = multiplicadorBase * fVista * fOrienta * fEstado * fAmenities * fServicios * fPiso;
+
+    // D. Valor Comercial Final
+    const valorComercialUF = avaluoTotalFiscalUF * multiplicadorFinal;
+
+    // --- FASE 3: FEEDBACK Y UI ---
+    actualizarResultadosFinales(avaluoTotalFiscalUF, valorComercialUF, multiplicadorFinal, depreciacion.perdida);
+}
+        /**
+ * SISTEMA DE INTELIGENCIA INMOBILIARIA V2.6
+ * BLOQUE 04: MOTOR VISUAL Y GESTIÓN DE REPORTES
+ * -----------------------------------------------------------------------
+ * Este módulo gestiona la experiencia de usuario premium y la 
+ * conversión de leads mediante WhatsApp estructurado.
+ */
+
+/**
+ * ACTUALIZACIÓN DINÁMICA DE RESULTADOS (EL CORAZÓN VISUAL)
+ * @param {number} fiscal - Valor calculado en UF bajo metodología SII.
+ * @param {number} comercial - Valor escalado bajo Estrategia Jiménez.
+ * @param {number} ratio - Factor de mercado resultante (ej: 2.85).
+ * @param {string} deprec - Porcentaje de pérdida por edad.
+ */
+function actualizarResultadosFinales(fiscal, comercial, ratio, deprec) {
+    // 1. Animación del Odómetro Principal (Valor Comercial)
+    // Usamos GSAP para una transición fluida y profesional
+    gsap.to(resObj, {
+        val: comercial,
+        duration: 2,
+        ease: "expo.out",
+        onUpdate: () => {
+            // Formateo con separador de miles para impacto visual
+            document.getElementById('resUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
+        },
+        onComplete: () => {
+            // 2. Revelado del valor en Pesos (CLP)
+            const elCLP = document.getElementById('resCLP');
+            const valorPesos = Math.round(comercial * UF_VALOR);
+            elCLP.innerText = "$ " + valorPesos.toLocaleString('es-CL');
+            
+            gsap.fromTo(elCLP, 
+                { opacity: 0, y: 10 }, 
+                { opacity: 1, y: 0, duration: 0.8, ease: "back.out" }
+            );
+        }
+    });
+
+    // 3. Actualización del Dashboard de Desglose
+    // Mostramos el Avalúo Fiscal para anclar la negociación
+    document.getElementById('fiscalUF').innerText = Math.round(fiscal).toLocaleString('es-CL') + " UF";
+    
+    // Calculamos el porcentaje de plusvalía real sobre la base 2.0x
+    const plusvaliaReal = ((ratio - 2.0) / 2.0 * 100).toFixed(1);
+    const elPlus = document.getElementById('valPlus');
+    elPlus.innerText = `+ ${plusvaliaReal}%`;
+    
+    // Feedback de Depreciación (Argumento técnico para cierres)
+    const elDepre = document.getElementById('valDepre');
+    elDepre.innerText = `- ${deprec}%`;
+
+    // 4. Dinámica del Badge de Ratio
+    const badge = document.getElementById('valRatio');
+    badge.innerText = ratio.toFixed(2);
+    
+    // Efecto neón en el contenedor si el ratio es > 2.8 (Propiedad Premium)
+    if (ratio >= 2.8) {
+        gsap.to("#ratioContainer", { 
+            backgroundColor: "rgba(37, 99, 235, 0.2)", 
+            borderColor: "rgba(37, 99, 235, 0.5)",
+            duration: 0.5 
+        });
+    } else {
+        gsap.to("#ratioContainer", { 
+            backgroundColor: "rgba(37, 99, 235, 0.1)", 
+            borderColor: "rgba(37, 99, 235, 0.2)",
+            duration: 0.5 
+        });
+    }
 }
 
 /**
- * GENERACIÓN DE MENSAJE DE CAPTACIÓN (WHATSAPP PREMIUM)
- * Incluye el desglose técnico para que el lead llegue pre-calificado.
+ * SISTEMA DE FEEDBACK PARA DATOS VACÍOS
  */
-function enviarPropuesta() {
-    const totalUF = document.getElementById('resUF').innerText;
-    const fiscalUF = document.getElementById('fiscalUF').innerText;
-    const sector = document.getElementById('zona').options[document.getElementById('zona').selectedIndex]?.text || "No definido";
-    const tipo = document.getElementById('tipo').value;
-    
-    // Calculamos el ratio final para tu información
-    const ratio = (parseInt(totalUF.replace(/\./g, '')) / parseInt(fiscalUF.replace(/\./g, ''))).toFixed(2);
-
-    const mensaje = `*EVALUACIÓN PATRIMONIAL - JIMÉNEZ & ASOCIADOS*%0A%0A` +
-        `*Activo:* ${tipo.toUpperCase()}%0A` +
-        `*Ubicación:* ${sector}%0A` +
-        `*Valor Estimado:* ${totalUF} UF%0A` +
-        `*Avalúo Fiscal:* ${fiscalUF}%0A` +
-        `*Ratio de Mercado:* ${ratio}x%0A%0A` +
-        `Solicito validación técnica en terreno para confirmar atributos de Vista, Orientación y Conservación.`;
-
-    window.open(`https://wa.me/56951134778?text=${mensaje}`, '_blank');
+function actualizarUIFeedback(f, c, r) {
+    document.getElementById('resUF').innerText = "0";
+    document.getElementById('resCLP').style.opacity = "0";
+    document.getElementById('fiscalUF').innerText = "0 UF";
+    document.getElementById('valPlus').innerText = "+ 0%";
+    document.getElementById('valDepre').innerText = "- 0.0%";
+    document.getElementById('valRatio').innerText = "2.00";
 }
 
-// Inicialización de la UI con GSAP para el efecto "Grandes Ligas"
+/**
+ * GENERADOR DE REPORTES PARA CAPTACIÓN (WHATSAPP ESTRATÉGICO)
+ * Formatea un mensaje profesional para que el cliente te envíe toda la data.
+ */
+function enviarPropuesta() {
+    // Recopilación de datos finales del DOM
+    const totalUF = document.getElementById('resUF').innerText;
+    const fiscalUF = document.getElementById('fiscalUF').innerText;
+    const ratioFinal = document.getElementById('valRatio').innerText;
+    const microzona = document.getElementById('zona').options[document.getElementById('zona').selectedIndex]?.text || "No especificada";
+    const tipo = document.getElementById('tipo').value;
+    const m2U = document.getElementById('util').value;
+    const m2T = document.getElementById('extra').value;
+
+    // Validación de seguridad
+    if (totalUF === "0") {
+        alert("Por favor, complete los parámetros técnicos para generar la evaluación.");
+        return;
+    }
+
+    // Estructura de mensaje de Negocios (Copia de alto impacto)
+    const saludo = `*SISTEMA DE EVALUACIÓN PATRIMONIAL | JIMÉNEZ %26 ASOCIADOS*%0A`;
+    const intro = `Hola Sebastián, acabo de realizar una tasación algorítmica de mi propiedad.%0A%0A`;
+    const ficha = `*--- FICHA TÉCNICA ---*%0A` +
+                  `• *Tipo:* ${tipo.toUpperCase()}%0A` +
+                  `• *Ubicación:* ${microzona}%0A` +
+                  `• *Superficie:* ${m2U}m² const. / ${m2T}m² terr.%0A%0A`;
+    const resultados = `*--- RESULTADOS ESTIMADOS ---*%0A` +
+                       `• *VALOR COMERCIAL:* ${totalUF} UF%0A` +
+                       `• *Ratio Mercado:* ${ratioFinal}x%0A` +
+                       `• *Referencia Fiscal:* ${fiscalUF}%0A%0A`;
+    const cierre = `Solicito una *Validación Técnica Presencial* para confirmar el escalamiento de los atributos de plusvalía y formalizar la orden de venta.`;
+
+    const url = `https://wa.me/56951134778?text=${saludo}${intro}${ficha}${resultados}${cierre}`;
+    
+    // Apertura en pestaña nueva para no perder el contexto de la web
+    window.open(url, '_blank');
+}
+
+/**
+ * EFECTOS DE "VIBE CODING" (INTERFACES DE LUJO)
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    gsap.from(".glass-panel", {
-        opacity: 0,
-        y: 50,
+    // Animación de entrada de los paneles
+    gsap.to(".reveal", {
+        opacity: 1,
+        y: 0,
         duration: 1.2,
-        stagger: 0.2,
+        stagger: 0.15,
         ease: "power4.out"
     });
-    
-    console.log("Sistema Jiménez & Asociados V2.6 cargado con éxito.");
-});
 
-</script>
+    // Inyectar valores iniciales si es necesario
+    actualizarLabels();
+});
+        <div class="glass-card p-6 border-white/5 bg-white/[0.01] mt-6 reveal" style="transition-delay: 0.4s;">
+                    <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> Science Behind the Tool
+                    </h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></span>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                <strong class="text-slate-300">Algoritmo de Suelo:</strong> Sincronización con la matriz de Áreas Homogéneas (AH) del SII, ajustada por el Factor de Masa Crítica de Mercado de Jiménez & Asociados.
+                            </p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></span>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                <strong class="text-slate-300">Curva de Depreciación:</strong> Aplicación de la Metodología Heidecke para el cálculo de obsolescencia física y funcional (Tasa 0.8% anual).
+                            </p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></span>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                <strong class="text-slate-300">Ratio de Mercado:</strong> Factor de corrección dinámico entre avalúo fiscal y precio de cierre real (Escala 2.0x - 3.5x).
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </div> </main>
+
+        <footer class="mt-20 pt-12 border-t border-white/5 reveal">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-2">
+                    <h2 class="heading-premium text-2xl text-white mb-4">JIMÉNEZ<span class="text-blue-500 font-light">&</span>ASOCIADOS</h2>
+                    <p class="text-xs text-slate-500 max-w-sm leading-relaxed mb-6">
+                        Líderes en gestión inmobiliaria estratégica en la Región de Valparaíso. Nuestra tecnología permite a propietarios y desarrolladores tomar decisiones basadas en datos reales, no en suposiciones.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-400 hover:bg-blue-500 hover:text-white transition-all"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-400 hover:bg-blue-500 hover:text-white transition-all"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-400 hover:bg-blue-500 hover:text-white transition-all"><i class="fa-brands fa-facebook-f"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h5 class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">Servicios Élite</h5>
+                    <ul class="space-y-3 text-xs text-slate-500">
+                        <li class="hover:text-blue-400 cursor-pointer transition-colors">Brokerage de Lujo</li>
+                        <li class="hover:text-blue-400 cursor-pointer transition-colors">Análisis de Inversión</li>
+                        <li class="hover:text-blue-400 cursor-pointer transition-colors">Tasaciones Periciales</li>
+                        <li class="hover:text-blue-400 cursor-pointer transition-colors">Gestión de Proyectos</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">Operaciones</h5>
+                    <ul class="space-y-3 text-xs text-slate-500">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-blue-500"></i> Viña del Mar / Reñaca</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-phone text-blue-500"></i> +56 9 5113 4778</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-envelope text-blue-500"></i> s.jimenez@jimenezyasociados.cl</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 py-8 border-t border-white/5">
+                <p class="text-[9px] text-slate-600 uppercase tracking-widest">
+                    © 2026 Jiménez & Asociados. Todos los derechos reservados.
+                </p>
+                <div class="flex gap-6 text-[9px] text-slate-600 uppercase tracking-widest">
+                    <a href="#" class="hover:text-blue-500 transition-colors">Términos Técnicos</a>
+                    <a href="#" class="hover:text-blue-500 transition-colors">Privacidad de Datos</a>
+                    <a href="#" class="hover:text-blue-500 transition-colors">Metodología SII</a>
+                </div>
+            </div>
+        </footer>
+    </div> <script>
+    /**
+     * EXTENSIÓN: VALORACIÓN DE OBRAS COMPLEMENTARIAS
+     * Fuente: Resol. 209 SII 2026 - Sección 5.3
+     */
+    const OBRAS_EXTRA = {
+        piscina: 98335, // Valor por m3 (EA)
+        pavimentos: 123693, // Valor por m2 (OP)
+        muros: 101152 // Valor por m2 (M)
+    };
+
+    /**
+     * Mapeo de Atributos Secundarios para la Ficha Técnica
+     */
+    function obtenerDescripcionRatio(ratio) {
+        if (ratio >= 3.0) return "Activo de Altas Prestaciones (Premium)";
+        if (ratio >= 2.5) return "Propiedad con Atributos de Valor Superior";
+        return "Valoración de Mercado Estándar";
+    }
+
+    /**
+     * Inicialización de validación de inputs
+     * Previene que se ingresen valores negativos o fuera de rango.
+     */
+    document.querySelectorAll('.premium-field').forEach(input => {
+        input.addEventListener('change', () => {
+            if (input.type === 'number' && input.value < 0) input.value = 0;
+            // Efecto visual de "pulsación" al actualizar datos
+            gsap.fromTo("#ratioContainer", 
+                { scale: 1.05 }, 
+                { scale: 1, duration: 0.3, ease: "back.out" }
+            );
+        });
+    });
+
+    /**
+     * MANTENIMIENTO DE MARCA EN CONSOLA (ANTI-COPIA)
+     */
+    console.log("%c JIMÉNEZ & ASOCIADOS ", "background: #1d4ed8; color: #fff; font-size: 20px; font-weight: bold; padding: 10px;");
+    console.log("Sistema de Tasación Algorítmica Protegido. Versión 2.6.4 Build 2026.");
+
+    </script>
 </body>
 </html>
