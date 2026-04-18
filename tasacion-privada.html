@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Motor de Tasación Pro | Jiménez & Asociados</title>
+    <title>Motor de Tasación Precisa | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -24,15 +24,15 @@
         <div class="lg:col-span-7 card-glass p-8 shadow-2xl">
             <div class="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
                 <div class="text-lg font-bold tracking-tighter uppercase italic text-blue-500">Analizador Comercial Jiménez & Asociados</div>
-                <div class="text-[9px] text-gray-600 tracking-widest uppercase">Expertise Regional</div>
+                <div class="text-[9px] text-gray-600 tracking-widest uppercase">Precisión Inmobiliaria</div>
             </div>
 
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label class="label-min">Tipología</label>
                     <select id="tipo" class="tech-input" onchange="toggleLabels()">
-                        <option value="departamento">Departamento</option>
-                        <option value="casa" selected>Casa</option>
+                        <option value="departamento" selected>Departamento</option>
+                        <option value="casa">Casa</option>
                     </select>
                 </div>
                 <div>
@@ -42,8 +42,8 @@
                         <option value="vina">Viña del Mar</option>
                         <option value="concon">Concón</option>
                         <option value="valparaiso">Valparaíso</option>
-                        <option value="interior">Quilpué / Villa Alemana</option>
-                        <option value="litoral_norte">Puchuncaví / Zapallar</option>
+                        <option value="quilpue">Quilpué / Villa Alemana</option>
+                        <option value="litoral_norte">Quintero / Zapallar / Papudo</option>
                     </select>
                 </div>
                 <div class="md:col-span-2">
@@ -52,11 +52,11 @@
                 </div>
 
                 <div>
-                    <label class="label-min">M² Construidos (Útiles)</label>
+                    <label class="label-min">M² Útiles</label>
                     <input type="number" id="util" class="tech-input" value="0" oninput="calcular()">
                 </div>
                 <div>
-                    <label id="lblExtra" class="label-min">M² Terreno Total</label>
+                    <label id="lblExtra" class="label-min">M² Terraza</label>
                     <input type="number" id="extra" class="tech-input" value="0" oninput="calcular()">
                 </div>
 
@@ -72,30 +72,31 @@
                 </div>
 
                 <div>
-                    <label class="label-min">Orientación Principal</label>
+                    <label class="label-min">Orientación</label>
                     <select id="orienta" class="tech-input" onchange="calcular()">
-                        <option value="1.08">Nor-Poniente (Top)</option>
-                        <option value="1.05">Poniente / Nor-Este</option>
+                        <option value="1.06">Nor-Poniente</option>
+                        <option value="1.04">Poniente</option>
                         <option value="1.03">Norte</option>
+                        <option value="1.01">Nor-Oriente</option>
                         <option value="1.00" selected>Oriente</option>
-                        <option value="0.90">Sur (Frío/Menos luz)</option>
+                        <option value="0.92">Sur</option>
                     </select>
                 </div>
                 <div>
-                    <label class="label-min">Vista al Mar</label>
+                    <label class="label-min">Vista</label>
                     <select id="vista" class="tech-input" onchange="calcular()">
-                        <option value="1.30">Frontal Despejada</option>
-                        <option value="1.15">Parcial</option>
-                        <option value="1.00" selected>Sin Vista Especial</option>
+                        <option value="1.20">Frontal Despejada</option>
+                        <option value="1.08">Parcial</option>
+                        <option value="1.00" selected>Sin Vista Mar</option>
                     </select>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="label-min">Estado de Conservación</label>
+                    <label class="label-min">Estado General</label>
                     <select id="estado" class="tech-input" onchange="calcular()">
-                        <option value="1.10">Remodelado / Nuevo</option>
+                        <option value="1.08">Excelente / Remodelado</option>
                         <option value="1.00" selected>Bueno / Habitable</option>
-                        <option value="0.75">Requiere Inversión</option>
+                        <option value="0.80">Regular</option>
                     </select>
                 </div>
             </div>
@@ -103,9 +104,9 @@
 
         <div class="lg:col-span-5 flex flex-col gap-6">
             <div class="card-glass p-12 text-center flex-grow flex flex-col justify-center">
-                <div class="text-[10px] text-gray-600 uppercase tracking-[4px] mb-6">Avalúo Referencial Mercado</div>
+                <div class="text-[10px] text-gray-600 uppercase tracking-[4px] mb-6">Avalúo Referencial de Mercado</div>
                 <div class="flex items-baseline justify-center gap-2">
-                    <span id="numUF" class="text-8xl font-bold tracking-tighter text-white tabular-nums">0</span>
+                    <span id="numUF" class="text-7xl font-bold tracking-tighter text-white tabular-nums">0</span>
                     <span class="text-2xl text-blue-500 font-bold">UF</span>
                 </div>
                 <div id="numCLP" class="text-lg text-gray-500 mt-6 opacity-0 transition-opacity duration-500 font-light">$ 0</div>
@@ -121,13 +122,42 @@
     <script>
         const VALOR_UF_HOY = 37850; 
         
-        // VALORES UF/m2 AJUSTADOS A REALIDAD 2026 GÓMEZ CARREÑO / QUINTA REGIÓN
+        // VALORES UF/m2 AJUSTADOS A CIERRES REALES (Mercado Usado)
         const ZONAS = {
-            vina: { "Gómez Carreño": 30, "Reñaca Norte": 85, "Reñaca Centro": 75, "Jardín del Mar": 68, "Miraflores Bajo": 62, "Santa Inés": 45 },
-            concon: { "Costa Montemar": 82, "Bosques Montemar": 72, "Borde Mar": 78, "Concón Sur": 55 },
-            valparaiso: { "Cerro Alegre": 68, "Curauma": 52, "Playa Ancha": 42, "Plan Valparaíso": 48 },
-            interior: { "Quilpué (Centro)": 40, "Los Pinos": 44, "Villa Alemana Sur": 38, "Peñablanca": 46 },
-            litoral_norte: { "Zapallar": 120, "Cachagua": 110, "Maitencillo": 85, "Papudo": 78 }
+            vina: { 
+                "Jardín del Mar": 48, 
+                "Gómez Carreño": 28, 
+                "Reñaca Norte": 76, 
+                "Reñaca Centro": 62, 
+                "Plan de Viña": 65,
+                "Miraflores": 54,
+                "Santa Inés": 42
+            },
+            concon: { 
+                "Costa Montemar": 75, 
+                "Bosques Montemar": 68, 
+                "Concón Sur": 46, 
+                "La Isla": 38 
+            },
+            valparaiso: { 
+                "Cerro Alegre": 62, 
+                "Curauma": 48, 
+                "Playa Ancha": 38, 
+                "Plan Valparaíso": 42 
+            },
+            quilpue: { 
+                "Los Pinos": 38, 
+                "Peñablanca": 42, 
+                "Villa Alemana Centro": 34, 
+                "Quilpué Centro": 36 
+            },
+            litoral_norte: { 
+                "Zapallar": 110, 
+                "Cachagua": 105, 
+                "Maitencillo": 82, 
+                "Papudo": 74,
+                "Quintero": 35
+            }
         };
 
         const resObj = { val: 0 };
@@ -161,29 +191,19 @@
 
             if (!pBase || !mUtil) { updateUI(0); return; }
 
-            // Lógica corregida para Casas (Ponderación de Patio no abusiva)
+            // Ponderación de Superficies (Útil 100%, Terraza 50%, Terreno en casas 20% de incidencia)
             let vInmueble = mUtil * pBase;
-            let vExtra = 0;
+            let vExtra = (tipo === 'casa') ? (mExtra * (pBase * 0.18)) : (mExtra * (pBase * 0.50));
 
-            if (tipo === 'casa') {
-                // El terreno en casas de barrio se tasa muy distinto al m2 construido.
-                // Se usa una incidencia de entre 3 a 5 UF por m2 de patio libre, no una proporción del útil.
-                const mPatioLibre = Math.max(0, mExtra - mUtil);
-                vExtra = mPatioLibre * 4.5; // Valor promedio UF m2 terreno en la zona
-            } else {
-                // Terrazas en departamentos al 50% del valor base
-                vExtra = mExtra * (pBase * 0.50);
-            }
-
-            // Factores Multiplicadores
+            // Factores Multiplicadores Suavizados (No cascada agresiva)
             const fVista = parseFloat(document.getElementById('vista').value);
             const fOrienta = parseFloat(document.getElementById('orienta').value);
             const fEstado = parseFloat(document.getElementById('estado').value);
             
-            // Factor Habitabilidad sutil
+            // Habitabilidad sutil (Max 5% total)
             const nD = parseInt(document.getElementById('dorms').value);
             const nB = parseInt(document.getElementById('banos').value);
-            const fHabit = (1 + (nD * 0.01)) * (1 + (nB * 0.005));
+            const fHabit = 1 + ((nD + nB) * 0.005);
 
             const finalUF = (vInmueble + vExtra) * fVista * fOrienta * fEstado * fHabit;
             updateUI(finalUF);
@@ -211,12 +231,7 @@
             window.open(`https://wa.me/56951134778?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        window.onload = () => {
-            initMacro();
-            gsap.from(".card-glass", { opacity: 0, y: 30, duration: 1, stagger: 0.2 });
-        };
-        
-        function initMacro(){ toggleLabels(); }
+        window.onload = () => { toggleLabels(); gsap.from(".card-glass", { opacity: 0, y: 30, duration: 1, stagger: 0.2 }); };
     </script>
 </body>
 </html>
