@@ -4,161 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Sistema de Tasación Profesional | Jiménez & Asociados</title>
+    <title>Sistema Técnico de Tasación | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #ffffff; }
-        .input-field { background: #111; border: 1px solid #222; border-radius: 8px; padding: 12px; width: 100%; color: white; outline: none; transition: 0.3s; }
-        .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-        .label-tech { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-        .card-tasacion { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; backdrop-filter: blur(10px); }
+        body { font-family: 'Inter', sans-serif; background-color: #030303; color: #ffffff; }
+        .tech-input { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 6px; padding: 10px; width: 100%; color: white; outline: none; font-size: 14px; transition: 0.2s; }
+        .tech-input:focus { border-color: #3b82f6; }
+        .label-min { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; display: block; }
+        .card-glass { background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
     </style>
 </head>
-<body class="min-h-screen py-12 px-4 md:px-8 flex items-center justify-center">
+<body class="min-h-screen py-10 px-4 md:px-8 flex items-center justify-center">
 
-    <div class="max-w-6xl w-full grid lg:grid-cols-12 gap-8 items-start">
+    <div class="max-w-6xl w-full grid lg:grid-cols-12 gap-6 items-stretch">
         
-        <div class="lg:col-span-7 card-tasacion p-8 shadow-2xl">
-            <div class="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                <h1 class="text-xl font-semibold tracking-tight text-blue-500 uppercase italic">Informe de Tasación Técnica</h1>
-                <div class="text-[10px] text-gray-500 tracking-widest uppercase">Versión 2026.4</div>
+        <div class="lg:col-span-7 card-glass p-8 shadow-2xl">
+            <div class="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
+                <div class="text-lg font-bold tracking-tighter uppercase italic text-blue-500">Motor de Tasación V2.6</div>
+                <div class="text-[9px] text-gray-600 tracking-widest uppercase">Jiménez & Asociados</div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="label-tech">Tipología de Inmueble</label>
-                    <select id="tipo" class="input-field" onchange="actualizarLabels()">
-                        <option value="departamento">Departamento (Copropiedad)</option>
-                        <option value="casa">Casa Habitacional</option>
+                    <label class="label-min">Tipo</label>
+                    <select id="tipo" class="tech-input" onchange="toggleLabels()">
+                        <option value="departamento">Departamento</option>
+                        <option value="casa">Casa</option>
                     </select>
                 </div>
                 <div>
-                    <label class="label-tech">Macro Sector</label>
-                    <select id="macro" class="input-field" onchange="cargarMicroZonas()">
-                        <option value="">Seleccione...</option>
+                    <label class="label-min">Comuna</label>
+                    <select id="macro" class="tech-input" onchange="cargarMicroZonas()">
+                        <option value="">Seleccione Comuna...</option>
                         <option value="vina">Viña del Mar</option>
                         <option value="concon">Concón</option>
-                        <option value="valpo">Valparaíso</option>
-                        <option value="litoral">Litoral Norte</option>
+                        <option value="valparaiso">Valparaíso</option>
+                        <option value="quilpue">Quilpué / Villa Alemana</option>
+                        <option value="litoral_norte">Puchuncaví / Zapallar / Papudo</option>
+                        <option value="litoral_sur">Algarrobo / Sto. Domingo</option>
+                        <option value="interior">Limache / Olmué / Quillota</option>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="label-tech">Micro Sector (Ponderación m² Zona)</label>
-                    <select id="micro" class="input-field" disabled onchange="calcular()"></select>
+                    <label class="label-min">Micro-Zona</label>
+                    <select id="micro" class="tech-input" disabled onchange="calcular()"></select>
                 </div>
 
                 <div>
-                    <label class="label-tech">Superficie Útil (m²)</label>
-                    <input type="number" id="util" class="input-field" value="0" oninput="calcular()">
+                    <label class="label-min">M² Útiles</label>
+                    <input type="number" id="util" class="tech-input" value="0" oninput="calcular()">
                 </div>
                 <div>
-                    <label id="lblExtra" class="label-tech">Sup. Terraza (m²)</label>
-                    <input type="number" id="extra" class="input-field" value="0" oninput="calcular()">
+                    <label id="lblExtra" class="label-min">M² Terraza</label>
+                    <input type="number" id="extra" class="tech-input" value="0" oninput="calcular()">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 md:col-span-2">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="label-tech">Dormitorios</label>
-                        <input type="number" id="dorms" class="input-field" value="1" min="1" oninput="calcular()">
+                        <label class="label-min">Dorms</label>
+                        <input type="number" id="dorms" class="tech-input" value="1" min="1" oninput="calcular()">
                     </div>
                     <div>
-                        <label class="label-tech">Baños</label>
-                        <input type="number" id="banos" class="input-field" value="1" min="1" oninput="calcular()">
+                        <label class="label-min">Baños</label>
+                        <input type="number" id="banos" class="tech-input" value="1" min="1" oninput="calcular()">
                     </div>
+                </div>
+                <div>
+                    <label class="label-min">Cocina</label>
+                    <select id="cocina" class="tech-input" onchange="calcular()">
+                        <option value="1.05">Isla / Concepto Abierto</option>
+                        <option value="1.00" selected>Cerrada / Tradicional</option>
+                    </select>
                 </div>
 
                 <div>
-                    <label class="label-tech">Vista al Mar</label>
-                    <select id="vista" class="input-field" onchange="calcular()">
+                    <label class="label-min">Orientación</label>
+                    <select id="orienta" class="tech-input" onchange="calcular()">
+                        <option value="1.07">Nor-Poniente</option>
+                        <option value="1.05">Poniente</option>
+                        <option value="1.03">Norte</option>
+                        <option value="1.00" selected>Nor-Oriente</option>
+                        <option value="0.97">Oriente</option>
+                        <option value="0.92">Sur</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label-min">Vista</label>
+                    <select id="vista" class="tech-input" onchange="calcular()">
                         <option value="1.25">Frontal Despejada</option>
-                        <option value="1.10">Parcial / Lateral</option>
-                        <option value="1.00" selected>Sin Vista / Ciudad</option>
+                        <option value="1.12">Parcial / Lateral</option>
+                        <option value="1.00" selected>Calle / Ciudad</option>
                     </select>
                 </div>
-                <div>
-                    <label class="label-tech">Orientación Principal</label>
-                    <select id="orienta" class="input-field" onchange="calcular()">
-                        <option value="1.05">Nor-Oriente (Óptima)</option>
-                        <option value="1.00" selected>Oriente / Poniente</option>
-                        <option value="0.95">Sur (Castigo Humedad)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="label-tech">Estado Conservación</label>
-                    <select id="estado" class="input-field" onchange="calcular()">
-                        <option value="1.10">Nuevo / Remodelado</option>
-                        <option value="1.00" selected>Bueno (Normal)</option>
-                        <option value="0.80">Regular (Mantenimiento)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="label-tech">Tipo de Cocina</label>
-                    <select id="cocina" class="input-field" onchange="calcular()">
-                        <option value="1.05">Integrada / Isla</option>
-                        <option value="1.00" selected>Cerrada Tradicional</option>
+                <div class="md:col-span-2">
+                    <label class="label-min">Estado de Conservación</label>
+                    <select id="estado" class="tech-input" onchange="calcular()">
+                        <option value="1.12">Remodelado / Nuevo</option>
+                        <option value="1.00" selected>Mantenimiento Óptimo</option>
+                        <option value="0.85">Requiere Mejoras</option>
                     </select>
                 </div>
             </div>
         </div>
 
         <div class="lg:col-span-5 flex flex-col gap-6">
-            <div class="card-tasacion p-10 text-center flex-grow flex flex-col justify-center">
-                <div class="text-sm text-gray-500 uppercase tracking-widest mb-4">Avalúo Comercial Estimado</div>
+            <div class="card-glass p-12 text-center flex-grow flex flex-col justify-center">
+                <div class="text-[10px] text-gray-600 uppercase tracking-[4px] mb-6">Resultado de Evaluación</div>
                 <div class="flex items-baseline justify-center gap-2">
                     <span id="numUF" class="text-8xl font-bold tracking-tighter text-white tabular-nums">0</span>
                     <span class="text-2xl text-blue-500 font-bold">UF</span>
                 </div>
-                <div id="numCLP" class="text-xl text-gray-400 mt-4 opacity-0 transition-opacity duration-500 font-light">$ 0 CLP</div>
-                
-                <div class="mt-8 pt-8 border-t border-white/5 grid grid-cols-2 gap-4 text-left">
-                    <div>
-                        <div class="text-[9px] text-gray-600 uppercase">Valor m² Zona</div>
-                        <div id="valM2" class="text-sm font-semibold">0 UF</div>
-                    </div>
-                    <div>
-                        <div class="text-[9px] text-gray-600 uppercase">Valor UF Hoy</div>
-                        <div class="text-sm font-semibold">$ 37.800</div>
-                    </div>
-                </div>
+                <div id="numCLP" class="text-lg text-gray-500 mt-6 opacity-0 transition-opacity duration-500 font-light">$ 0</div>
             </div>
 
-            <button onclick="enviarWhatsApp()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] uppercase tracking-tighter flex items-center justify-center gap-3">
+            <button onclick="enviarWhatsApp()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 rounded-xl shadow-2xl transition-all transform hover:scale-[1.01] uppercase tracking-tighter flex items-center justify-center gap-3">
                 <i class="fa-brands fa-whatsapp text-xl"></i>
-                Formalizar Tasación en Terreno
+                Agendar Validación en Terreno
             </button>
-            <p class="text-[10px] text-gray-500 text-center px-8 italic">Este valor es referencial basado en el método de comparación de mercado. Requiere inspección física para validez legal.</p>
         </div>
     </div>
 
     <script>
-        const VALOR_UF = 37800;
+        // VALORES INTERNOS CONFIDENCIALES (Cálculo Paramétrico)
+        const VALOR_UF_INTERNO = 37800; 
         const ZONAS = {
-            vina: { "Reñaca Norte": 88, "Reñaca Centro": 76, "Jardín del Mar": 70, "Plan de Viña": 82 },
-            concon: { "Costa Montemar": 85, "Bosques Montemar": 74, "Concón Borde Mar": 78, "Concón Sur": 64 },
-            valpo: { "Cerro Alegre": 68, "Curauma": 58, "Plan": 50 },
-            litoral: { "Zapallar": 120, "Cachagua": 115, "Maitencillo": 95 }
+            vina: { "Reñaca Norte": 88, "Reñaca Centro": 76, "Jardín del Mar": 72, "Miraflores": 68, "Plan de Viña": 82, "Gómez Carreño": 55 },
+            concon: { "Costa Montemar": 85, "Bosques Montemar": 74, "Borde Mar": 78, "Concón Sur": 62, "Sector Lilenes": 75 },
+            valparaiso: { "Cerro Alegre": 68, "Cerro Concepción": 70, "Playa Ancha": 48, "Curauma": 56, "Plan Valparaíso": 45 },
+            quilpue: { "Paso Hondo": 58, "Los Pinos": 52, "El Belloto": 45, "Peñablanca": 50, "Villa Alemana Sur": 48 },
+            litoral_norte: { "Zapallar": 125, "Cachagua": 120, "Maitencillo": 98, "Papudo": 88, "Horcón / Ventanas": 45 },
+            litoral_sur: { "Santo Domingo": 95, "Algarrobo": 85, "El Quisco": 65, "San Antonio": 42 },
+            interior: { "Limache": 50, "Olmué": 55, "Quillota": 48, "La Calera": 42, "San Felipe / Los Andes": 48 }
         };
 
         const resObj = { val: 0 };
 
-        function actualizarLabels() {
+        function toggleLabels() {
             const tipo = document.getElementById('tipo').value;
-            document.getElementById('lblExtra').innerText = tipo === 'casa' ? 'Sup. Terreno (m²)' : 'Sup. Terraza (m²)';
+            document.getElementById('lblExtra').innerText = tipo === 'casa' ? 'M² Terreno' : 'M² Terraza';
             calcular();
         }
 
         function cargarMicroZonas() {
-            const m = document.getElementById('macro').value;
+            const macro = document.getElementById('macro').value;
             const micro = document.getElementById('micro');
-            micro.innerHTML = '<option value="">Seleccione Sector Específico...</option>';
-            if (m) {
+            micro.innerHTML = '<option value="">Seleccione Sector...</option>';
+            if (macro) {
                 micro.disabled = false;
-                for (let z in ZONAS[m]) {
+                for (let z in ZONAS[macro]) {
                     let o = document.createElement('option');
-                    o.value = ZONAS[m][z]; o.innerText = `${z} (${ZONAS[m][z]} UF/m²)`;
+                    o.value = ZONAS[macro][z]; o.innerText = z;
                     micro.appendChild(o);
                 }
             } else { micro.disabled = true; }
@@ -166,52 +164,42 @@
         }
 
         function calcular() {
-            const ufM2 = parseFloat(document.getElementById('micro').value) || 0;
-            const util = parseFloat(document.getElementById('util').value) || 0;
-            const extra = parseFloat(document.getElementById('extra').value) || 0;
+            const pBase = parseFloat(document.getElementById('micro').value) || 0;
+            const mUtil = parseFloat(document.getElementById('util').value) || 0;
+            const mExtra = parseFloat(document.getElementById('extra').value) || 0;
             const tipo = document.getElementById('tipo').value;
 
-            if (!ufM2 || !util) { updateUI(0); return; }
+            if (!pBase || !mUtil) { updateUI(0); return; }
 
-            // LÓGICA DE TASADOR PERITO
-            let baseInmueble = util * ufM2;
-            let baseExtra = 0;
+            // Lógica de Ponderación de Superficies
+            let vInmueble = mUtil * pBase;
+            let vExtra = (tipo === 'casa') ? (mExtra * (pBase * 0.18)) : (mExtra * (pBase * 0.50));
 
-            if (tipo === 'casa') {
-                // Factor de incidencia de terreno (Normalmente 1/4 o 1/5 del valor construido)
-                baseExtra = extra * (ufM2 * 0.18); 
-            } else {
-                // Terrazas computan al 50% según normativa
-                baseExtra = extra * (ufM2 * 0.50);
-            }
-
-            // Factores de Ajuste Ponderados
+            // Factores Multiplicadores
             const fVista = parseFloat(document.getElementById('vista').value);
             const fOrienta = parseFloat(document.getElementById('orienta').value);
             const fEstado = parseFloat(document.getElementById('estado').value);
             const fCocina = parseFloat(document.getElementById('cocina').value);
             
-            // Ajuste por Habitabilidad (Dorms y Baños impactan la demanda)
+            // Factor Habitabilidad (Bono de configuración)
             const nD = parseInt(document.getElementById('dorms').value);
             const nB = parseInt(document.getElementById('banos').value);
-            const fHabit = (1 + (nD * 0.015)) * (1 + (nB * 0.01));
+            const fHabit = (1 + (nD * 0.012)) * (1 + (nB * 0.008));
 
-            const totalFinal = (baseInmueble + baseExtra) * fVista * fOrienta * fEstado * fCocina * fHabit;
-            
-            document.getElementById('valM2').innerText = `${ufM2} UF`;
-            updateUI(totalFinal);
+            const finalUF = (vInmueble + vExtra) * fVista * fOrienta * fEstado * fCocina * fHabit;
+            updateUI(finalUF);
         }
 
         function updateUI(uf) {
             gsap.to(resObj, {
-                val: uf, duration: 1.2, ease: "expo.out",
+                val: uf, duration: 1, ease: "power3.out",
                 onUpdate: () => {
                     document.getElementById('numUF').innerText = Math.round(resObj.val).toLocaleString('es-CL');
                 },
                 onComplete: () => {
                     const clp = document.getElementById('numCLP');
                     if (uf > 0) {
-                        clp.innerText = "$ " + Math.round(uf * VALOR_UF).toLocaleString('es-CL') + " CLP";
+                        clp.innerText = "$ " + Math.round(uf * VALOR_UF_INTERNO).toLocaleString('es-CL');
                         clp.style.opacity = 1;
                     } else { clp.style.opacity = 0; }
                 }
@@ -220,13 +208,12 @@
 
         function enviarWhatsApp() {
             const uf = document.getElementById('numUF').innerText;
-            const zona = document.getElementById('micro').options[document.getElementById('micro').selectedIndex].text;
-            const msg = `Hola Sebastián. Acabo de realizar una tasación técnica en el portal para una propiedad en ${zona}. El valor estimado es de ${uf} UF. Solicito coordinar una visita para formalizar este informe.`;
+            const msg = `Hola Sebastián. Usé el simulador para una propiedad que tasó ${uf} UF. Solicito agendar la validación técnica oficial.`;
             window.open(`https://wa.me/56951134778?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         window.onload = () => {
-            gsap.from(".card-tasacion", { opacity: 0, y: 50, duration: 1, stagger: 0.3, ease: "power4.out" });
+            gsap.from(".card-glass", { opacity: 0, y: 30, duration: 1, stagger: 0.2 });
         };
     </script>
 </body>
