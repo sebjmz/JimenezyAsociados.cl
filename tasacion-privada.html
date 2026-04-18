@@ -5,94 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     
-    <title>Evaluación Comercial Privada | Jiménez & Asociados</title>
+    <title>Tu Evaluación Privada | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #ffffff; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #030303; 
+            color: #ffffff; 
+            overflow-x: hidden;
+        }
+
+        /* Estilos Premium para Formularios */
+        .premium-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 0;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .premium-input:focus {
+            border-bottom: 1px solid #3b82f6;
+        }
+
+        .premium-input option {
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        .label-premium {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-top: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Animaciones iniciales ocultas */
+        .reveal-item { opacity: 0; transform: translateY(20px); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
 
-    <div class="mb-10 text-center">
-        <div class="text-2xl font-extrabold tracking-tighter text-white mb-2">
-            JIMÉNEZ<span class="text-blue-500">&</span>ASOCIADOS
-        </div>
-        <div class="text-gray-400 text-sm tracking-widest uppercase">Acceso Exclusivo Partners & Clientes</div>
-    </div>
-
-    <div id="ja-calculator" style="width: 100%; max-width: 600px; margin: auto; background: #1a1a1a; padding: 30px; border-radius: 15px; border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-        <h2 style="color: #3b82f6; text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 24px; font-weight: bold;">Simulador de Tasación<br><span style="font-size: 0.5em; color: #888; text-transform: uppercase; letter-spacing: 2px;">Región de Valparaíso</span></h2>
+    <div class="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center">
         
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Zona Geográfica:</label>
-        <select id="macroZona" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; outline: none;">
-            <option value="">Seleccione sector...</option>
-            <option value="vina">Viña del Mar</option>
-            <option value="concon">Concón</option>
-            <option value="valpo">Valparaíso</option>
-            <option value="litoral">Litoral Norte</option>
-        </select>
-
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Micro-Zona (Valor UF/m²):</label>
-        <select id="microZona" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; outline: none;" disabled>
-            <option value="">Seleccione Zona Geográfica primero</option>
-        </select>
-
-        <div style="display: flex; gap: 15px; margin-top: 15px;">
-            <div style="flex: 1;">
-                <label style="display: block; font-weight: bold; font-size: 14px; color: #ddd;">Sup. Útil (m²):</label>
-                <input type="number" id="supUtil" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; box-sizing: border-box; outline: none;" value="0" min="0">
+        <div class="reveal-item p-6 md:p-10 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm">
+            <div class="mb-10">
+                <h1 class="text-3xl font-light tracking-tight mb-2">Configuración <span class="font-bold text-blue-500">Paramétrica</span></h1>
+                <p class="text-sm text-gray-500">Ajuste los valores para obtener una estimación en tiempo real.</p>
             </div>
-            <div style="flex: 1;">
-                <label style="display: block; font-weight: bold; font-size: 14px; color: #ddd;">Terraza/Patio (m²):</label>
-                <input type="number" id="supTerraza" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; box-sizing: border-box; outline: none;" value="0" min="0">
+
+            <label class="label-premium">Zona Geográfica</label>
+            <select id="macroZona" class="premium-input">
+                <option value="">Seleccione sector principal...</option>
+                <option value="vina">Viña del Mar</option>
+                <option value="concon">Concón</option>
+                <option value="valpo">Valparaíso</option>
+                <option value="litoral">Litoral Norte</option>
+            </select>
+
+            <label class="label-premium">Micro-Zona (UF/m²)</label>
+            <select id="microZona" class="premium-input" disabled>
+                <option value="">Esperando selección previa...</option>
+            </select>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="label-premium">Sup. Útil (m²)</label>
+                    <input type="number" id="supUtil" class="premium-input text-center" value="0" min="0">
+                </div>
+                <div>
+                    <label class="label-premium">Terraza/Patio (m²)</label>
+                    <input type="number" id="supTerraza" class="premium-input text-center" value="0" min="0">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mt-2">
+                <div>
+                    <label class="label-premium">Vista</label>
+                    <select id="vista" class="premium-input text-sm">
+                        <option value="1.25">Frontal al Mar</option>
+                        <option value="1.10">Parcial Mar</option>
+                        <option value="1.00" selected>Ciudad/Verde</option>
+                        <option value="0.90">Interior</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label-premium">Orientación</label>
+                    <select id="orientacion" class="premium-input text-sm">
+                        <option value="1.05">Nororiente</option>
+                        <option value="1.03">Norte</option>
+                        <option value="1.02">Poniente</option>
+                        <option value="1.00" selected>Oriente</option>
+                        <option value="0.95">Sur</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mt-2">
+                <div>
+                    <label class="label-premium">Antigüedad</label>
+                    <select id="antiguedad" class="premium-input text-sm">
+                        <option value="1.05">0 a 2 años</option>
+                        <option value="1.00" selected>3 a 10 años</option>
+                        <option value="0.95">11 a 20 años</option>
+                        <option value="0.85">+20 años</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label-premium">Estado</label>
+                    <select id="estado" class="premium-input text-sm">
+                        <option value="1.15">Premium</option>
+                        <option value="1.00" selected>Estándar</option>
+                        <option value="0.90">Con desgaste</option>
+                        <option value="0.70">A remodelar</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Atributo de Vista:</label>
-        <select id="vista" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; outline: none;">
-            <option value="1.25">Frontal al Mar (Premium)</option>
-            <option value="1.10">Parcial o Lateral al Mar</option>
-            <option value="1.00" selected>Vista a la Ciudad / Áreas Verdes</option>
-            <option value="0.90">Interior / Vista Ciega</option>
-        </select>
+        <div class="reveal-item flex flex-col justify-center items-center md:items-start text-center md:text-left pl-0 md:pl-10">
+            
+            <div class="mb-16">
+                <div class="text-[10px] uppercase tracking-[4px] text-gray-500 mb-4">Herramienta Privada</div>
+                <div class="text-xl font-extrabold tracking-tighter text-white">
+                    JIMÉNEZ<span class="text-blue-500">&</span>ASOCIADOS
+                </div>
+            </div>
 
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Orientación Solar:</label>
-        <select id="orientacion" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; outline: none;">
-            <option value="1.05">Nororiente (Óptima)</option>
-            <option value="1.03">Norte</option>
-            <option value="1.02">Norponiente / Poniente</option>
-            <option value="1.00" selected>Oriente</option>
-            <option value="0.95">Sur / Suroriente</option>
-        </select>
+            <div class="w-full">
+                <h2 class="text-sm uppercase tracking-widest text-gray-500 mb-2">Valor Comercial Sugerido</h2>
+                
+                <div class="flex items-baseline justify-center md:justify-start gap-3 mb-1">
+                    <span id="resultadoNumeroUF" class="text-7xl md:text-8xl font-light text-white tracking-tighter tabular-nums">0</span>
+                    <span class="text-2xl text-blue-500 font-bold">UF</span>
+                </div>
+                
+                <div id="resultadoCLP" class="text-gray-500 text-lg font-light tracking-wide opacity-0 transition-opacity duration-500">
+                    $0 CLP
+                </div>
+            </div>
 
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Antigüedad de la Propiedad:</label>
-        <select id="antiguedad" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; outline: none;">
-            <option value="1.05">Nueva / En Blanco (0 a 2 años)</option>
-            <option value="1.00" selected>Seminueva (3 a 10 años)</option>
-            <option value="0.95">Consolidada (11 a 20 años)</option>
-            <option value="0.85">Antigua (Más de 20 años)</option>
-        </select>
+            <div class="mt-16 w-full max-w-sm">
+                <button onclick="contactarAsesor()" class="w-full py-4 bg-white hover:bg-gray-200 text-black font-bold text-sm uppercase tracking-widest rounded-full transition-all duration-300 transform hover:-translate-y-1 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                    Agendar Visita Técnica
+                </button>
+                <p class="text-[10px] text-gray-600 text-center mt-4 uppercase tracking-widest">Servicio de guante blanco</p>
+            </div>
 
-        <label style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #ddd;">Estado de Conservación:</label>
-        <select id="estado" style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 15px; margin-bottom: 25px; outline: none;">
-            <option value="1.15">Remodelación Premium / Lujo</option>
-            <option value="1.00" selected>Buen Estado / Estándar</option>
-            <option value="0.90">Desgaste Normal de Uso</option>
-            <option value="0.70">Requiere Remodelación Total</option>
-        </select>
-
-        <div style="background: rgba(59, 130, 246, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(59, 130, 246, 0.3);">
-            <h3 style="margin: 0; color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Valor Comercial Sugerido</h3>
-            <h2 id="resultadoUF" style="color: #3b82f6; margin: 15px 0; font-size: 36px; font-weight: bold;">0 UF</h2>
-            <h4 id="resultadoCLP" style="color: #fff; margin: 0; font-weight: normal; opacity: 0.8;">$0 CLP (Aprox)</h4>
         </div>
-
-        <button id="btnSolicitarOficial" onclick="window.location.href='https://wa.me/56951134778?text=Hola,%20usé%20la%20calculadora%20privada%20y%20quiero%20coordinar%20una%20visita%20técnica.'" style="width: 100%; padding: 18px; background: #3b82f6; color: #ffffff; border: none; font-weight: bold; font-size: 16px; margin-top: 25px; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;">Coordinar Visita Técnica Oficial</button>
     </div>
 
     <script>
+        // 1. ANIMACIÓN DE ENTRADA (Lujo silencioso)
+        window.onload = () => {
+            gsap.to(".reveal-item", {
+                y: 0,
+                opacity: 1,
+                duration: 1.2,
+                stagger: 0.2,
+                ease: "power3.out"
+            });
+        };
+
+        // 2. DATOS DE MERCADO
         const datosZonas = {
             vina: { "Reñaca Norte": 85, "Reñaca Centro/Bajo": 75, "Jardín del Mar": 68, "Población Vergara": 80, "Plan de Viña": 65 },
             concon: { "Costa de Montemar": 82, "Bosques de Montemar": 70, "Borde Costero": 78, "Concón Central": 60 },
@@ -100,13 +186,17 @@
             litoral: { "Zapallar": 110, "Cachagua": 105, "Maitencillo/Marbella": 90 }
         };
 
+        const valorUFActual = 37800;
+        let valorAnteriorUF = 0; // Para animar desde el valor anterior
+
         const macroZonaSelect = document.getElementById('macroZona');
         const microZonaSelect = document.getElementById('microZona');
-        const inputs = document.querySelectorAll('#ja-calculator input, #ja-calculator select');
-        const resultadoUF = document.getElementById('resultadoUF');
-        const resultadoCLP = document.getElementById('resultadoCLP');
-        const valorUFActual = 37800; 
+        const inputs = document.querySelectorAll('.premium-input');
+        const resultadoUFObj = { val: 0 }; // Objeto para que GSAP pueda animarlo
+        const textoNumeroUF = document.getElementById('resultadoNumeroUF');
+        const textoCLP = document.getElementById('resultadoCLP');
 
+        // 3. LÓGICA DE MENÚS
         macroZonaSelect.addEventListener('change', function() {
             microZonaSelect.innerHTML = '<option value="">Seleccione Micro-Zona</option>';
             const seleccion = this.value;
@@ -115,7 +205,7 @@
                 for (const [zona, valor] of Object.entries(datosZonas[seleccion])) {
                     const option = document.createElement('option');
                     option.value = valor;
-                    option.textContent = zona + " (Base: " + valor + " UF/m²)";
+                    option.textContent = zona;
                     microZonaSelect.appendChild(option);
                 }
             } else {
@@ -124,6 +214,7 @@
             calcular(); 
         });
 
+        // 4. MOTOR DE CÁLCULO Y ANIMACIÓN
         function calcular() {
             const ufBaseM2 = parseFloat(microZonaSelect.value) || 0;
             const supUtil = parseFloat(document.getElementById('supUtil').value) || 0;
@@ -134,24 +225,51 @@
             const estado = parseFloat(document.getElementById('estado').value) || 1;
 
             if (ufBaseM2 === 0 || supUtil === 0) {
-                resultadoUF.textContent = "0 UF";
-                resultadoCLP.textContent = "$0 CLP (Aprox)";
+                animarNumero(0, 0);
+                textoCLP.style.opacity = 0;
                 return;
             }
 
             const valorBase = (supUtil * ufBaseM2) + (supTerraza * (ufBaseM2 * 0.5));
-            const multiplicadores = vista * orientacion * antiguedad * estado;
-            const totalUF = valorBase * multiplicadores;
+            const totalUF = valorBase * (vista * orientacion * antiguedad * estado);
             const totalCLP = totalUF * valorUFActual;
 
-            resultadoUF.textContent = totalUF.toLocaleString('es-CL', { maximumFractionDigits: 0 }) + " UF";
-            resultadoCLP.textContent = "$" + totalCLP.toLocaleString('es-CL', { maximumFractionDigits: 0 }) + " CLP (Aprox)";
+            animarNumero(totalUF, totalCLP);
+        }
+
+        // 5. EFECTO ODÓMETRO PREMIUM CON GSAP
+        function animarNumero(nuevoTotalUF, nuevoTotalCLP) {
+            gsap.to(resultadoUFObj, {
+                val: nuevoTotalUF,
+                duration: 1.5,
+                ease: "power2.out",
+                onUpdate: function() {
+                    textoNumeroUF.innerText = Math.round(resultadoUFObj.val).toLocaleString('es-CL');
+                },
+                onComplete: function() {
+                    if(nuevoTotalCLP > 0) {
+                        textoCLP.innerText = "$ " + Math.round(nuevoTotalCLP).toLocaleString('es-CL') + " CLP";
+                        textoCLP.style.opacity = 1;
+                    }
+                }
+            });
         }
 
         inputs.forEach(input => {
             input.addEventListener('change', calcular);
             input.addEventListener('keyup', calcular);
         });
+
+        // 6. ACCIÓN DE CONTACTO
+        function contactarAsesor() {
+            const numeroUF = textoNumeroUF.innerText;
+            if(numeroUF === "0") {
+                alert("Por favor, ingresa los datos de la propiedad primero.");
+                return;
+            }
+            const mensaje = `Hola Sebastián. Usé el simulador privado y mi propiedad arrojó un valor referencial de ${numeroUF} UF. Quisiera agendar una visita técnica oficial para confirmar el precio de mercado.`;
+            window.open(`https://wa.me/56951134778?text=${encodeURIComponent(mensaje)}`, '_blank');
+        }
     </script>
 </body>
 </html>
