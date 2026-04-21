@@ -3,71 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-white p-4">
-    <div class="max-w-xl mx-auto border border-gray-100 p-6 rounded-3xl shadow-sm">
-        <h2 class="text-xl font-black uppercase italic mb-6 text-gray-800 italic">Generar y <span class="text-pink-600">Enviar Reserva</span></h2>
-        
+    <div class="max-w-xl mx-auto border p-6 rounded-3xl shadow-sm">
+        <h2 class="text-xl font-black uppercase mb-6 italic text-gray-800">Generar y <span class="text-pink-600">Enviar Reserva</span></h2>
         <form id="formReserva" class="space-y-4">
-            <input type="text" name="nombre_cliente" placeholder="Nombre Completo Cliente" required class="w-full p-3 border rounded-xl text-sm font-bold">
-            <input type="email" name="email" placeholder="Correo del Cliente (Para envío automático)" required class="w-full p-3 border rounded-xl text-sm font-bold border-blue-200">
-            
+            <input type="text" name="nombre_cliente" placeholder="Nombre Cliente" required class="w-full p-3 border rounded-xl text-sm">
+            <input type="email" name="email" placeholder="Correo Cliente" required class="w-full p-3 border rounded-xl text-sm border-blue-200">
             <div class="grid grid-cols-2 gap-3">
-                <input type="text" name="rut_cliente" placeholder="RUT Cliente" required class="p-3 border rounded-xl text-sm">
-                <input type="tel" name="telefono" placeholder="WhatsApp Cliente" class="p-3 border rounded-xl text-sm">
+                <input type="text" name="rut_cliente" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
+                <input type="tel" name="telefono" placeholder="WhatsApp" class="p-3 border rounded-xl text-sm">
             </div>
-
+            <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="w-full p-3 border rounded-xl text-sm">
             <div class="grid grid-cols-2 gap-3">
-                <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="p-3 border rounded-xl text-sm">
                 <input type="text" name="comuna" placeholder="Comuna" required class="p-3 border rounded-xl text-sm">
+                <input type="number" name="monto" placeholder="Monto $" required class="p-3 border rounded-xl text-sm">
             </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <input type="number" name="monto" placeholder="Monto Reserva $" required class="p-3 border rounded-xl text-sm">
-                <select name="medio_pago" class="p-3 border rounded-xl text-sm font-black bg-gray-50">
-                    <option value="Transferencia Electrónica">Transferencia</option>
-                    <option value="Efectivo">Efectivo</option>
-                </select>
-            </div>
-
+            <select name="medio_pago" class="w-full p-3 border rounded-xl text-sm font-black bg-gray-50">
+                <option value="Transferencia Electrónica">Transferencia</option>
+                <option value="Efectivo">Efectivo</option>
+            </select>
             <input type="date" name="fecha_pago" required class="w-full p-3 border rounded-xl text-sm">
+            
+            <div class="p-4 border-2 border-dashed border-pink-100 rounded-2xl bg-pink-50/50">
+                <p class="text-[10px] font-black text-pink-600 uppercase mb-2">Foto de la Transferencia</p>
+                <input type="file" id="fotoInput" accept="image/*" class="text-xs">
+            </div>
 
-            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-pink-700 transition shadow-lg flex items-center justify-center gap-3">
-                <i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE
+            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg">
+                GENERAR Y ENVIAR AL CLIENTE
             </button>
         </form>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2L7fyjMPWIn6ryqihwxMKERwGH--ywBYq1WySX53AdWePPBBxUNnVNI1XBhIi4ySI/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxESfzyU8cB3xLqxYNeOYdYBMIwcJgMat1LaNfve9WxVHcQFBY03UVxKGu3C1tKUJ0m/exec"; // PEGA AQUÍ LA URL AZUL
 
         document.getElementById('formReserva').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> PROCESANDO ENVÍO...';
             btn.disabled = true;
+            btn.innerText = "PROCESANDO IMAGEN...";
 
+            const fileInput = document.getElementById('fotoInput');
+            let archivoBase64 = "";
+
+            // Convertir imagen a texto para enviarla
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                archivoBase64 = await new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+            }
+
+            btn.innerText = "ENVIANDO A GMAIL...";
             const formData = new FormData(this);
-            const params = new URLSearchParams(formData).toString();
+            const datos = Object.fromEntries(formData.entries());
+            datos.archivoData = archivoBase64; // Añadimos la foto
 
             try {
-                // Enviamos los datos por POST a la URL de Google Script
-                const response = await fetch(SCRIPT_URL + "?" + params, {
-                    method: 'POST'
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar bloqueos
+                    body: JSON.stringify(datos)
                 });
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    alert("¡ÉXITO! El PDF fue generado y enviado al correo del cliente.");
-                    this.reset();
-                } else {
-                    alert("Error del servidor: " + result.message);
-                }
-            } catch (error) {
-                alert("Error de conexión. Revisa si la URL del Script es correcta.");
+                
+                alert("¡Proceso iniciado! En unos segundos el cliente recibirá el correo.");
+                this.reset();
+            } catch (err) {
+                alert("Error de conexión. Verifica la URL del Script.");
             } finally {
-                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE';
+                btn.innerText = "GENERAR Y ENVIAR AL CLIENTE";
                 btn.disabled = false;
             }
         });
