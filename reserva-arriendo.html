@@ -1,1 +1,55 @@
-s
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white p-4">
+    <div class="max-w-xl mx-auto border border-gray-100 p-6 rounded-3xl shadow-sm">
+        <h2 class="text-xl font-black uppercase italic mb-6 text-gray-800">Recibo de <span class="text-pink-600">Reserva</span></h2>
+        
+        <form id="formReserva" class="space-y-4">
+            <input type="text" name="nombre_cliente" placeholder="Nombre del Cliente" required class="w-full p-3 border rounded-xl text-sm">
+            <input type="text" name="rut_cliente" placeholder="RUT del Cliente" required class="w-full p-3 border rounded-xl text-sm">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <input type="tel" name="telefono" placeholder="WhatsApp" class="p-3 border rounded-xl text-sm">
+                <input type="number" name="monto" placeholder="Monto $" required class="p-3 border rounded-xl text-sm">
+            </div>
+
+            <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="w-full p-3 border rounded-xl text-sm">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <select name="medio_pago" class="p-3 border rounded-xl text-sm font-bold bg-gray-50">
+                    <option value="Transferencia Electrónica">Transferencia</option>
+                    <option value="Efectivo">Efectivo</option>
+                </select>
+                <input type="date" name="fecha_pago" required class="p-3 border rounded-xl text-sm">
+            </div>
+
+            <div class="p-4 border-2 border-dashed border-pink-100 rounded-2xl bg-pink-50/30">
+                <p class="text-[10px] font-black text-pink-600 uppercase mb-2">Adjuntar Comprobante (Foto o PDF)</p>
+                <input type="file" id="file" accept="image/*,.pdf" class="text-xs">
+            </div>
+
+            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-pink-700 transition shadow-lg flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> GENERAR Y GUARDAR
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Aquí conectaremos con el Google Apps Script más adelante
+        document.getElementById('formReserva').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnEnviar');
+            btn.innerText = "PROCESANDO...";
+            btn.disabled = true;
+            
+            // Lógica simple de envío a Google Script
+            alert("Enviando a Google Drive...");
+        });
+    </script>
+</body>
+</html>
