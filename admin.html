@@ -356,18 +356,24 @@
         window.switchTab = (tab) => {
             // 1. Definir qué queremos mostrar y qué botones activar
             const views = {
-                negocios: document.getElementById('view-negocios'),
-                partners: document.getElementById('view-partners'),
-                orden: document.getElementById('view-orden'),
-                visita: document.getElementById('view-visita') // <-- NUEVA VISTA
-            };
-            const btns = {
-                negocios: document.getElementById('btn-tab-negocios'),
-                partners: document.getElementById('btn-tab-partners'),
-                orden: document.getElementById('btn-tab-orden'),
-                visita: document.getElementById('btn-tab-visita') // <-- NUEVO BOTÓN
-            };
+    negocios: document.getElementById('view-negocios'),
+    partners: document.getElementById('view-partners'),
+    orden: document.getElementById('view-orden'),
+    visita: document.getElementById('view-visita'),
+    reserva: document.getElementById('view-reserva') // <-- Agregar esta
+};
+const btns = {
+    negocios: document.getElementById('btn-tab-negocios'),
+    partners: document.getElementById('btn-tab-partners'),
+    orden: document.getElementById('btn-tab-orden'),
+    visita: document.getElementById('btn-tab-visita'),
+    reserva: document.getElementById('btn-tab-reserva') // <-- Agregar esta
+};
 
+// Y en el condicional de colores al final de la función:
+else if (tab === 'reserva') {
+    btns[tab].className = "bg-pink-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+}
             // 2. Ocultar todas las vistas y apagar todos los botones
             Object.keys(views).forEach(key => {
                 if(views[key]) views[key].classList.add('hidden');
@@ -468,6 +474,9 @@
                 <button id="btn-tab-visita" onclick="switchTab('visita')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">
                     <i class="fa-solid fa-house-user mr-1"></i> Orden Visita
                 </button>
+                <button id="btn-tab-reserva" onclick="switchTab('reserva')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">
+                <i class="fa-solid fa-cash-register mr-1"></i> Comprobante Reserva
+            </button>
             </div>
 
             <button onclick="logout()" class="text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-6 py-3 rounded-2xl hover:bg-red-600 hover:text-white transition w-full md:w-auto">Cerrar Sesión</button>
@@ -565,6 +574,11 @@
                     <iframe src="orden-visita.html" class="w-full h-[85vh] border-none" title="Formulario Orden de Visita"></iframe>
                 </div>
             </div>
+        <div id="view-reserva" class="hidden">
+    <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl bg-white min-h-[85vh]">
+        <iframe src="reserva-arriendo.html" class="w-full h-[85vh] border-none" title="Comprobante de Reserva"></iframe>
+    </div>
+</div>
         </main>
     </div>
 </body>
