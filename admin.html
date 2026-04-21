@@ -354,48 +354,45 @@
         window.logout = () => signOut(auth).then(() => window.location.href = 'ingresopartner.html');
 
         window.switchTab = (tab) => {
-            // 1. Definir qué queremos mostrar y qué botones activar
-            const views = {
-    negocios: document.getElementById('view-negocios'),
-    partners: document.getElementById('view-partners'),
-    orden: document.getElementById('view-orden'),
-    visita: document.getElementById('view-visita'),
-    reserva: document.getElementById('view-reserva') // <-- Agregar esta
-};
-const btns = {
-    negocios: document.getElementById('btn-tab-negocios'),
-    partners: document.getElementById('btn-tab-partners'),
-    orden: document.getElementById('btn-tab-orden'),
-    visita: document.getElementById('btn-tab-visita'),
-    reserva: document.getElementById('btn-tab-reserva') // <-- Agregar esta
-};
+    // 1. Definimos las vistas y botones (incluyendo la nueva de reserva)
+    const views = {
+        negocios: document.getElementById('view-negocios'),
+        partners: document.getElementById('view-partners'),
+        orden: document.getElementById('view-orden'),
+        visita: document.getElementById('view-visita'),
+        reserva: document.getElementById('view-reserva') 
+    };
+    const btns = {
+        negocios: document.getElementById('btn-tab-negocios'),
+        partners: document.getElementById('btn-tab-partners'),
+        orden: document.getElementById('btn-tab-orden'),
+        visita: document.getElementById('btn-tab-visita'),
+        reserva: document.getElementById('btn-tab-reserva')
+    };
 
-// Y en el condicional de colores al final de la función:
-else if (tab === 'reserva') {
-    btns[tab].className = "bg-pink-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-}
-            // 2. Ocultar todas las vistas y apagar todos los botones
-            Object.keys(views).forEach(key => {
-                if(views[key]) views[key].classList.add('hidden');
-                if(btns[key]) btns[key].className = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
-            });
+    // 2. Ocultamos todo y reseteamos estilos de botones
+    Object.keys(views).forEach(key => {
+        if(views[key]) views[key].classList.add('hidden');
+        if(btns[key]) btns[key].className = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
+    });
 
-            // 3. Mostrar solo la pestaña elegida
-            views[tab].classList.remove('hidden');
-            
-            // 4. Aplicar color al botón activo según la pestaña
-            if (tab === 'negocios') {
-                btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-            } else if (tab === 'partners') {
-                btns[tab].className = "bg-purple-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-                loadAllPartners();
-            } else if (tab === 'orden') {
-                btns[tab].className = "bg-green-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-            } else if (tab === 'visita') {
-                // Color Teal (verde azulado) para diferenciar la Orden de Visita
-                btns[tab].className = "bg-teal-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-            }
-        };
+    // 3. Mostramos la vista seleccionada
+    if(views[tab]) views[tab].classList.remove('hidden');
+    
+    // 4. Aplicamos el color correspondiente al botón activo
+    if (tab === 'negocios') {
+        btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    } else if (tab === 'partners') {
+        btns[tab].className = "bg-purple-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+        loadAllPartners();
+    } else if (tab === 'orden') {
+        btns[tab].className = "bg-green-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    } else if (tab === 'visita') {
+        btns[tab].className = "bg-teal-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    } else if (tab === 'reserva') {
+        btns[tab].className = "bg-pink-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    }
+};
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 // 1. Quitar la pantalla de carga
