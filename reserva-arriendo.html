@@ -3,78 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-white p-4">
     <div class="max-w-xl mx-auto border p-6 rounded-3xl shadow-sm">
         <h2 class="text-xl font-black uppercase mb-6 italic text-gray-800">Generar y <span class="text-pink-600">Enviar Reserva</span></h2>
+        
         <form id="formReserva" class="space-y-4">
-            <input type="text" name="nombre_cliente" placeholder="Nombre Cliente" required class="w-full p-3 border rounded-xl text-sm">
-            <input type="email" name="email" placeholder="Correo Cliente" required class="w-full p-3 border rounded-xl text-sm border-blue-200">
+            <input type="text" name="nombre_cliente" placeholder="Nombre Cliente" required class="w-full p-3 border rounded-xl text-sm font-bold">
+            <input type="email" name="email" placeholder="Correo Cliente (Donde llegará el PDF)" required class="w-full p-3 border rounded-xl text-sm border-blue-200">
+            
             <div class="grid grid-cols-2 gap-3">
                 <input type="text" name="rut_cliente" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
                 <input type="tel" name="telefono" placeholder="WhatsApp" class="p-3 border rounded-xl text-sm">
             </div>
-            <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="w-full p-3 border rounded-xl text-sm">
+
             <div class="grid grid-cols-2 gap-3">
+                <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="p-3 border rounded-xl text-sm">
                 <input type="text" name="comuna" placeholder="Comuna" required class="p-3 border rounded-xl text-sm">
-                <input type="number" name="monto" placeholder="Monto $" required class="p-3 border rounded-xl text-sm">
             </div>
-            <select name="medio_pago" class="w-full p-3 border rounded-xl text-sm font-black bg-gray-50">
-                <option value="Transferencia Electrónica">Transferencia</option>
-                <option value="Efectivo">Efectivo</option>
-            </select>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <input type="number" name="monto" placeholder="Monto $" required class="p-3 border rounded-xl text-sm font-bold">
+                <select name="medio_pago" class="p-3 border rounded-xl text-sm font-black bg-gray-50">
+                    <option value="Transferencia Electrónica">Transferencia</option>
+                    <option value="Efectivo">Efectivo</option>
+                </select>
+            </div>
+
             <input type="date" name="fecha_pago" required class="w-full p-3 border rounded-xl text-sm">
             
             <div class="p-4 border-2 border-dashed border-pink-100 rounded-2xl bg-pink-50/50">
-                <p class="text-[10px] font-black text-pink-600 uppercase mb-2">Foto de la Transferencia</p>
-                <input type="file" id="fotoInput" accept="image/*" class="text-xs">
+                <p class="text-[10px] font-black text-pink-600 uppercase mb-2">Comprobante (Foto o PDF)</p>
+                <input type="file" id="archivoInput" accept="image/*,.pdf" class="text-xs">
             </div>
 
-            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg">
-                GENERAR Y ENVIAR AL CLIENTE
+            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE
             </button>
         </form>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxESfzyU8cB3xLqxYNeOYdYBMIwcJgMat1LaNfve9WxVHcQFBY03UVxKGu3C1tKUJ0m/exec"; // PEGA AQUÍ LA URL AZUL
+        // PEGA AQUÍ TU URL ACTUALIZADA
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT2veX098aagkoV7hPV7aMWR9-G2e6XHi-zoDdGZpSp-aioxvmVGnijMbKOuFZOMA/exec";
 
         document.getElementById('formReserva').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
             btn.disabled = true;
-            btn.innerText = "PROCESANDO IMAGEN...";
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> PROCESANDO...';
 
-            const fileInput = document.getElementById('fotoInput');
+            const fileInput = document.getElementById('archivoInput');
             let archivoBase64 = "";
+            let nombreArchivo = "";
 
-            // Convertir imagen a texto para enviarla
+            // Convertir archivo (Imagen o PDF) a Base64
             if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                nombreArchivo = file.name;
                 const reader = new FileReader();
                 archivoBase64 = await new Promise(resolve => {
                     reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(fileInput.files[0]);
+                    reader.readAsDataURL(file);
                 });
             }
 
-            btn.innerText = "ENVIANDO A GMAIL...";
             const formData = new FormData(this);
             const datos = Object.fromEntries(formData.entries());
-            datos.archivoData = archivoBase64; // Añadimos la foto
+            datos.archivoData = archivoBase64;
+            datos.archivoNombre = nombreArchivo;
 
             try {
-                const resp = await fetch(SCRIPT_URL, {
+                // Enviamos como JSON plano para que Google lo reciba bien
+                await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Importante para evitar bloqueos
+                    mode: 'no-cors', 
                     body: JSON.stringify(datos)
                 });
                 
-                alert("¡Proceso iniciado! En unos segundos el cliente recibirá el correo.");
+                alert("¡Orden enviada! El cliente recibirá el correo en unos instantes.");
                 this.reset();
             } catch (err) {
-                alert("Error de conexión. Verifica la URL del Script.");
+                alert("Error al conectar con el servidor.");
             } finally {
-                btn.innerText = "GENERAR Y ENVIAR AL CLIENTE";
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE';
                 btn.disabled = false;
             }
         });
