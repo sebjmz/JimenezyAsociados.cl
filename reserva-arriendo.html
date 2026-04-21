@@ -7,48 +7,69 @@
 </head>
 <body class="bg-white p-4">
     <div class="max-w-xl mx-auto border border-gray-100 p-6 rounded-3xl shadow-sm">
-        <h2 class="text-xl font-black uppercase italic mb-6 text-gray-800">Recibo de <span class="text-pink-600">Reserva</span></h2>
+        <h2 class="text-xl font-black uppercase italic mb-6 text-gray-800 italic">Generar y <span class="text-pink-600">Enviar Reserva</span></h2>
         
         <form id="formReserva" class="space-y-4">
-            <input type="text" name="nombre_cliente" placeholder="Nombre del Cliente" required class="w-full p-3 border rounded-xl text-sm">
-            <input type="text" name="rut_cliente" placeholder="RUT del Cliente" required class="w-full p-3 border rounded-xl text-sm">
+            <input type="text" name="nombre_cliente" placeholder="Nombre Completo Cliente" required class="w-full p-3 border rounded-xl text-sm font-bold">
+            <input type="email" name="email" placeholder="Correo del Cliente (Para envío automático)" required class="w-full p-3 border rounded-xl text-sm font-bold border-blue-200">
             
             <div class="grid grid-cols-2 gap-3">
-                <input type="tel" name="telefono" placeholder="WhatsApp" class="p-3 border rounded-xl text-sm">
-                <input type="number" name="monto" placeholder="Monto $" required class="p-3 border rounded-xl text-sm">
+                <input type="text" name="rut_cliente" placeholder="RUT Cliente" required class="p-3 border rounded-xl text-sm">
+                <input type="tel" name="telefono" placeholder="WhatsApp Cliente" class="p-3 border rounded-xl text-sm">
             </div>
 
-            <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="w-full p-3 border rounded-xl text-sm">
+            <div class="grid grid-cols-2 gap-3">
+                <input type="text" name="direccion" placeholder="Dirección Propiedad" required class="p-3 border rounded-xl text-sm">
+                <input type="text" name="comuna" placeholder="Comuna" required class="p-3 border rounded-xl text-sm">
+            </div>
             
             <div class="grid grid-cols-2 gap-3">
-                <select name="medio_pago" class="p-3 border rounded-xl text-sm font-bold bg-gray-50">
+                <input type="number" name="monto" placeholder="Monto Reserva $" required class="p-3 border rounded-xl text-sm">
+                <select name="medio_pago" class="p-3 border rounded-xl text-sm font-black bg-gray-50">
                     <option value="Transferencia Electrónica">Transferencia</option>
                     <option value="Efectivo">Efectivo</option>
                 </select>
-                <input type="date" name="fecha_pago" required class="p-3 border rounded-xl text-sm">
             </div>
 
-            <div class="p-4 border-2 border-dashed border-pink-100 rounded-2xl bg-pink-50/30">
-                <p class="text-[10px] font-black text-pink-600 uppercase mb-2">Adjuntar Comprobante (Foto o PDF)</p>
-                <input type="file" id="file" accept="image/*,.pdf" class="text-xs">
-            </div>
+            <input type="date" name="fecha_pago" required class="w-full p-3 border rounded-xl text-sm">
 
-            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-pink-700 transition shadow-lg flex items-center justify-center gap-2">
-                <i class="fa-solid fa-file-pdf"></i> GENERAR Y GUARDAR
+            <button type="submit" id="btnEnviar" class="w-full bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-pink-700 transition shadow-lg flex items-center justify-center gap-3">
+                <i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE
             </button>
         </form>
     </div>
 
     <script>
-        // Aquí conectaremos con el Google Apps Script más adelante
-        document.getElementById('formReserva').addEventListener('submit', function(e) {
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2L7fyjMPWIn6ryqihwxMKERwGH--ywBYq1WySX53AdWePPBBxUNnVNI1XBhIi4ySI/exec";
+
+        document.getElementById('formReserva').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
-            btn.innerText = "PROCESANDO...";
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> PROCESANDO ENVÍO...';
             btn.disabled = true;
-            
-            // Lógica simple de envío a Google Script
-            alert("Enviando a Google Drive...");
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+
+            try {
+                // Enviamos los datos por POST a la URL de Google Script
+                const response = await fetch(SCRIPT_URL + "?" + params, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    alert("¡ÉXITO! El PDF fue generado y enviado al correo del cliente.");
+                    this.reset();
+                } else {
+                    alert("Error del servidor: " + result.message);
+                }
+            } catch (error) {
+                alert("Error de conexión. Revisa si la URL del Script es correcta.");
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GENERAR Y ENVIAR AL CLIENTE';
+                btn.disabled = false;
+            }
         });
     </script>
 </body>
