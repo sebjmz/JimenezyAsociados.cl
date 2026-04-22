@@ -354,44 +354,38 @@
         window.logout = () => signOut(auth).then(() => window.location.href = 'ingresopartner.html');
 
         window.switchTab = (tab) => {
-    // 1. Definimos las vistas y botones (incluyendo la nueva de reserva)
     const views = {
         negocios: document.getElementById('view-negocios'),
         partners: document.getElementById('view-partners'),
         orden: document.getElementById('view-orden'),
         visita: document.getElementById('view-visita'),
-        reserva: document.getElementById('view-reserva') 
+        reserva: document.getElementById('view-reserva'),
+        contratos: document.getElementById('view-contratos') // Agregado
     };
     const btns = {
         negocios: document.getElementById('btn-tab-negocios'),
         partners: document.getElementById('btn-tab-partners'),
         orden: document.getElementById('btn-tab-orden'),
         visita: document.getElementById('btn-tab-visita'),
-        reserva: document.getElementById('btn-tab-reserva')
+        reserva: document.getElementById('btn-tab-reserva'),
+        contratos: document.getElementById('btn-tab-contratos') // Agregado
     };
 
-    // 2. Ocultamos todo y reseteamos estilos de botones
+    // Ocultar todo y resetear botones
     Object.keys(views).forEach(key => {
         if(views[key]) views[key].classList.add('hidden');
         if(btns[key]) btns[key].className = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
     });
 
-    // 3. Mostramos la vista seleccionada
+    // Mostrar seleccionada y aplicar color
     if(views[tab]) views[tab].classList.remove('hidden');
     
-    // 4. Aplicamos el color correspondiente al botón activo
-    if (tab === 'negocios') {
-        btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-    } else if (tab === 'partners') {
-        btns[tab].className = "bg-purple-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-        loadAllPartners();
-    } else if (tab === 'orden') {
-        btns[tab].className = "bg-green-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-    } else if (tab === 'visita') {
-        btns[tab].className = "bg-teal-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-    } else if (tab === 'reserva') {
-        btns[tab].className = "bg-pink-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
-    }
+    if (tab === 'negocios') btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] ...";
+    else if (tab === 'partners') { btns[tab].className = "bg-purple-600 text-white ..."; loadAllPartners(); }
+    else if (tab === 'orden') btns[tab].className = "bg-green-600 text-white ...";
+    else if (tab === 'visita') btns[tab].className = "bg-teal-600 text-white ...";
+    else if (tab === 'reserva') btns[tab].className = "bg-pink-600 text-white ...";
+    else if (tab === 'contratos') btns[tab].className = "bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
 };
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
@@ -473,6 +467,9 @@
                 </button>
                 <button id="btn-tab-reserva" onclick="switchTab('reserva')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">
                 <i class="fa-solid fa-cash-register mr-1"></i> Comprobante Reserva
+            </button>
+                <button id="btn-tab-contratos" onclick="switchTab('contratos')" class="text-gray-400 hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none">
+                <i class="fa-solid fa-file-contract mr-1"></i> Contratos
             </button>
             </div>
 
@@ -560,12 +557,6 @@
                     <iframe src="orden-venta.html" class="w-full h-[85vh] border-none" title="Formulario Orden de Venta"></iframe>
                 </div>
             </div>
-            <div id="view-orden" class="hidden">
-                <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl bg-white min-h-[85vh]">
-                    <iframe src="orden-venta.html" class="w-full h-[85vh] border-none" title="Formulario Orden de Venta"></iframe>
-                </div>
-            </div>
-
             <div id="view-visita" class="hidden">
                 <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl bg-white min-h-[85vh]">
                     <iframe src="orden-visita.html" class="w-full h-[85vh] border-none" title="Formulario Orden de Visita"></iframe>
@@ -574,6 +565,31 @@
         <div id="view-reserva" class="hidden">
     <div class="glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl bg-white min-h-[85vh]">
         <iframe src="reserva-arriendo.html" class="w-full h-[85vh] border-none"></iframe>
+    </div>
+</div>
+            <div id="view-contratos" class="hidden">
+    <div class="max-w-4xl mx-auto py-10">
+        <h2 class="text-xl font-black italic uppercase text-blue-500 mb-8 tracking-widest text-center">Seleccionar Tipo de Contrato</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div onclick="window.location.href='admin-contratos.html'" class="group bg-slate-900/50 border border-white/10 p-8 rounded-[2.5rem] hover:border-blue-500 transition-all duration-500 cursor-pointer text-center relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-600/10 rounded-full group-hover:scale-150 transition-transform"></div>
+                <i class="fa-solid fa-shield-halved text-4xl text-blue-500 mb-4"></i>
+                <h3 class="text-lg font-black uppercase italic text-white mb-2">Con Codeudor</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Garantía Solidaria (Plantilla 1)</p>
+            </div>
+
+            <div onclick="window.location.href='admin-contratos-simple.html'" class="group bg-slate-900/50 border border-white/10 p-8 rounded-[2.5rem] hover:border-pink-500 transition-all duration-500 cursor-pointer text-center relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-pink-600/10 rounded-full group-hover:scale-150 transition-transform"></div>
+                <i class="fa-solid fa-user-check text-4xl text-pink-500 mb-4"></i>
+                <h3 class="text-lg font-black uppercase italic text-white mb-2">Sin Codeudor</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Arriendo Simple (Plantilla 2)</p>
+            </div>
+        </div>
+        
+        <div class="mt-12 text-center">
+            <p class="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic">Jiménez & Asociados - Protección Legal</p>
+        </div>
     </div>
 </div>
         </main>
