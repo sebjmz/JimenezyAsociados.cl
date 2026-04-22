@@ -108,8 +108,7 @@
         </div>
     </div>
 
-    <script>
-        function calcularFechas() {
+    <script>function calcularFechas() {
             const fechaIn = document.getElementById('fecha_inicio').value;
             if (!fechaIn) return;
 
@@ -125,6 +124,8 @@
             const reajuste = new Date(inicio);
             reajuste.setMonth(inicio.getMonth() + 6);
             document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
+            
+            generar();
         }
 
         function generar() {
@@ -141,6 +142,10 @@
             const fechaInVal = document.getElementById('fecha_inicio').value;
             const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
 
+            // Automatización de Monto en Letras
+            const letrasRenta = numeroALetras(renta);
+            document.getElementById('monto_letras').value = letrasRenta;
+
             let proporcional = 0;
             if (fechaInVal) {
                 const dia = new Date(fechaInVal + "T12:00:00").getDate();
@@ -148,10 +153,15 @@
             }
 
             const garantia = renta * nGarantia;
+            const comisionLiquida = renta * 0.5;
+            const comisionBruta = comisionLiquida / 0.8475;
+
+            // Update UI
             document.getElementById('res_proporcional').innerText = fmt(proporcional);
             document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
-            document.getElementById('res_comision_total').innerText = fmt((renta * 0.5) / 0.8475);
+            document.getElementById('res_comision_total').innerText = fmt(comisionBruta);
 
+            // TEXTO ÍNTEGRO DEL CONTRATO
             const texto = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
 FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
 
@@ -166,25 +176,25 @@ Los comparecientes, mayores de edad, en pleno uso de sus facultades y sin vicios
 II. CLÁUSULAS FUNDAMENTALES
 PRIMERO. PROPIEDAD: La Parte Arrendadora es dueña y da en arriendo a La Parte Arrendataria, el inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}.
 
-SEGUNDO. DESTINO: El inmueble será destinado única y exclusivamente a la habitación de La Parte Arrendataria y su familia nuclear. Queda prohibido el uso comercial o Airbnb.
+SEGUNDO. DESTINO: Habitación de La Parte Arrendataria y su familia nuclear. Prohibido uso comercial o Airbnb.
 
-TERCERO. PLAZO Y VIGENCIA: Comenzará a regir el día ${dateFmt('fecha_inicio')} y tendrá una vigencia original de un año, finalizando el día ${dateFmt('fecha_termino')}.
+TERCERO. PLAZO Y VIGENCIA: Rige desde ${dateFmt('fecha_inicio')} hasta el ${dateFmt('fecha_termino')}. Renovación automática por periodos de un año.
 
-CUARTO. RENTA Y FORMA DE PAGO: La renta mensual será de ${fmt(renta)} (${raw('monto_letras')}).
-MULTA POR ATRASO: En caso de mora, se devengará una multa moratoria penal diaria equivalente al cinco por ciento (5%) del valor de la renta mensual vigente por cada día de atraso.
+CUARTO. RENTA Y FORMA DE PAGO: Renta mensual de ${fmt(renta)} (${letrasRenta}).
+MULTA POR ATRASO: Multa moratoria penal diaria del cinco por ciento (5%) de la renta mensual por cada día de atraso.
 
 CUARTO BIS. DESGLOSE DE PAGOS AL MOMENTO DE LA FIRMA:
-MES PROPORCIONAL: La suma de ${fmt(proporcional)}, correspondiente a los días de ocupación del primer mes (mes comercial de 30 días).
-DEPÓSITO DE GARANTÍA: La suma de ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
-TOTAL ACUMULADO PERCIBIDO EN ESTE ACTO: ${fmt(proporcional + garantia)}.
+MES PROPORCIONAL: ${fmt(proporcional)}, por días de ocupación del primer mes (mes comercial de 30 días).
+DEPÓSITO DE GARANTÍA: ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
+TOTAL PERCIBIDO EN ESTE ACTO: ${fmt(proporcional + garantia)}.
 
-QUINTO. REAJUSTABILIDAD: La renta se reajustará semestralmente según la variación del IPC. El primer reajuste será el día ${dateFmt('fecha_reajuste')}.
+QUINTO. REAJUSTABILIDAD: Reajuste semestral por IPC. Primer reajuste el día ${dateFmt('fecha_reajuste')}.
 
-SEXTO. DEPÓSITO DE GARANTÍA: Suma de ${fmt(garantia)} para garantizar cumplimiento y conservación.
+SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para asegurar cumplimiento y conservación.
 
 SÉPTIMO A DÉCIMO CUARTO: (Mantención, Inspección, Prohibiciones, Servicios, Siniestros, Ley 21.461, Abandono y DICOM integrados íntegramente).
 
-DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(renta * 0.5)}, que sumado a la retención legal del 15,25% (2026), totaliza un valor bruto de ${fmt((renta * 0.5) / 0.8475)} por cada parte.
+DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(comisionLiquida)}, que sumado a la retención legal del 15,25% (2026), totaliza un valor bruto de ${fmt(comisionBruta)} por cada parte.
 
 DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y firma digital.
 
@@ -192,6 +202,26 @@ FIRMAS DE CONFORMIDAD
 ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} | CODEUDOR: ${raw('rut_codeudor')}`;
 
             document.getElementById('preview_contrato').innerText = texto;
+            
+            // DISPARO A GOOGLE APPS SCRIPT PARA PDF Y ENVÍO
+            if (renta > 0 && fechaInVal) {
+                const payload = {
+                    monto_renta: renta,
+                    monto_letras: letrasRenta,
+                    fecha_inicio: dateFmt('fecha_inicio'),
+                    fecha_termino: dateFmt('fecha_termino'),
+                    fecha_reajuste: dateFmt('fecha_reajuste'),
+                    nombre_arrendatario: raw('nombre_arrendatario'),
+                    nombre_arrendador: raw('nombre_arrendador'),
+                    direccion_propiedad: raw('direccion_propiedad'),
+                    comision_total: comisionBruta,
+                    ciudad: raw('ciudad'),
+                    rut_arrendador: raw('rut_arrendador'),
+                    rut_arrendatario: raw('rut_arrendatario'),
+                    rut_codeudor: raw('rut_codeudor')
+                };
+                google.script.run.withSuccessHandler(() => console.log("PDF generado")).generarYEnviarPDF(payload);
+            }
         }
 
         function copiarContrato() {
@@ -199,6 +229,52 @@ ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} 
             navigator.clipboard.writeText(content);
             alert("Contrato copiado exitosamente.");
         }
+
+        function numeroALetras(num) {
+            const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+            const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+            const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
+            const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+            if (num === 0) return 'CERO PESOS';
+            if (num === 1000000) return 'UN MILLÓN DE PESOS';
+
+            function convertir(n) {
+                if (n < 10) return unidades[n - 1] || '';
+                if (n < 20) {
+                    if (n === 10) return 'DIEZ';
+                    return especiales[n - 11] || 'DIECI' + convertir(n - 10);
+                }
+                if (n < 100) {
+                    let d = Math.floor(n / 10);
+                    let u = n % 10;
+                    return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1];
+                }
+                if (n < 1000) {
+                    if (n === 100) return 'CIEN';
+                    let c = Math.floor(n / 100);
+                    let resto = n % 100;
+                    return centenas[c - 1] + ' ' + convertir(resto);
+                }
+                if (n < 1000000) {
+                    let mil = Math.floor(n / 1000);
+                    let resto = n % 1000;
+                    let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL';
+                    return milTexto + ' ' + convertir(resto);
+                }
+                if (n < 1000000000) {
+                    let millon = Math.floor(n / 1000000);
+                    let resto = n % 1000000;
+                    let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES';
+                    if (resto > 0 && resto < 1000000) return millonTexto + ' ' + convertir(resto);
+                    return millonTexto + ' DE';
+                }
+                return '';
+            }
+            return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
+        }
+        
+        // Carga inicial
         generar();
     </script>
 </body>
