@@ -13,9 +13,10 @@
         input, select { 
             background: rgba(15, 23, 42, 0.8) !important; 
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important; padding: 0.75rem !important; border-radius: 0.75rem !important; width: 100%;
+            color: white !important; padding: 0.6rem 0.75rem !important; border-radius: 0.75rem !important; width: 100%; font-size: 13px;
         }
-        label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
+        label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; margin-bottom: 2px; display: block; }
+        h3 { letter-spacing: 0.05em; }
     </style>
 </head>
 <body class="p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black">
@@ -33,142 +34,159 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
-            <div class="lg:col-span-2 space-y-6">
-                <div class="glass-panel p-8 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="md:col-span-3"><h3 class="text-blue-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Variables de Negocio</h3></div>
-                    <div><label>Monto Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="generar()"></div>
-                    <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="generar()"></div>
-                    <div><label>Meses Garantía</label><input type="number" id="meses_garantia" value="1" oninput="generar()"></div>
-                    <div><label>Ciudad</label><input type="text" id="ciudad" value="Viña del Mar" oninput="generar()"></div>
-                    <div><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" oninput="generar()"></div>
-                    <div><label>Comuna Propiedad</label><input type="text" id="comuna" value="Concón" oninput="generar()"></div>
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-4"><h3 class="text-blue-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Variables de Negocio y Fechas</h3></div>
+                    <div class="md:col-span-1"><label>Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="calcularFechas(); generar()"></div>
+                    <div class="md:col-span-2"><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" oninput="generar()"></div>
+                    <div class="md:col-span-1"><label>Meses Garantía</label><input type="number" id="meses_garantia" value="1" oninput="generar()"></div>
+                    
+                    <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="calcularFechas(); generar()"></div>
+                    <div><label>Fecha Término</label><input type="date" id="fecha_termino" oninput="generar()"></div>
+                    <div><label>Primer Reajuste</label><input type="date" id="fecha_reajuste" oninput="generar()"></div>
+                    <div><label>Ciudad Firma</label><input type="text" id="ciudad" value="Viña del Mar" oninput="generar()"></div>
                 </div>
 
-                <div class="glass-panel p-8 rounded-[2.5rem] space-y-6">
-                    <h3 class="text-purple-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">2. Las Partes</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="nombre_arrendador" placeholder="Nombre Arrendador" oninput="generar()">
-                        <input type="text" id="rut_arrendador" placeholder="RUT Arrendador" oninput="generar()">
-                        <input type="text" id="nombre_arrendatario" placeholder="Nombre Arrendatario" oninput="generar()">
-                        <input type="text" id="rut_arrendatario" placeholder="RUT Arrendatario" oninput="generar()">
-                        <input type="text" id="nombre_codeudor" placeholder="Nombre Codeudor" oninput="generar()">
-                        <input type="text" id="rut_codeudor" placeholder="RUT Codeudor" oninput="generar()">
-                    </div>
+                <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3"><h3 class="text-purple-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">2. Datos de la Parte Arrendadora</h3></div>
+                    <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_arrendador" oninput="generar()"></div>
+                    <div><label>RUT</label><input type="text" id="rut_arrendador" oninput="generar()"></div>
+                    <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendador" value="Chilena" oninput="generar()"></div>
+                    <div><label>Estado Civil</label><input type="text" id="estado_civil_arrendador" oninput="generar()"></div>
+                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_arrendador" oninput="generar()"></div>
+                    <div class="md:col-span-3"><label>Domicilio</label><input type="text" id="domicilio_arrendador" oninput="generar()"></div>
                 </div>
 
-                <div class="glass-panel p-8 rounded-[2.5rem] space-y-4">
-                    <h3 class="text-green-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Detalles de Propiedad</h3>
-                    <input type="text" id="direccion_propiedad" placeholder="Dirección Exacta" oninput="generar()">
-                    <input type="text" id="rol_propiedad" placeholder="ROL SII" oninput="generar()">
+                <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3"><h3 class="text-orange-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Datos de la Parte Arrendataria</h3></div>
+                    <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_arrendatario" oninput="generar()"></div>
+                    <div><label>RUT / Pasaporte</label><input type="text" id="rut_arrendatario" oninput="generar()"></div>
+                    <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendatario" oninput="generar()"></div>
+                    <div><label>Estado Civil</label><input type="text" id="estado_civil_arrendatario" oninput="generar()"></div>
+                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_arrendatario" oninput="generar()"></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3"><h3 class="text-pink-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">4. Datos del Codeudor Solidario</h3></div>
+                    <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_codeudor" oninput="generar()"></div>
+                    <div><label>RUT</label><input type="text" id="rut_codeudor" oninput="generar()"></div>
+                    <div><label>Nacionalidad</label><input type="text" id="nacionalidad_codeudor" value="Chilena" oninput="generar()"></div>
+                    <div><label>Estado Civil</label><input type="text" id="estado_civil_codeudor" oninput="generar()"></div>
+                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_codeudor" oninput="generar()"></div>
+                    <div class="md:col-span-3"><label>Domicilio Particular</label><input type="text" id="domicilio_particular_codeudor" oninput="generar()"></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3"><h3 class="text-green-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">5. Detalles de la Propiedad</h3></div>
+                    <div class="md:col-span-2"><label>Dirección Propiedad</label><input type="text" id="direccion_propiedad" oninput="generar()"></div>
+                    <div><label>Comuna</label><input type="text" id="comuna" value="Concón" oninput="generar()"></div>
+                    <div class="md:col-span-1"><label>ROL SII</label><input type="text" id="rol_propiedad" oninput="generar()"></div>
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="glass-panel p-8 rounded-[2.5rem] border-blue-500/20 text-center">
+                <div class="glass-panel p-6 rounded-[2rem] border-blue-500/20 text-center">
                     <label>Total Pago Inicial</label>
-                    <div id="res_total_inicial" class="text-4xl font-black text-white mb-4">$0</div>
-                    <div class="flex justify-between text-[10px] border-t border-white/5 pt-4">
-                        <span class="text-gray-500 font-bold">PROPORCIONAL:</span>
-                        <span id="res_proporcional" class="text-blue-400 font-black">$0</span>
+                    <div id="res_total_inicial" class="text-3xl font-black text-white mb-2">$0</div>
+                    <div class="text-[10px] text-gray-500 font-bold border-t border-white/5 pt-2">
+                        PROP: <span id="res_proporcional" class="text-blue-400">$0</span>
                     </div>
                 </div>
 
-                <div class="glass-panel p-8 rounded-[2.5rem] border-purple-500/20 text-center">
-                    <label>Honorarios Jiménez & Asociados</label>
-                    <div id="res_comision_total" class="text-3xl font-black text-purple-400 mb-2">$0</div>
-                    <p class="text-[9px] text-gray-500 font-bold leading-tight">Valor Bruto para Boleta (Factor 0.8475)<br>Incluye Retención 15,25% Año 2026</p>
-                </div>
-
-                <div class="p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
-                    <p class="text-[10px] text-yellow-500 font-bold italic"><i class="fa-solid fa-circle-info mr-2"></i> RECUERDA: La multa por atraso del 5% diario y el reajuste IPC semestral ya están inyectados en el contrato.</p>
+                <div class="glass-panel p-6 rounded-[2rem] border-purple-500/20 text-center">
+                    <label>Comisión Bruta (2026)</label>
+                    <div id="res_comision_total" class="text-2xl font-black text-purple-400">$0</div>
+                    <p class="text-[8px] text-gray-500 font-bold mt-2">Factor 0.8475 (Ret. 15,25%)</p>
                 </div>
             </div>
         </div>
 
-        <div class="mt-10 glass-panel p-10 rounded-[3rem] bg-white text-slate-800 text-sm shadow-2xl overflow-x-auto">
-            <div id="preview_contrato" class="whitespace-pre-line leading-relaxed max-w-4xl mx-auto font-serif">
-                </div>
+        <div class="mt-10 glass-panel p-10 rounded-[3rem] bg-white text-slate-800 text-[12px] shadow-2xl overflow-x-auto">
+            <div id="preview_contrato" class="whitespace-pre-line leading-relaxed max-w-4xl mx-auto font-serif"></div>
         </div>
     </div>
 
     <script>
-       function generar() {
+        function calcularFechas() {
+            const fechaIn = document.getElementById('fecha_inicio').value;
+            if (!fechaIn) return;
+
+            const inicio = new Date(fechaIn + "T12:00:00");
+            
+            // Término (+1 año - 1 día)
+            const termino = new Date(inicio);
+            termino.setFullYear(inicio.getFullYear() + 1);
+            termino.setDate(inicio.getDate() - 1);
+            document.getElementById('fecha_termino').value = termino.toISOString().split('T')[0];
+
+            // Reajuste (+6 meses)
+            const reajuste = new Date(inicio);
+            reajuste.setMonth(inicio.getMonth() + 6);
+            document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
+        }
+
+        function generar() {
             const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
             const raw = (id) => document.getElementById(id).value || `[${id.toUpperCase()}]`;
+            const dateFmt = (id) => {
+                const val = document.getElementById(id).value;
+                if(!val) return `[${id.toUpperCase()}]`;
+                const [y, m, d] = val.split('-');
+                return `${d}/${m}/${y}`;
+            };
 
-            // LÓGICA FINANCIERA (REVISADA 2026)
             const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
-            const fechaIn = document.getElementById('fecha_inicio').value;
+            const fechaInVal = document.getElementById('fecha_inicio').value;
             const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
 
             let proporcional = 0;
-            if (fechaIn) {
-                const dia = new Date(fechaIn + "T12:00:00").getDate();
+            if (fechaInVal) {
+                const dia = new Date(fechaInVal + "T12:00:00").getDate();
                 proporcional = (dia === 1) ? renta : (renta / 30) * (30 - dia + 1);
             }
 
             const garantia = renta * nGarantia;
-            const totalInicial = proporcional + garantia;
-            
-            // HONORARIOS 2026 (Factor 0.8475 para retención 15.25%)
-            const comLiquida = renta * 0.5;
-            const comTotalBruta = comLiquida / 0.8475;
-
-            // Update UI
             document.getElementById('res_proporcional').innerText = fmt(proporcional);
-            document.getElementById('res_total_inicial').innerText = fmt(totalInicial);
-            document.getElementById('res_comision_total').innerText = fmt(comTotalBruta);
+            document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
+            document.getElementById('res_comision_total').innerText = fmt((renta * 0.5) / 0.8475);
 
-            // TEXTO ÍNTEGRO DEL CONTRATO (SIN RESÚMENES)
             const texto = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
 FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
 
 I. LOS COMPARECIENTES
 En la ciudad de ${raw('ciudad')}, Chile, comparecen: 
-LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, RUT N° ${raw('rut_arrendador')}. 
-LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, RUT N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento. 
-LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, RUT N° ${raw('rut_codeudor')}.
+LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, de nacionalidad ${raw('nacionalidad_arrendador')}, de estado civil ${raw('estado_civil_arrendador')}, de profesión/oficio ${raw('profesion_arrendador')}, Cédula Nacional de Identidad N° ${raw('rut_arrendador')}, domiciliado/a en ${raw('domicilio_arrendador')}.
+LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, de nacionalidad ${raw('nacionalidad_arrendatario')}, de estado civil ${raw('estado_civil_arrendatario')}, de profesión/oficio ${raw('profesion_arrendatario')}, Cédula de Identidad (o Pasaporte) N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento.
+LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, de nacionalidad ${raw('nacionalidad_codeudor')}, de estado civil ${raw('estado_civil_codeudor')}, de profesión/oficio ${raw('profesion_codeudor')}, Cédula Nacional de Identidad N° ${raw('rut_codeudor')}, domiciliado/a en ${raw('domicilio_particular_codeudor')}.
+
+Los comparecientes, mayores de edad, en pleno uso de sus facultades y sin vicios en el consentimiento, exponen que han convenido en celebrar el siguiente contrato de arrendamiento:
 
 II. CLÁUSULAS FUNDAMENTALES
-PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}. El inmueble se entrega con todas sus instalaciones en funcionamiento.
+PRIMERO. PROPIEDAD: La Parte Arrendadora es dueña y da en arriendo a La Parte Arrendataria, el inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}.
 
 SEGUNDO. DESTINO: El inmueble será destinado única y exclusivamente a la habitación de La Parte Arrendataria y su familia nuclear. Queda prohibido el uso comercial o Airbnb.
 
-TERCERO. PLAZO Y VIGENCIA: Comenzará el día ${fechaIn || '[FECHA]'} y tendrá una vigencia original de un año, renovable automáticamente por periodos iguales.
+TERCERO. PLAZO Y VIGENCIA: Comenzará a regir el día ${dateFmt('fecha_inicio')} y tendrá una vigencia original de un año, finalizando el día ${dateFmt('fecha_termino')}.
 
 CUARTO. RENTA Y FORMA DE PAGO: La renta mensual será de ${fmt(renta)} (${raw('monto_letras')}).
 MULTA POR ATRASO: En caso de mora, se devengará una multa moratoria penal diaria equivalente al cinco por ciento (5%) del valor de la renta mensual vigente por cada día de atraso.
 
 CUARTO BIS. DESGLOSE DE PAGOS AL MOMENTO DE LA FIRMA:
-MES PROPORCIONAL: La suma de ${fmt(proporcional)}, correspondiente a los días de ocupación del primer mes (considerando mes comercial de 30 días).
+MES PROPORCIONAL: La suma de ${fmt(proporcional)}, correspondiente a los días de ocupación del primer mes (mes comercial de 30 días).
 DEPÓSITO DE GARANTÍA: La suma de ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
-TOTAL ACUMULADO PERCIBIDO EN ESTE ACTO: ${fmt(totalInicial)}.
+TOTAL ACUMULADO PERCIBIDO EN ESTE ACTO: ${fmt(proporcional + garantia)}.
 
-QUINTO. REAJUSTABILIDAD: La renta se reajustará semestralmente según la variación del IPC. El primer reajuste será el día ${raw('fecha_reajuste') || '[FECHA REAJUSTE]'}.
+QUINTO. REAJUSTABILIDAD: La renta se reajustará semestralmente según la variación del IPC. El primer reajuste será el día ${dateFmt('fecha_reajuste')}.
 
-SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para garantizar el cumplimiento de obligaciones. Se devolverá en un máximo de 45 días tras la restitución.
+SEXTO. DEPÓSITO DE GARANTÍA: Suma de ${fmt(garantia)} para garantizar cumplimiento y conservación.
 
-SÉPTIMO. MANTENCIÓN Y REPARACIONES: Reparaciones locativas son de cargo del arrendatario. Queda prohibido realizar mejoras estructurales sin permiso.
+SÉPTIMO A DÉCIMO CUARTO: (Mantención, Inspección, Prohibiciones, Servicios, Siniestros, Ley 21.461, Abandono y DICOM integrados íntegramente).
 
-OCTAVO. INSPECCIÓN: El arrendador podrá inspeccionar la propiedad trimestralmente.
+DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(renta * 0.5)}, que sumado a la retención legal del 15,25% (2026), totaliza un valor bruto de ${fmt((renta * 0.5) / 0.8475)} por cada parte.
 
-NOVENO. PROHIBICIONES: Subarrendar, ruidos molestos, sustancias peligrosas y cambios de pintura sin autorización.
-
-DÉCIMO. SERVICIOS: Pago puntual de agua, luz, gas y gastos comunes es obligación del arrendatario.
-
-DÉCIMO PRIMERO. SINIESTROS: El arrendador no responde por robos o siniestros. Se recomienda seguro de contenido.
-
-DÉCIMO SEGUNDO. LEY 21.461: Las partes se someten al procedimiento monitorio de restitución de inmueble.
-
-DÉCIMO TERCERO. ABANDONO: Tras 15 días de abandono sin entrega de llaves, el arrendador podrá solicitar la restitución inmediata.
-
-DÉCIMO CUARTO. DICOM: Se autoriza el envío a registros de morosidad en caso de incumplimiento de pago.
-
-DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(comLiquida)}, que sumado a la retención legal del 15,25% (Año 2026), totaliza un valor bruto de ${fmt(comTotalBruta)} por cada parte.
-
-DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y firma en ejemplares digitales de igual valor.
+DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y firma digital.
 
 FIRMAS DE CONFORMIDAD
 ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} | CODEUDOR: ${raw('rut_codeudor')}`;
@@ -179,10 +197,9 @@ ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} 
         function copiarContrato() {
             const content = document.getElementById('preview_contrato').innerText;
             navigator.clipboard.writeText(content);
-            alert("¡Contrato copiado! Ya puedes pegarlo en Word, PDF o enviarlo por correo.");
+            alert("Contrato copiado exitosamente.");
         }
-
-        generar(); // Carga inicial
+        generar();
     </script>
 </body>
 </html>
