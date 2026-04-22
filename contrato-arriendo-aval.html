@@ -135,18 +135,42 @@
             const fechaIn = document.getElementById('fecha_inicio').value;
             if (!fechaIn) return;
 
-            const inicio = new Date(fechaIn + "T12:00:00");
+            // Extraemos los datos exactos sin que la zona horaria nos mueva los días
+            const partes = fechaIn.split('-');
+            const anio = parseInt(partes[0], 10);
+            const mes = parseInt(partes[1], 10) - 1; // JS cuenta los meses de 0 a 11
+            const dia = parseInt(partes[2], 10);
+
+            let fechaTermino;
             
-            const termino = new Date(inicio);
-            termino.setFullYear(inicio.getFullYear() + 1);
-            termino.setDate(inicio.getDate() - 1);
-            document.getElementById('fecha_termino').value = termino.toISOString().split('T')[0];
+            // LA REGLA DE ORO DE JIMÉNEZ & ASOCIADOS:
+            if (dia <= 15) {
+                // Si entra del 1 al 15: Termina el último día del mes ANTERIOR del próximo año.
+                // Ej: Entra el 10 Abril 2026 -> Termina 31 Marzo 2027.
+                // (En código, el día "0" de un mes, nos da el último día del mes anterior automáticamente)
+                fechaTermino = new Date(anio + 1, mes, 0); 
+            } else {
+                // Si entra del 16 en adelante: Termina el último día del MISMO mes del próximo año.
+                // Ej: Entra el 16 Abril 2026 -> Termina 30 Abril 2027.
+                fechaTermino = new Date(anio + 1, mes + 1, 0);
+            }
 
-            const reajuste = new Date(inicio);
-            reajuste.setMonth(inicio.getMonth() + 6);
-            document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
+            // Función interna para formatear la fecha de vuelta al input (YYYY-MM-DD)
+            const formatoYMD = (d) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            };
+
+            document.getElementById('fecha_termino').value = formatoYMD(fechaTermino);
+
+            // Reajuste: Exactamente 6 meses después del inicio
+            const reajuste = new Date(anio, mes + 6, dia);
+            document.getElementById('fecha_reajuste').value = formatoYMD(reajuste);
+            
+            generarCalculos(); // Actualiza los números a la derecha
         }
-
         function generarCalculos() {
             const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
 
