@@ -100,17 +100,17 @@
             const formData = new FormData(this);
             const datos = Object.fromEntries(formData.entries());
 
-            try {
-                // Enviamos como JSON al Script
-                await fetch(SCRIPT_URL, {
+           try {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(datos)
                 });
                 
-                alert("¡Contrato generado con éxito! Las partes recibirán el borrador en sus correos en unos segundos.");
-                // Opcional: No resetear para poder corregir si hubo un error de tipeo
+                alert("¡Contrato generado con éxito! Las partes recibirán el borrador en sus correos.");
             } catch (err) {
+                console.error(err);
                 alert("Error de conexión con el servidor de Jiménez & Asociados.");
             } finally {
                 btn.innerHTML = '<i class="fa-solid fa-file-signature"></i> GENERAR CONTRATO Y ENVIAR';
