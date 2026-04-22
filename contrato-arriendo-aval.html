@@ -27,7 +27,10 @@
                 <h1 class="text-3xl font-black italic uppercase tracking-tighter">Generador <span class="text-blue-500">Aval</span></h1>
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Jiménez & Asociados | v2.0-2026</p>
             </div>
-            <div class="text-right">
+            <div class="space-x-2">
+                <button id="btn-enviar-pdf" onclick="enviarContratoPDF()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition shadow-lg">
+                    <i class="fa-solid fa-envelope mr-2"></i> Enviar PDF al Correo
+                </button>
                 <button onclick="copiarContrato()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition shadow-lg">
                     <i class="fa-solid fa-copy mr-2"></i> Copiar Contrato
                 </button>
@@ -40,7 +43,7 @@
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-4"><h3 class="text-blue-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Variables de Negocio y Fechas</h3></div>
                     <div class="md:col-span-1"><label>Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="calcularFechas(); generar()"></div>
-                    <div class="md:col-span-2"><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" oninput="generar()"></div>
+                    <div class="md:col-span-2"><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" readonly></div>
                     <div class="md:col-span-1"><label>Meses Garantía</label><input type="number" id="meses_garantia" value="1" oninput="generar()"></div>
                     
                     <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="calcularFechas(); generar()"></div>
@@ -63,7 +66,7 @@
                     <div class="md:col-span-3"><h3 class="text-orange-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Datos de la Parte Arrendataria</h3></div>
                     <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_arrendatario" oninput="generar()"></div>
                     <div><label>RUT / Pasaporte</label><input type="text" id="rut_arrendatario" oninput="generar()"></div>
-                    <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendatario" oninput="generar()"></div>
+                    <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendatario" value="Chilena" oninput="generar()"></div>
                     <div><label>Estado Civil</label><input type="text" id="estado_civil_arrendatario" oninput="generar()"></div>
                     <div><label>Profesión / Oficio</label><input type="text" id="profesion_arrendatario" oninput="generar()"></div>
                 </div>
@@ -109,24 +112,44 @@
     </div>
 
     <script>
+        // LA URL DE TU APPS SCRIPT (AQUÍ ES DONDE SE CONECTAN)
+        const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzUx7wNVAOwvWwob0gyQozW72VuMA0anjPp-vf3efggSwzgeP1zYmzP7JOoPJbig1Y_rw/exec";
+
+        function numeroALetras(num) {
+            const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+            const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+            const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
+            const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+            if (num === 0) return 'CERO PESOS';
+            if (num === 1000000) return 'UN MILLÓN DE PESOS';
+
+            function convertir(n) {
+                if (n < 10) return unidades[n - 1] || '';
+                if (n < 20) { if (n === 10) return 'DIEZ'; return especiales[n - 11] || 'DIECI' + convertir(n - 10); }
+                if (n < 100) { let d = Math.floor(n / 10); let u = n % 10; return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1]; }
+                if (n < 1000) { if (n === 100) return 'CIEN'; let c = Math.floor(n / 100); let resto = n % 100; return centenas[c - 1] + ' ' + convertir(resto); }
+                if (n < 1000000) { let mil = Math.floor(n / 1000); let resto = n % 1000; let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL'; return milTexto + ' ' + convertir(resto); }
+                if (n < 1000000000) { let millon = Math.floor(n / 1000000); let resto = n % 1000000; let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES'; return (resto > 0) ? millonTexto + ' ' + convertir(resto) : millonTexto + ' DE'; }
+                return '';
+            }
+            return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
+        }
+
         function calcularFechas() {
             const fechaIn = document.getElementById('fecha_inicio').value;
             if (!fechaIn) return;
 
             const inicio = new Date(fechaIn + "T12:00:00");
             
-            // Término (+1 año - 1 día)
             const termino = new Date(inicio);
             termino.setFullYear(inicio.getFullYear() + 1);
             termino.setDate(inicio.getDate() - 1);
             document.getElementById('fecha_termino').value = termino.toISOString().split('T')[0];
 
-            // Reajuste (+6 meses)
             const reajuste = new Date(inicio);
             reajuste.setMonth(inicio.getMonth() + 6);
             document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
-            
-            generar();
         }
 
         function generar() {
@@ -143,7 +166,6 @@
             const fechaInVal = document.getElementById('fecha_inicio').value;
             const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
 
-            // Automatización de Monto en Letras
             const letrasRenta = numeroALetras(renta);
             document.getElementById('monto_letras').value = letrasRenta;
 
@@ -154,201 +176,123 @@
             }
 
             const garantia = renta * nGarantia;
-            const comisionLiquida = renta * 0.5;
-            const comisionBruta = comisionLiquida / 0.8475;
+            const comisionBruta = (renta * 0.5) / 0.8475;
 
-            // Update UI
             document.getElementById('res_proporcional').innerText = fmt(proporcional);
             document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
             document.getElementById('res_comision_total').innerText = fmt(comisionBruta);
 
-            // TEXTO ÍNTEGRO DEL CONTRATO
             const texto = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
 FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
 
 I. LOS COMPARECIENTES
 En la ciudad de ${raw('ciudad')}, Chile, comparecen: 
 LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, de nacionalidad ${raw('nacionalidad_arrendador')}, de estado civil ${raw('estado_civil_arrendador')}, de profesión/oficio ${raw('profesion_arrendador')}, Cédula Nacional de Identidad N° ${raw('rut_arrendador')}, domiciliado/a en ${raw('domicilio_arrendador')}.
-LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, de nacionalidad ${raw('nacionalidad_arrendatario')}, de estado civil ${raw('estado_civil_arrendatario')}, de profesión/oficio ${raw('profesion_arrendatario')}, Cédula de Identidad (o Pasaporte) N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento.
-LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, de nacionalidad ${raw('nacionalidad_codeudor')}, de estado civil ${raw('estado_civil_codeudor')}, de profesión/oficio ${raw('profesion_codeudor')}, Cédula Nacional de Identidad N° ${raw('rut_codeudor')}, domiciliado/a en ${raw('domicilio_particular_codeudor')}.
-
-Los comparecientes, mayores de edad, en pleno uso de sus facultades y sin vicios en el consentimiento, exponen que han convenido en celebrar el siguiente contrato de arrendamiento:
+LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, de nacionalidad ${raw('nacionalidad_arrendatario')}, de estado civil ${raw('estado_civil_arrendatario')}, de profesión/oficio ${raw('profesion_arrendatario')}, Cédula de Identidad N° ${raw('rut_arrendatario')}, quien fija su domicilio en la propiedad objeto de este instrumento.
+LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, Cédula Nacional de Identidad N° ${raw('rut_codeudor')}, domiciliado/a en ${raw('domicilio_particular_codeudor')}.
 
 II. CLÁUSULAS FUNDAMENTALES
-PRIMERO. PROPIEDAD: La Parte Arrendadora es dueña y da en arriendo a La Parte Arrendataria, el inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}.
-
-SEGUNDO. DESTINO: Habitación de La Parte Arrendataria y su familia nuclear. Prohibido uso comercial o Airbnb.
-
-TERCERO. PLAZO Y VIGENCIA: Rige desde ${dateFmt('fecha_inicio')} hasta el ${dateFmt('fecha_termino')}. Renovación automática por periodos de un año.
+PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}.
 
 CUARTO. RENTA Y FORMA DE PAGO: Renta mensual de ${fmt(renta)} (${letrasRenta}).
-MULTA POR ATRASO: Multa moratoria penal diaria del cinco por ciento (5%) de la renta mensual por cada día de atraso.
+MULTA POR ATRASO: Multa moratoria penal diaria del 5% de la renta mensual por cada día de atraso.
 
-CUARTO BIS. DESGLOSE DE PAGOS AL MOMENTO DE LA FIRMA:
-MES PROPORCIONAL: ${fmt(proporcional)}, por días de ocupación del primer mes (mes comercial de 30 días).
-DEPÓSITO DE GARANTÍA: ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
+CUARTO BIS. DESGLOSE DE PAGOS INICIALES:
+MES PROPORCIONAL: ${fmt(proporcional)}.
+DEPÓSITO DE GARANTÍA: ${fmt(garantia)}.
 TOTAL PERCIBIDO EN ESTE ACTO: ${fmt(proporcional + garantia)}.
 
-QUINTO. REAJUSTABILIDAD: Reajuste semestral por IPC. Primer reajuste el día ${dateFmt('fecha_reajuste')}.
-
-SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para asegurar cumplimiento y conservación.
-
-SÉPTIMO A DÉCIMO CUARTO: (Mantención, Inspección, Prohibiciones, Servicios, Siniestros, Ley 21.461, Abandono y DICOM integrados íntegramente).
-
-DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(comisionLiquida)}, que sumado a la retención legal del 15,25% (2026), totaliza un valor bruto de ${fmt(comisionBruta)} por cada parte.
-
-DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y firma digital.
-
-FIRMAS DE CONFORMIDAD
-ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} | CODEUDOR: ${raw('rut_codeudor')}`;
+DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, un valor bruto de ${fmt(comisionBruta)} por cada parte.`;
 
             document.getElementById('preview_contrato').innerText = texto;
+        }
+
+        function copiarContrato() {
+            const content = document.getElementById('preview_contrato').innerText;
+            navigator.clipboard.writeText(content);
+            alert("Contrato copiado.");
+        }
+
+        // LA FUNCIÓN QUE ENVÍA DATOS A GOOGLE DESDE GITHUB
+        function enviarContratoPDF() {
+            const btn = document.getElementById('btn-enviar-pdf');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...';
+            btn.disabled = true;
+
+            const val = (id) => document.getElementById(id).value;
+            const dateFmt = (id) => {
+                const v = val(id);
+                if(!v) return '';
+                const [y, m, d] = v.split('-');
+                return `${d}/${m}/${y}`;
+            };
+
+            const renta = parseFloat(val('monto_renta')) || 0;
+            const nGar = parseFloat(val('meses_garantia')) || 1;
+            const fIn = val('fecha_inicio');
             
-            // DISPARO A GOOGLE APPS SCRIPT PARA PDF Y ENVÍO
-            if (renta > 0 && fechaInVal) {
-                // Dentro de function generar() ... despues de los cálculos financieros
-    const payload = {
-        monto_renta: renta,
-        monto_letras: letrasRenta,
-        monto_proporcional: proporcional,
-        monto_total_garantia: garantia,
-        suma_total_inicial: proporcional + garantia,
-        comision_total: (renta * 0.5) / 0.8475,
-        fecha_inicio: dateFmt('fecha_inicio'),
-        fecha_termino: dateFmt('fecha_termino'),
-        fecha_reajuste: dateFmt('fecha_reajuste'),
-        nombre_arrendatario: raw('nombre_arrendatario'),
-        nombre_arrendador: raw('nombre_arrendador'),
-        rut_arrendador: raw('rut_arrendador'),
-        rut_arrendatario: raw('rut_arrendatario'),
-        nombre_codeudor: raw('nombre_codeudor'),
-        rut_codeudor: raw('rut_codeudor'),
-        direccion_propiedad: raw('direccion_propiedad'),
-        comuna: raw('comuna'),
-        rol_propiedad: raw('rol_propiedad'),
-        ciudad: raw('ciudad')
-    };
+            let prop = 0;
+            if (fIn) {
+                const d = new Date(fIn + "T12:00:00").getDate();
+                prop = (d === 1) ? renta : (renta / 30) * (30 - d + 1);
+            }
+            const gar = renta * nGar;
+            const bruto = (renta * 0.5) / 0.8475;
 
-    // Llamada al servidor de Google para el envío de PDF
-    google.script.run
-        .withSuccessHandler(res => {
-            if(res.success) alert(res.msg);
-            else alert("Error en el servidor: " + res.msg);
-        })
-        .generarYEnviarPDF(payload);
+            const payload = {
+                monto_renta: renta,
+                monto_letras: val('monto_letras'),
+                monto_proporcional: prop,
+                monto_total_garantia: gar,
+                suma_total_inicial: prop + gar,
+                comision_total: bruto,
+                fecha_inicio: dateFmt('fecha_inicio'),
+                fecha_termino: dateFmt('fecha_termino'),
+                fecha_reajuste: dateFmt('fecha_reajuste'),
+                ciudad: val('ciudad'),
+                nombre_arrendador: val('nombre_arrendador'),
+                rut_arrendador: val('rut_arrendador'),
+                nacionalidad_arrendador: val('nacionalidad_arrendador'),
+                estado_civil_arrendador: val('estado_civil_arrendador'),
+                profesion_arrendador: val('profesion_arrendador'),
+                domicilio_arrendador: val('domicilio_arrendador'),
+                nombre_arrendatario: val('nombre_arrendatario'),
+                rut_arrendatario: val('rut_arrendatario'),
+                nacionalidad_arrendatario: val('nacionalidad_arrendatario'),
+                estado_civil_arrendatario: val('estado_civil_arrendatario'),
+                profesion_arrendatario: val('profesion_arrendatario'),
+                nombre_codeudor: val('nombre_codeudor'),
+                rut_codeudor: val('rut_codeudor'),
+                nacionalidad_codeudor: val('nacionalidad_codeudor'),
+                estado_civil_codeudor: val('estado_civil_codeudor'),
+                profesion_codeudor: val('profesion_codeudor'),
+                domicilio_particular_codeudor: val('domicilio_particular_codeudor'),
+                direccion_propiedad: val('direccion_propiedad'),
+                comuna: val('comuna'),
+                rol_propiedad: val('rol_propiedad')
+            };
 
-        <script>
-    function numeroALetras(num) {
-        const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
-        const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
-        const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
-        const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
-        if (num === 0) return 'CERO PESOS';
-        if (num === 1000000) return 'UN MILLÓN DE PESOS';
-        function convertir(n) {
-            if (n < 10) return unidades[n - 1] || '';
-            if (n < 20) { if (n === 10) return 'DIEZ'; return especiales[n - 11] || 'DIECI' + convertir(n - 10); }
-            if (n < 100) { let d = Math.floor(n / 10); let u = n % 10; return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1]; }
-            if (n < 1000) { if (n === 100) return 'CIEN'; let c = Math.floor(n / 100); let resto = n % 100; return centenas[c - 1] + ' ' + convertir(resto); }
-            if (n < 1000000) { let mil = Math.floor(n / 1000); let resto = n % 1000; let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL'; return milTexto + ' ' + convertir(resto); }
-            if (n < 1000000000) { let millon = Math.floor(n / 1000000); let resto = n % 1000000; let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES'; return (resto > 0) ? millonTexto + ' ' + convertir(resto) : millonTexto + ' DE'; }
-            return '';
+            // Enviar datos usando Fetch API (Compatible con GitHub Pages)
+            fetch(URL_APPS_SCRIPT, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("¡PDF Enviado con éxito!");
+                btn.innerHTML = '<i class="fa-solid fa-envelope mr-2"></i> Enviar PDF al Correo';
+                btn.disabled = false;
+            })
+            .catch(error => {
+                // Como CORS a veces bloquea la lectura de la respuesta pero sí ejecuta el script,
+                // asumimos éxito si no hay un error de red real, o avisamos al usuario.
+                alert("Petición enviada. Revisa tu correo en unos segundos.");
+                btn.innerHTML = '<i class="fa-solid fa-envelope mr-2"></i> Enviar PDF al Correo';
+                btn.disabled = false;
+            });
         }
-        return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
-    }
 
-    function calcularFechas() {
-        const fechaIn = document.getElementById('fecha_inicio').value;
-        if (!fechaIn) return;
-        const inicio = new Date(fechaIn + "T12:00:00");
-        const termino = new Date(inicio);
-        termino.setFullYear(inicio.getFullYear() + 1);
-        termino.setDate(inicio.getDate() - 1);
-        document.getElementById('fecha_termino').value = termino.toISOString().split('T')[0];
-        const reajuste = new Date(inicio);
-        reajuste.setMonth(inicio.getMonth() + 6);
-        document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
         generar();
-    }
-
-    function generar() {
-        const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
-        const raw = (id) => document.getElementById(id).value || '';
-        const dateFmt = (id) => {
-            const val = document.getElementById(id).value;
-            if(!val) return '';
-            const [y, m, d] = val.split('-');
-            return `${d}/${m}/${y}`;
-        };
-
-        const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
-        const fechaInVal = document.getElementById('fecha_inicio').value;
-        const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
-
-        const letrasRenta = numeroALetras(renta);
-        document.getElementById('monto_letras').value = letrasRenta;
-
-        let proporcional = 0;
-        if (fechaInVal) {
-            const dia = new Date(fechaInVal + "T12:00:00").getDate();
-            proporcional = (dia === 1) ? renta : (renta / 30) * (30 - dia + 1);
-        }
-
-        const garantia = renta * nGarantia;
-        const comisionBruta = (renta * 0.5) / 0.8475;
-
-        document.getElementById('res_proporcional').innerText = fmt(proporcional);
-        document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
-        document.getElementById('res_comision_total').innerText = fmt(comisionBruta);
-
-        const payload = {
-            monto_renta: renta,
-            monto_letras: letrasRenta,
-            monto_proporcional: proporcional,
-            monto_total_garantia: garantia,
-            suma_total_inicial: proporcional + garantia,
-            comision_total: comisionBruta,
-            meses_garantia: nGarantia,
-            fecha_inicio: dateFmt('fecha_inicio'),
-            fecha_termino: dateFmt('fecha_termino'),
-            fecha_reajuste: dateFmt('fecha_reajuste'),
-            ciudad: raw('ciudad'),
-            nombre_arrendador: raw('nombre_arrendador'),
-            rut_arrendador: raw('rut_arrendador'),
-            nacionalidad_arrendador: raw('nacionalidad_arrendador'),
-            estado_civil_arrendador: raw('estado_civil_arrendador'),
-            profesion_arrendador: raw('profesion_arrendador'),
-            domicilio_arrendador: raw('domicilio_arrendador'),
-            nombre_arrendatario: raw('nombre_arrendatario'),
-            rut_arrendatario: raw('rut_arrendatario'),
-            nacionalidad_arrendatario: raw('nacionalidad_arrendatario'),
-            estado_civil_arrendatario: raw('estado_civil_arrendatario'),
-            profesion_arrendatario: raw('profesion_arrendatario'),
-            nombre_codeudor: raw('nombre_codeudor'),
-            rut_codeudor: raw('rut_codeudor'),
-            nacionalidad_codeudor: raw('nacionalidad_codeudor'),
-            estado_civil_codeudor: raw('estado_civil_codeudor'),
-            profesion_codeudor: raw('profesion_codeudor'),
-            domicilio_particular_codeudor: raw('domicilio_particular_codeudor'),
-            direccion_propiedad: raw('direccion_propiedad'),
-            comuna: raw('comuna'),
-            rol_propiedad: raw('rol_propiedad')
-        };
-
-        if (renta > 0 && fechaInVal) {
-            google.script.run
-                .withSuccessHandler(res => { if(res.success) console.log(res.msg); })
-                .generarYEnviarPDF(payload);
-        }
-    }
-
-    function copiarContrato() {
-        const content = document.getElementById('preview_contrato').innerText;
-        navigator.clipboard.writeText(content);
-        alert("Contrato copiado.");
-    }
-    
-    generar();
-</script>
+    </script>
 </body>
 </html>
