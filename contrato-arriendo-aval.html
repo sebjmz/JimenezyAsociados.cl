@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 p-6">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
+        <div class="flex justify-between items-center mb-8 border-b pb-6">
+            <div>
+                <h1 class="text-2xl font-black italic uppercase text-slate-800">Jiménez & <span class="text-blue-600">Asociados</span></h1>
+                <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Gestión de Contratos Inmobiliarios</p>
+            </div>
+            <div class="text-right">
+                <span class="bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-xs font-black uppercase">Plantilla 1: Con Aval</span>
+            </div>
+        </div>
+
+        <form id="formContrato" class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Ciudad de Firma</label>
+                    <input type="text" name="ciudad" placeholder="Ej: Viña del Mar" required class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Fecha de Inicio de Arriendo</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" required class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
+                </div>
+            </div>
+
+            <div class="p-6 border border-slate-100 rounded-2xl bg-slate-50/30">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-tighter">I. Datos de la Parte Arrendadora (Dueño)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" name="nombre_arrendador" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="rut_arrendador" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="nacionalidad_arrendador" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="estado_civil_arrendador" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="profesion_arrendador" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="domicilio_arrendador" placeholder="Domicilio Particular" required class="p-3 border rounded-xl text-sm">
+                    <input type="email" name="email_arrendador" placeholder="Email para envío de copia" required class="p-3 border rounded-xl text-sm border-blue-200">
+                </div>
+            </div>
+
+            <div class="p-6 border border-slate-100 rounded-2xl bg-white shadow-sm">
+                <p class="text-[10px] font-black text-blue-600 uppercase mb-4 tracking-tighter">II. Datos de la Parte Arrendataria (Cliente)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" name="nombre_arrendatario" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="rut_arrendatario" placeholder="RUT / Pasaporte" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="nacionalidad_arrendatario" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="estado_civil_arrendatario" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="profesion_arrendatario" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
+                    <input type="email" name="email_arrendatario" placeholder="Email para envío de copia" required class="p-3 border rounded-xl text-sm border-blue-200">
+                </div>
+            </div>
+
+            <div class="p-6 border border-purple-100 rounded-2xl bg-purple-50/20">
+                <p class="text-[10px] font-black text-purple-600 uppercase mb-4 tracking-tighter">III. Datos de la Parte Codeudora Solidaria (Aval)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" name="nombre_codeudor" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="rut_codeudor" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="nacionalidad_codeudor" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="estado_civil_codeudor" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="profesion_codeudor" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="domicilio_particular_codeudor" placeholder="Domicilio Particular" required class="p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="p-6 border border-slate-100 rounded-2xl bg-slate-50/30">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-tighter">IV. Detalles de la Propiedad y Renta</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <input type="text" name="direccion_propiedad" placeholder="Dirección del Inmueble" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="comuna" placeholder="Comuna" required class="p-3 border rounded-xl text-sm">
+                    <input type="text" name="rol_propiedad" placeholder="ROL SII" required class="p-3 border rounded-xl text-sm">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="monto_renta" placeholder="Renta Mensual $" required class="p-3 border rounded-xl text-sm font-bold">
+                        <select name="meses_garantia" class="p-3 border rounded-xl text-sm font-bold bg-white">
+                            <option value="1">1 Mes Garantía</option>
+                            <option value="2">2 Meses Garantía</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="btnEnviar" class="w-full bg-slate-800 text-white py-6 rounded-3xl font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-file-signature"></i> GENERAR CONTRATO Y ENVIAR
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLIs0mqvjXlTkAF29B-J73degvxS5b8qVxp8_Hpoz6ffmPF1vglmgR-hwAa8ADfo6f/exec";
+
+        document.getElementById('formContrato').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnEnviar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> PROCESANDO DOCUMENTO...';
+
+            const formData = new FormData(this);
+            const datos = Object.fromEntries(formData.entries());
+
+           try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                
+                alert("¡Contrato generado con éxito! Las partes recibirán el borrador en sus correos.");
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión con el servidor de Jiménez & Asociados.");
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-file-signature"></i> GENERAR CONTRATO Y ENVIAR';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
