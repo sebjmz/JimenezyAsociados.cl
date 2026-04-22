@@ -205,30 +205,36 @@ ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} 
             
             // DISPARO A GOOGLE APPS SCRIPT PARA PDF Y ENVÍO
             if (renta > 0 && fechaInVal) {
-                const payload = {
-                    monto_renta: renta,
-                    monto_letras: letrasRenta,
-                    fecha_inicio: dateFmt('fecha_inicio'),
-                    fecha_termino: dateFmt('fecha_termino'),
-                    fecha_reajuste: dateFmt('fecha_reajuste'),
-                    nombre_arrendatario: raw('nombre_arrendatario'),
-                    nombre_arrendador: raw('nombre_arrendador'),
-                    direccion_propiedad: raw('direccion_propiedad'),
-                    comision_total: comisionBruta,
-                    ciudad: raw('ciudad'),
-                    rut_arrendador: raw('rut_arrendador'),
-                    rut_arrendatario: raw('rut_arrendatario'),
-                    rut_codeudor: raw('rut_codeudor')
-                };
-                google.script.run.withSuccessHandler(() => console.log("PDF generado")).generarYEnviarPDF(payload);
-            }
-        }
+                // Dentro de function generar() ... despues de los cálculos financieros
+    const payload = {
+        monto_renta: renta,
+        monto_letras: letrasRenta,
+        monto_proporcional: proporcional,
+        monto_total_garantia: garantia,
+        suma_total_inicial: proporcional + garantia,
+        comision_total: (renta * 0.5) / 0.8475,
+        fecha_inicio: dateFmt('fecha_inicio'),
+        fecha_termino: dateFmt('fecha_termino'),
+        fecha_reajuste: dateFmt('fecha_reajuste'),
+        nombre_arrendatario: raw('nombre_arrendatario'),
+        nombre_arrendador: raw('nombre_arrendador'),
+        rut_arrendador: raw('rut_arrendador'),
+        rut_arrendatario: raw('rut_arrendatario'),
+        nombre_codeudor: raw('nombre_codeudor'),
+        rut_codeudor: raw('rut_codeudor'),
+        direccion_propiedad: raw('direccion_propiedad'),
+        comuna: raw('comuna'),
+        rol_propiedad: raw('rol_propiedad'),
+        ciudad: raw('ciudad')
+    };
 
-        function copiarContrato() {
-            const content = document.getElementById('preview_contrato').innerText;
-            navigator.clipboard.writeText(content);
-            alert("Contrato copiado exitosamente.");
-        }
+    // Llamada al servidor de Google para el envío de PDF
+    google.script.run
+        .withSuccessHandler(res => {
+            if(res.success) alert(res.msg);
+            else alert("Error en el servidor: " + res.msg);
+        })
+        .generarYEnviarPDF(payload);
 
         function numeroALetras(num) {
             const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
