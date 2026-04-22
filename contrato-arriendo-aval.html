@@ -2,121 +2,170 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Contrato Aval | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: white; }
+        .glass-panel { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        input, select { 
+            background: rgba(15, 23, 42, 0.8) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important; padding: 0.75rem !important; border-radius: 0.75rem !important; width: 100%;
+        }
+        label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
+    </style>
 </head>
-<body class="bg-slate-50 p-6">
-    <div class="max-w-4xl mx-auto bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
-        <div class="flex justify-between items-center mb-8 border-b pb-6">
+<body class="p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 flex justify-between items-end">
             <div>
-                <h1 class="text-2xl font-black italic uppercase text-slate-800">Jiménez & <span class="text-blue-600">Asociados</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Gestión de Contratos Inmobiliarios</p>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Generador <span class="text-blue-500">Aval</span></h1>
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Jiménez & Asociados | v2.0-2026</p>
             </div>
             <div class="text-right">
-                <span class="bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-xs font-black uppercase">Plantilla 1: Con Aval</span>
+                <button onclick="copiarContrato()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition shadow-lg">
+                    <i class="fa-solid fa-copy mr-2"></i> Copiar Contrato
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-panel p-8 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-3"><h3 class="text-blue-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Variables de Negocio</h3></div>
+                    <div><label>Monto Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="generar()"></div>
+                    <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="generar()"></div>
+                    <div><label>Meses Garantía</label><input type="number" id="meses_garantia" value="1" oninput="generar()"></div>
+                    <div><label>Ciudad</label><input type="text" id="ciudad" value="Viña del Mar" oninput="generar()"></div>
+                    <div><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" oninput="generar()"></div>
+                    <div><label>Comuna Propiedad</label><input type="text" id="comuna" value="Concón" oninput="generar()"></div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-[2.5rem] space-y-6">
+                    <h3 class="text-purple-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">2. Las Partes</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="nombre_arrendador" placeholder="Nombre Arrendador" oninput="generar()">
+                        <input type="text" id="rut_arrendador" placeholder="RUT Arrendador" oninput="generar()">
+                        <input type="text" id="nombre_arrendatario" placeholder="Nombre Arrendatario" oninput="generar()">
+                        <input type="text" id="rut_arrendatario" placeholder="RUT Arrendatario" oninput="generar()">
+                        <input type="text" id="nombre_codeudor" placeholder="Nombre Codeudor" oninput="generar()">
+                        <input type="text" id="rut_codeudor" placeholder="RUT Codeudor" oninput="generar()">
+                    </div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-[2.5rem] space-y-4">
+                    <h3 class="text-green-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Detalles de Propiedad</h3>
+                    <input type="text" id="direccion_propiedad" placeholder="Dirección Exacta" oninput="generar()">
+                    <input type="text" id="rol_propiedad" placeholder="ROL SII" oninput="generar()">
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-panel p-8 rounded-[2.5rem] border-blue-500/20 text-center">
+                    <label>Total Pago Inicial</label>
+                    <div id="res_total_inicial" class="text-4xl font-black text-white mb-4">$0</div>
+                    <div class="flex justify-between text-[10px] border-t border-white/5 pt-4">
+                        <span class="text-gray-500 font-bold">PROPORCIONAL:</span>
+                        <span id="res_proporcional" class="text-blue-400 font-black">$0</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-[2.5rem] border-purple-500/20 text-center">
+                    <label>Honorarios Jiménez & Asociados</label>
+                    <div id="res_comision_total" class="text-3xl font-black text-purple-400 mb-2">$0</div>
+                    <p class="text-[9px] text-gray-500 font-bold leading-tight">Valor Bruto para Boleta (Factor 0.8475)<br>Incluye Retención 15,25% Año 2026</p>
+                </div>
+
+                <div class="p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
+                    <p class="text-[10px] text-yellow-500 font-bold italic"><i class="fa-solid fa-circle-info mr-2"></i> RECUERDA: La multa por atraso del 5% diario y el reajuste IPC semestral ya están inyectados en el contrato.</p>
+                </div>
             </div>
         </div>
 
-        <form id="formContrato" class="space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Ciudad de Firma</label>
-                    <input type="text" name="ciudad" placeholder="Ej: Viña del Mar" required class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
+        <div class="mt-10 glass-panel p-10 rounded-[3rem] bg-white text-slate-800 text-sm shadow-2xl overflow-x-auto">
+            <div id="preview_contrato" class="whitespace-pre-line leading-relaxed max-w-4xl mx-auto font-serif">
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Fecha de Inicio de Arriendo</label>
-                    <input type="date" id="fecha_inicio" name="fecha_inicio" required class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
-                </div>
-            </div>
-
-            <div class="p-6 border border-slate-100 rounded-2xl bg-slate-50/30">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-tighter">I. Datos de la Parte Arrendadora (Dueño)</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="nombre_arrendador" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="rut_arrendador" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="nacionalidad_arrendador" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="estado_civil_arrendador" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="profesion_arrendador" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="domicilio_arrendador" placeholder="Domicilio Particular" required class="p-3 border rounded-xl text-sm">
-                    <input type="email" name="email_arrendador" placeholder="Email para envío de copia" required class="p-3 border rounded-xl text-sm border-blue-200">
-                </div>
-            </div>
-
-            <div class="p-6 border border-slate-100 rounded-2xl bg-white shadow-sm">
-                <p class="text-[10px] font-black text-blue-600 uppercase mb-4 tracking-tighter">II. Datos de la Parte Arrendataria (Cliente)</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="nombre_arrendatario" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="rut_arrendatario" placeholder="RUT / Pasaporte" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="nacionalidad_arrendatario" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="estado_civil_arrendatario" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="profesion_arrendatario" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
-                    <input type="email" name="email_arrendatario" placeholder="Email para envío de copia" required class="p-3 border rounded-xl text-sm border-blue-200">
-                </div>
-            </div>
-
-            <div class="p-6 border border-purple-100 rounded-2xl bg-purple-50/20">
-                <p class="text-[10px] font-black text-purple-600 uppercase mb-4 tracking-tighter">III. Datos de la Parte Codeudora Solidaria (Aval)</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="nombre_codeudor" placeholder="Nombre Completo" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="rut_codeudor" placeholder="RUT" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="nacionalidad_codeudor" placeholder="Nacionalidad" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="estado_civil_codeudor" placeholder="Estado Civil" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="profesion_codeudor" placeholder="Profesión / Oficio" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="domicilio_particular_codeudor" placeholder="Domicilio Particular" required class="p-3 border rounded-xl text-sm">
-                </div>
-            </div>
-
-            <div class="p-6 border border-slate-100 rounded-2xl bg-slate-50/30">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-tighter">IV. Detalles de la Propiedad y Renta</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" name="direccion_propiedad" placeholder="Dirección del Inmueble" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="comuna" placeholder="Comuna" required class="p-3 border rounded-xl text-sm">
-                    <input type="text" name="rol_propiedad" placeholder="ROL SII" required class="p-3 border rounded-xl text-sm">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" name="monto_renta" placeholder="Renta Mensual $" required class="p-3 border rounded-xl text-sm font-bold">
-                        <select name="meses_garantia" class="p-3 border rounded-xl text-sm font-bold bg-white">
-                            <option value="1">1 Mes Garantía</option>
-                            <option value="2">2 Meses Garantía</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" id="btnEnviar" class="w-full bg-slate-800 text-white py-6 rounded-3xl font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-3">
-                <i class="fa-solid fa-file-signature"></i> GENERAR CONTRATO Y ENVIAR
-            </button>
-        </form>
+        </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLIs0mqvjXlTkAF29B-J73degvxS5b8qVxp8_Hpoz6ffmPF1vglmgR-hwAa8ADfo6f/exec";
+        function generar() {
+            const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
+            const raw = (id) => document.getElementById(id).value || `[${id.toUpperCase()}]`;
 
-        document.getElementById('formContrato').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnEnviar');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> PROCESANDO DOCUMENTO...';
+            // LÓGICA FINANCIERA
+            const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
+            const fechaIn = document.getElementById('fecha_inicio').value;
+            const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
 
-            const formData = new FormData(this);
-            const datos = Object.fromEntries(formData.entries());
-
-           try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-                
-                alert("¡Contrato generado con éxito! Las partes recibirán el borrador en sus correos.");
-            } catch (err) {
-                console.error(err);
-                alert("Error de conexión con el servidor de Jiménez & Asociados.");
-            } finally {
-                btn.innerHTML = '<i class="fa-solid fa-file-signature"></i> GENERAR CONTRATO Y ENVIAR';
-                btn.disabled = false;
+            let proporcional = 0;
+            if (fechaIn) {
+                const dia = new Date(fechaIn + "T12:00:00").getDate();
+                proporcional = (dia === 1) ? renta : (renta / 30) * (30 - dia + 1);
             }
-        });
+
+            const garantia = renta * nGarantia;
+            const totalInicial = proporcional + garantia;
+            
+            // HONORARIOS 2026 (Factor 0.8475)
+            const comLiquida = renta * 0.5;
+            const comTotalBruta = comLiquida / 0.8475;
+
+            // Update UI
+            document.getElementById('res_proporcional').innerText = fmt(proporcional);
+            document.getElementById('res_total_inicial').innerText = fmt(totalInicial);
+            document.getElementById('res_comision_total').innerText = fmt(comTotalBruta);
+
+            // TEXTO ÍNTEGRO DEL CONTRATO
+            const texto = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
+FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
+
+I. LOS COMPARECIENTES
+En la ciudad de ${raw('ciudad')}, Chile, comparecen: LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, RUT N° ${raw('rut_arrendador')}. LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, RUT N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento. LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, RUT N° ${raw('rut_codeudor')}.
+
+II. CLÁUSULAS FUNDAMENTALES
+PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}.
+
+SEGUNDO. DESTINO: El inmueble será destinado única y exclusivamente a la habitación de La Parte Arrendataria y su familia nuclear.
+
+TERCERO. PLAZO Y VIGENCIA: Comenzará el día ${fechaIn || '[FECHA]'} y tendrá una vigencia original de un año.
+
+CUARTO. RENTA Y FORMA DE PAGO: La renta mensual será de ${fmt(renta)} (${raw('monto_letras')}).
+MULTA POR ATRASO: En caso de mora, se devengará una multa moratoria penal diaria equivalente al cinco por ciento (5%) del valor de la renta mensual vigente por cada día de atraso.
+
+CUARTO BIS. DESGLOSE DE PAGOS AL MOMENTO DE LA FIRMA:
+MES PROPORCIONAL: La suma de ${fmt(proporcional)}, correspondiente a los días de ocupación del primer mes (considerando mes comercial de 30 días).
+DEPÓSITO DE GARANTÍA: La suma de ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
+TOTAL ACUMULADO PERCIBIDO EN ESTE ACTO: ${fmt(totalInicial)}.
+
+QUINTO. REAJUSTABILIDAD: La renta pactada se reajustará semestralmente según la variación del IPC.
+
+SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para garantizar el cumplimiento de obligaciones y conservación de la propiedad.
+
+SEPTIMO A DÉCIMO CUARTO: (Leyes 21.461, Monitorio, Conservación, Prohibiciones y Autorización DICOM integradas).
+
+DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(comLiquida)}, que sumado a la retención legal del 15,25% (Año 2026), totaliza un valor bruto de ${fmt(comTotalBruta)} por cada parte.
+
+DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y Firma en ejemplares digitales.
+
+FIRMAS DE CONFORMIDAD
+ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} | CODEUDOR: ${raw('rut_codeudor')}`;
+
+            document.getElementById('preview_contrato').innerText = texto;
+        }
+
+        function copiarContrato() {
+            const content = document.getElementById('preview_contrato').innerText;
+            navigator.clipboard.writeText(content);
+            alert("¡Contrato copiado! Ya puedes pegarlo en Word, PDF o enviarlo por correo.");
+        }
+
+        generar(); // Carga inicial
     </script>
 </body>
 </html>
