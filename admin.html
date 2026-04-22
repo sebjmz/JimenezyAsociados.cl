@@ -360,7 +360,7 @@
         orden: document.getElementById('view-orden'),
         visita: document.getElementById('view-visita'),
         reserva: document.getElementById('view-reserva'),
-        contratos: document.getElementById('view-contratos') // Agregado
+        contratos: document.getElementById('view-contratos')
     };
     const btns = {
         negocios: document.getElementById('btn-tab-negocios'),
@@ -368,24 +368,32 @@
         orden: document.getElementById('btn-tab-orden'),
         visita: document.getElementById('btn-tab-visita'),
         reserva: document.getElementById('btn-tab-reserva'),
-        contratos: document.getElementById('btn-tab-contratos') // Agregado
+        contratos: document.getElementById('btn-tab-contratos')
     };
 
-    // Ocultar todo y resetear botones
+    // 1. Clases base para botones INACTIVOS (Iguales para todos)
+    const claseInactivo = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
+
+    // 2. Ocultar todo y resetear estilos
     Object.keys(views).forEach(key => {
         if(views[key]) views[key].classList.add('hidden');
-        if(btns[key]) btns[key].className = "text-gray-400 bg-transparent hover:text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition flex-1 md:flex-none";
+        if(btns[key]) btns[key].className = claseInactivo;
     });
 
-    // Mostrar seleccionada y aplicar color
+    // 3. Mostrar vista seleccionada
     if(views[tab]) views[tab].classList.remove('hidden');
     
-    if (tab === 'negocios') btns[tab].className = "bg-blue-600 text-white px-4 py-2.5 rounded-xl text-[9px] ...";
-    else if (tab === 'partners') { btns[tab].className = "bg-purple-600 text-white ..."; loadAllPartners(); }
-    else if (tab === 'orden') btns[tab].className = "bg-green-600 text-white ...";
-    else if (tab === 'visita') btns[tab].className = "bg-teal-600 text-white ...";
-    else if (tab === 'reserva') btns[tab].className = "bg-pink-600 text-white ...";
-    else if (tab === 'contratos') btns[tab].className = "bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none";
+    // 4. Aplicar color al botón ACTIVO (Manteniendo tamaño y redondeado)
+    if(btns[tab]) {
+        let colorFondo = "bg-blue-600"; // Default
+        if (tab === 'partners') colorFondo = "bg-purple-600";
+        if (tab === 'orden') colorFondo = "bg-green-600";
+        if (tab === 'visita') colorFondo = "bg-teal-600";
+        if (tab === 'reserva') colorFondo = "bg-pink-600";
+        if (tab === 'contratos') colorFondo = "bg-indigo-600";
+
+        btns[tab].className = `${colorFondo} text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg flex-1 md:flex-none`;
+    }
 };
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
