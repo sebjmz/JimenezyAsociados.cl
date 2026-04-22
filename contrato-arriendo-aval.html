@@ -94,11 +94,11 @@
     </div>
 
     <script>
-        function generar() {
+       function generar() {
             const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
             const raw = (id) => document.getElementById(id).value || `[${id.toUpperCase()}]`;
 
-            // LÓGICA FINANCIERA
+            // LÓGICA FINANCIERA (REVISADA 2026)
             const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
             const fechaIn = document.getElementById('fecha_inicio').value;
             const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
@@ -112,7 +112,7 @@
             const garantia = renta * nGarantia;
             const totalInicial = proporcional + garantia;
             
-            // HONORARIOS 2026 (Factor 0.8475)
+            // HONORARIOS 2026 (Factor 0.8475 para retención 15.25%)
             const comLiquida = renta * 0.5;
             const comTotalBruta = comLiquida / 0.8475;
 
@@ -121,19 +121,22 @@
             document.getElementById('res_total_inicial').innerText = fmt(totalInicial);
             document.getElementById('res_comision_total').innerText = fmt(comTotalBruta);
 
-            // TEXTO ÍNTEGRO DEL CONTRATO
+            // TEXTO ÍNTEGRO DEL CONTRATO (SIN RESÚMENES)
             const texto = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
 FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
 
 I. LOS COMPARECIENTES
-En la ciudad de ${raw('ciudad')}, Chile, comparecen: LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, RUT N° ${raw('rut_arrendador')}. LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, RUT N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento. LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, RUT N° ${raw('rut_codeudor')}.
+En la ciudad de ${raw('ciudad')}, Chile, comparecen: 
+LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, RUT N° ${raw('rut_arrendador')}. 
+LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, RUT N° ${raw('rut_arrendatario')}, quien para los efectos de este contrato fija su domicilio en la propiedad objeto de este instrumento. 
+LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, RUT N° ${raw('rut_codeudor')}.
 
 II. CLÁUSULAS FUNDAMENTALES
-PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}.
+PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL de Avalúo N° ${raw('rol_propiedad')}. El inmueble se entrega con todas sus instalaciones en funcionamiento.
 
-SEGUNDO. DESTINO: El inmueble será destinado única y exclusivamente a la habitación de La Parte Arrendataria y su familia nuclear.
+SEGUNDO. DESTINO: El inmueble será destinado única y exclusivamente a la habitación de La Parte Arrendataria y su familia nuclear. Queda prohibido el uso comercial o Airbnb.
 
-TERCERO. PLAZO Y VIGENCIA: Comenzará el día ${fechaIn || '[FECHA]'} y tendrá una vigencia original de un año.
+TERCERO. PLAZO Y VIGENCIA: Comenzará el día ${fechaIn || '[FECHA]'} y tendrá una vigencia original de un año, renovable automáticamente por periodos iguales.
 
 CUARTO. RENTA Y FORMA DE PAGO: La renta mensual será de ${fmt(renta)} (${raw('monto_letras')}).
 MULTA POR ATRASO: En caso de mora, se devengará una multa moratoria penal diaria equivalente al cinco por ciento (5%) del valor de la renta mensual vigente por cada día de atraso.
@@ -143,15 +146,29 @@ MES PROPORCIONAL: La suma de ${fmt(proporcional)}, correspondiente a los días d
 DEPÓSITO DE GARANTÍA: La suma de ${fmt(garantia)}, equivalente a ${nGarantia} mes(es) de renta.
 TOTAL ACUMULADO PERCIBIDO EN ESTE ACTO: ${fmt(totalInicial)}.
 
-QUINTO. REAJUSTABILIDAD: La renta pactada se reajustará semestralmente según la variación del IPC.
+QUINTO. REAJUSTABILIDAD: La renta se reajustará semestralmente según la variación del IPC. El primer reajuste será el día ${raw('fecha_reajuste') || '[FECHA REAJUSTE]'}.
 
-SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para garantizar el cumplimiento de obligaciones y conservación de la propiedad.
+SEXTO. DEPÓSITO DE GARANTÍA: Monto de ${fmt(garantia)} para garantizar el cumplimiento de obligaciones. Se devolverá en un máximo de 45 días tras la restitución.
 
-SEPTIMO A DÉCIMO CUARTO: (Leyes 21.461, Monitorio, Conservación, Prohibiciones y Autorización DICOM integradas).
+SÉPTIMO. MANTENCIÓN Y REPARACIONES: Reparaciones locativas son de cargo del arrendatario. Queda prohibido realizar mejoras estructurales sin permiso.
+
+OCTAVO. INSPECCIÓN: El arrendador podrá inspeccionar la propiedad trimestralmente.
+
+NOVENO. PROHIBICIONES: Subarrendar, ruidos molestos, sustancias peligrosas y cambios de pintura sin autorización.
+
+DÉCIMO. SERVICIOS: Pago puntual de agua, luz, gas y gastos comunes es obligación del arrendatario.
+
+DÉCIMO PRIMERO. SINIESTROS: El arrendador no responde por robos o siniestros. Se recomienda seguro de contenido.
+
+DÉCIMO SEGUNDO. LEY 21.461: Las partes se someten al procedimiento monitorio de restitución de inmueble.
+
+DÉCIMO TERCERO. ABANDONO: Tras 15 días de abandono sin entrega de llaves, el arrendador podrá solicitar la restitución inmediata.
+
+DÉCIMO CUARTO. DICOM: Se autoriza el envío a registros de morosidad en caso de incumplimiento de pago.
 
 DECIMO QUINTO. HONORARIOS POR CORRETAJE DE PROPIEDADES: Las partes obligan a pagar a Sebastián Jiménez Meza, RUT 16.501.067-1, la suma líquida de ${fmt(comLiquida)}, que sumado a la retención legal del 15,25% (Año 2026), totaliza un valor bruto de ${fmt(comTotalBruta)} por cada parte.
 
-DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y Firma en ejemplares digitales.
+DÉCIMO SEXTO Y SEPTIMO: Domicilio en ${raw('ciudad')} y firma en ejemplares digitales de igual valor.
 
 FIRMAS DE CONFORMIDAD
 ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} | CODEUDOR: ${raw('rut_codeudor')}`;
