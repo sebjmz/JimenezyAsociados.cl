@@ -16,70 +16,67 @@
             color: white !important; padding: 0.6rem 0.75rem !important; border-radius: 0.75rem !important; width: 100%; font-size: 13px;
         }
         label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; margin-bottom: 2px; display: block; }
-        h3 { letter-spacing: 0.05em; }
     </style>
 </head>
 <body class="p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black">
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10 flex justify-between items-end">
-            <div>
-                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Generador <span class="text-blue-500">Aval</span></h1>
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Jiménez & Asociados | v2.0-2026</p>
-            </div>
-            <div class="space-x-2">
-                <button id="btn-enviar-pdf" onclick="enviarContratoPDF()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition shadow-lg">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> Generar y Enviar PDF
-                </button>
-            </div>
+        <header class="mb-10">
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter">Generador <span class="text-blue-500">Aval</span></h1>
+            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Jiménez & Asociados | v2.0-2026</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="md:col-span-4"><h3 class="text-blue-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Variables de Negocio y Fechas</h3></div>
-                    <div class="md:col-span-1"><label>Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="calcularFechas(); generarCalculos()"></div>
-                    <div class="md:col-span-2"><label>Renta en Letras</label><input type="text" id="monto_letras" placeholder="Un millón de pesos" readonly class="opacity-70 cursor-not-allowed"></div>
-                    <div class="md:col-span-1"><label>Meses Garantía</label><input type="number" id="meses_garantia" value="1" oninput="generarCalculos()"></div>
-                    
-                    <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="calcularFechas(); generarCalculos()"></div>
-                    <div><label>Fecha Término</label><input type="date" id="fecha_termino" readonly class="opacity-70 cursor-not-allowed"></div>
-                    <div><label>Primer Reajuste</label><input type="date" id="fecha_reajuste" readonly class="opacity-70 cursor-not-allowed"></div>
-                    <div><label>Ciudad Firma</label><input type="text" id="ciudad" value="Viña del Mar"></div>
+                    <div class="md:col-span-4"><h3 class="text-blue-500 font-black text-xs uppercase border-b border-white/5 pb-2">1. Variables de Negocio</h3></div>
+                    <div><label>Renta ($)</label><input type="number" id="monto_renta" value="1000000" oninput="calcularFechas()"></div>
+                    <div class="md:col-span-2"><label>Renta en Letras</label><input type="text" id="monto_letras" readonly class="opacity-70"></div>
+                    <div><label>Garantía (Meses)</label><input type="number" id="meses_garantia" value="1" oninput="generarCalculos()"></div>
+                    <div><label>Fecha Inicio</label><input type="date" id="fecha_inicio" oninput="calcularFechas()"></div>
+                    <div><label>Fecha Término</label><input type="date" id="fecha_termino" readonly class="opacity-70"></div>
+                    <div><label>Fecha Reajuste</label><input type="date" id="fecha_reajuste" readonly class="opacity-70"></div>
+                    <div><label>Ciudad</label><input type="text" id="ciudad" value="Viña del Mar"></div>
                 </div>
 
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-3"><h3 class="text-purple-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">2. Datos de la Parte Arrendadora</h3></div>
+                    <div class="md:col-span-3 text-purple-500 font-black text-xs uppercase border-b border-white/5 pb-2">2. Datos de la Parte Arrendadora</div>
                     <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_arrendador"></div>
                     <div><label>RUT</label><input type="text" id="rut_arrendador"></div>
                     <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendador" value="Chilena"></div>
                     <div><label>Estado Civil</label><input type="text" id="estado_civil_arrendador"></div>
-                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_arrendador"></div>
+                    <div><label>Profesión</label><input type="text" id="profesion_arrendador"></div>
                     <div class="md:col-span-3"><label>Domicilio</label><input type="text" id="domicilio_arrendador"></div>
                 </div>
 
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-3"><h3 class="text-orange-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Datos de la Parte Arrendataria</h3></div>
+                    <div class="md:col-span-3 text-orange-500 font-black text-xs uppercase border-b border-white/5 pb-2">3. Datos de la Parte Arrendataria</div>
                     <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_arrendatario"></div>
-                    <div><label>RUT / Pasaporte</label><input type="text" id="rut_arrendatario"></div>
+                    <div><label>RUT</label><input type="text" id="rut_arrendatario"></div>
                     <div><label>Nacionalidad</label><input type="text" id="nacionalidad_arrendatario" value="Chilena"></div>
                     <div><label>Estado Civil</label><input type="text" id="estado_civil_arrendatario"></div>
-                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_arrendatario"></div>
+                    <div><label>Profesión</label><input type="text" id="profesion_arrendatario"></div>
                 </div>
 
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-3"><h3 class="text-pink-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">4. Datos del Codeudor Solidario</h3></div>
+                    <div class="md:col-span-3 text-pink-500 font-black text-xs uppercase border-b border-white/5 pb-2">4. Datos del Codeudor Solidario</div>
                     <div class="md:col-span-2"><label>Nombre Completo</label><input type="text" id="nombre_codeudor"></div>
                     <div><label>RUT</label><input type="text" id="rut_codeudor"></div>
                     <div><label>Nacionalidad</label><input type="text" id="nacionalidad_codeudor" value="Chilena"></div>
                     <div><label>Estado Civil</label><input type="text" id="estado_civil_codeudor"></div>
-                    <div><label>Profesión / Oficio</label><input type="text" id="profesion_codeudor"></div>
+                    <div><label>Profesión</label><input type="text" id="profesion_codeudor"></div>
                     <div class="md:col-span-3"><label>Domicilio Particular</label><input type="text" id="domicilio_particular_codeudor"></div>
                 </div>
 
+                <div class="pt-4 flex justify-center">
+                    <button id="btn-enviar-pdf" onclick="enviarContratoPDF()" class="bg-green-600 hover:bg-green-500 text-white px-10 py-5 rounded-2xl font-black uppercase text-[14px] tracking-widest transition shadow-xl shadow-green-900/30 w-full">
+                        <i class="fa-solid fa-file-pdf mr-2 text-xl"></i> Generar y Enviar Contrato PDF
+                    </button>
+                </div>
+
                 <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-3"><h3 class="text-green-500 font-black text-xs uppercase tracking-widest border-b border-white/5 pb-2">5. Detalles de la Propiedad</h3></div>
+                    <div class="md:col-span-3 text-green-500 font-black text-xs uppercase border-b border-white/5 pb-2">5. Detalles de la Propiedad</div>
                     <div class="md:col-span-2"><label>Dirección Propiedad</label><input type="text" id="direccion_propiedad"></div>
                     <div><label>Comuna</label><input type="text" id="comuna" value="Concón"></div>
                     <div class="md:col-span-1"><label>ROL SII</label><input type="text" id="rol_propiedad"></div>
@@ -91,34 +88,29 @@
                     <label>Total Pago Inicial</label>
                     <div id="res_total_inicial" class="text-3xl font-black text-white mb-2">$0</div>
                     <div class="text-[10px] text-gray-500 font-bold border-t border-white/5 pt-2">
-                        Proporcional del mes: <span id="res_proporcional" class="text-blue-400">$0</span>
+                        Proporcional: <span id="res_proporcional" class="text-blue-400">$0</span>
                     </div>
                 </div>
-
                 <div class="glass-panel p-6 rounded-[2rem] border-purple-500/20 text-center">
                     <label>Comisión Bruta (2026)</label>
                     <div id="res_comision_total" class="text-2xl font-black text-purple-400">$0</div>
-                    <p class="text-[8px] text-gray-500 font-bold mt-2">Factor 0.8475 (Cubre Retención 15,25%)</p>
+                    <p class="text-[8px] text-gray-500 font-bold mt-2">Factor 0.8475</p>
                 </div>
-                
-                <div id="status_message" class="text-xs text-center font-bold mt-4"></div>
+                <div id="status_message" class="text-[10px] text-center font-bold uppercase tracking-wider"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // LA URL DE TU APPS SCRIPT (AQUÍ ES DONDE SE CONECTAN)
-        const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbykDxNeh4bEsmFmkVlrBhPgsyE_fJ7QQi6jHr2f4AvLKMTzG2KRIOTkU3cepXxTbvheIw/exec";
+        const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyesZXlNoTBzJ2r-3z97-YoRzRpbhArKnjQdapipblISkmj1ccb2bwGd3FrV-2S4vbGSg/exec";
 
         function numeroALetras(num) {
             const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
             const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
             const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
             const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
-
             if (num === 0) return 'CERO PESOS';
             if (num === 1000000) return 'UN MILLÓN DE PESOS';
-
             function convertir(n) {
                 if (n < 10) return unidades[n - 1] || '';
                 if (n < 20) { if (n === 10) return 'DIEZ'; return especiales[n - 11] || 'DIECI' + convertir(n - 10); }
@@ -134,75 +126,56 @@
         function calcularFechas() {
             const fechaIn = document.getElementById('fecha_inicio').value;
             if (!fechaIn) return;
-
-            // Extraemos los datos exactos sin que la zona horaria nos mueva los días
             const partes = fechaIn.split('-');
             const anio = parseInt(partes[0], 10);
-            const mes = parseInt(partes[1], 10) - 1; // JS cuenta los meses de 0 a 11
+            const mes = parseInt(partes[1], 10) - 1; 
             const dia = parseInt(partes[2], 10);
 
             let fechaTermino;
-            
-            // LA REGLA DE ORO DE JIMÉNEZ & ASOCIADOS:
+            // REGLA DEL DÍA 15 INTEGRADA
             if (dia <= 15) {
-                // Si entra del 1 al 15: Termina el último día del mes ANTERIOR del próximo año.
-                // Ej: Entra el 10 Abril 2026 -> Termina 31 Marzo 2027.
-                // (En código, el día "0" de un mes, nos da el último día del mes anterior automáticamente)
                 fechaTermino = new Date(anio + 1, mes, 0); 
             } else {
-                // Si entra del 16 en adelante: Termina el último día del MISMO mes del próximo año.
-                // Ej: Entra el 16 Abril 2026 -> Termina 30 Abril 2027.
                 fechaTermino = new Date(anio + 1, mes + 1, 0);
             }
 
-            // Función interna para formatear la fecha de vuelta al input (YYYY-MM-DD)
             const formatoYMD = (d) => {
                 const y = d.getFullYear();
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 const day = String(d.getDate()).padStart(2, '0');
                 return `${y}-${m}-${day}`;
             };
-
             document.getElementById('fecha_termino').value = formatoYMD(fechaTermino);
-
-            // Reajuste: Exactamente 6 meses después del inicio
             const reajuste = new Date(anio, mes + 6, dia);
             document.getElementById('fecha_reajuste').value = formatoYMD(reajuste);
-            
-            generarCalculos(); // Actualiza los números a la derecha
+            generarCalculos();
         }
+
         function generarCalculos() {
             const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
-
             const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
-            const fechaInVal = document.getElementById('fecha_inicio').value;
-            const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
-
+            const fIn = document.getElementById('fecha_inicio').value;
+            const nGar = parseFloat(document.getElementById('meses_garantia').value) || 1;
             document.getElementById('monto_letras').value = numeroALetras(renta);
-
-            let proporcional = 0;
-            if (fechaInVal) {
-                const dia = new Date(fechaInVal + "T12:00:00").getDate();
-                proporcional = (dia === 1) ? renta : (renta / 30) * (30 - dia + 1);
+            let prop = 0;
+            if (fIn) {
+                const d = new Date(fIn + "T12:00:00").getDate();
+                prop = (d === 1) ? renta : (renta / 30) * (30 - d + 1);
             }
-
-            const garantia = renta * nGarantia;
-            const comisionBruta = (renta * 0.5) / 0.8475;
-
-            document.getElementById('res_proporcional').innerText = fmt(proporcional);
-            document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
-            document.getElementById('res_comision_total').innerText = fmt(comisionBruta);
+            const gar = renta * nGar;
+            const bruto = (renta * 0.5) / 0.8475;
+            document.getElementById('res_proporcional').innerText = fmt(prop);
+            document.getElementById('res_total_inicial').innerText = fmt(prop + gar);
+            document.getElementById('res_comision_total').innerText = fmt(bruto);
         }
 
-        // LA FUNCIÓN QUE ENVÍA DATOS A GOOGLE DESDE GITHUB
         function enviarContratoPDF() {
             const btn = document.getElementById('btn-enviar-pdf');
-            const statusMsg = document.getElementById('status_message');
-            
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando y Enviando...';
+            const msg = document.getElementById('status_message');
             btn.disabled = true;
-            statusMsg.innerText = "Conectando con Google y generando documento oficial...";
-            statusMsg.className = "text-xs text-center font-bold mt-4 text-yellow-400";
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESANDO...';
+            msg.innerText = "GENERANDO CONTRATO...";
+            msg.className = "text-yellow-500 text-center font-bold uppercase tracking-wider";
 
             const val = (id) => document.getElementById(id).value;
             const dateFmt = (id) => {
@@ -215,22 +188,20 @@
             const renta = parseFloat(val('monto_renta')) || 0;
             const nGar = parseFloat(val('meses_garantia')) || 1;
             const fIn = val('fecha_inicio');
-            
             let prop = 0;
             if (fIn) {
                 const d = new Date(fIn + "T12:00:00").getDate();
                 prop = (d === 1) ? renta : (renta / 30) * (30 - d + 1);
             }
-            const gar = renta * nGar;
-            const bruto = (renta * 0.5) / 0.8475;
 
             const payload = {
                 monto_renta: renta,
                 monto_letras: val('monto_letras'),
                 monto_proporcional: prop,
-                monto_total_garantia: gar,
-                suma_total_inicial: prop + gar,
-                comision_total: bruto,
+                monto_total_garantia: renta * nGar,
+                suma_total_inicial: prop + (renta * nGar),
+                comision_total: (renta * 0.5) / 0.8475,
+                meses_garantia: nGar,
                 fecha_inicio: dateFmt('fecha_inicio'),
                 fecha_termino: dateFmt('fecha_termino'),
                 fecha_reajuste: dateFmt('fecha_reajuste'),
@@ -257,28 +228,23 @@
                 rol_propiedad: val('rol_propiedad')
             };
 
-            // Enviar datos usando Fetch API (Compatible con GitHub Pages)
-            fetch(URL_APPS_SCRIPT, {
-                method: 'POST',
-                body: JSON.stringify(payload)
+            fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify(payload) })
+            .then(() => {
+                msg.innerText = "¡PDF ENVIADO CON ÉXITO!";
+                msg.className = "text-green-500 text-center font-bold uppercase tracking-wider";
+                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> ENVIADO';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> GENERAR Y ENVIAR CONTRATO PDF';
+                }, 3000);
             })
-            .then(response => response.json())
-            .then(data => {
-                statusMsg.innerText = "¡PDF Generado y Enviado a sebjmz@gmail.com con éxito!";
-                statusMsg.className = "text-xs text-center font-bold mt-4 text-green-400";
-                btn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Generar y Enviar PDF';
+            .catch(() => {
+                msg.innerText = "REVISA TU CORREO";
+                msg.className = "text-blue-500 text-center font-bold uppercase tracking-wider";
                 btn.disabled = false;
-            })
-            .catch(error => {
-                // Como CORS a veces bloquea la lectura de la respuesta pero sí ejecuta el script
-                statusMsg.innerText = "Petición enviada. Revisa tu correo en unos segundos para confirmar recepción.";
-                statusMsg.className = "text-xs text-center font-bold mt-4 text-blue-400";
-                btn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Generar y Enviar PDF';
-                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> GENERAR Y ENVIAR CONTRATO PDF';
             });
         }
-
-        // Ejecutar cálculos iniciales
         generarCalculos();
     </script>
 </body>
