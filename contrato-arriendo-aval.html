@@ -108,7 +108,8 @@
         </div>
     </div>
 
-    <script>function calcularFechas() {
+    <script>
+        function calcularFechas() {
             const fechaIn = document.getElementById('fecha_inicio').value;
             if (!fechaIn) return;
 
@@ -236,52 +237,118 @@ ARRENDADOR: ${raw('rut_arrendador')} | ARRENDATARIO: ${raw('rut_arrendatario')} 
         })
         .generarYEnviarPDF(payload);
 
-        function numeroALetras(num) {
-            const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
-            const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
-            const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
-            const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
-
-            if (num === 0) return 'CERO PESOS';
-            if (num === 1000000) return 'UN MILLÓN DE PESOS';
-
-            function convertir(n) {
-                if (n < 10) return unidades[n - 1] || '';
-                if (n < 20) {
-                    if (n === 10) return 'DIEZ';
-                    return especiales[n - 11] || 'DIECI' + convertir(n - 10);
-                }
-                if (n < 100) {
-                    let d = Math.floor(n / 10);
-                    let u = n % 10;
-                    return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1];
-                }
-                if (n < 1000) {
-                    if (n === 100) return 'CIEN';
-                    let c = Math.floor(n / 100);
-                    let resto = n % 100;
-                    return centenas[c - 1] + ' ' + convertir(resto);
-                }
-                if (n < 1000000) {
-                    let mil = Math.floor(n / 1000);
-                    let resto = n % 1000;
-                    let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL';
-                    return milTexto + ' ' + convertir(resto);
-                }
-                if (n < 1000000000) {
-                    let millon = Math.floor(n / 1000000);
-                    let resto = n % 1000000;
-                    let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES';
-                    if (resto > 0 && resto < 1000000) return millonTexto + ' ' + convertir(resto);
-                    return millonTexto + ' DE';
-                }
-                return '';
-            }
-            return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
+        <script>
+    function numeroALetras(num) {
+        const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+        const especiales = ['ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE'];
+        const centenas = ['CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+        if (num === 0) return 'CERO PESOS';
+        if (num === 1000000) return 'UN MILLÓN DE PESOS';
+        function convertir(n) {
+            if (n < 10) return unidades[n - 1] || '';
+            if (n < 20) { if (n === 10) return 'DIEZ'; return especiales[n - 11] || 'DIECI' + convertir(n - 10); }
+            if (n < 100) { let d = Math.floor(n / 10); let u = n % 10; return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1]; }
+            if (n < 1000) { if (n === 100) return 'CIEN'; let c = Math.floor(n / 100); let resto = n % 100; return centenas[c - 1] + ' ' + convertir(resto); }
+            if (n < 1000000) { let mil = Math.floor(n / 1000); let resto = n % 1000; let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL'; return milTexto + ' ' + convertir(resto); }
+            if (n < 1000000000) { let millon = Math.floor(n / 1000000); let resto = n % 1000000; let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES'; return (resto > 0) ? millonTexto + ' ' + convertir(resto) : millonTexto + ' DE'; }
+            return '';
         }
-        
-        // Carga inicial
+        return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
+    }
+
+    function calcularFechas() {
+        const fechaIn = document.getElementById('fecha_inicio').value;
+        if (!fechaIn) return;
+        const inicio = new Date(fechaIn + "T12:00:00");
+        const termino = new Date(inicio);
+        termino.setFullYear(inicio.getFullYear() + 1);
+        termino.setDate(inicio.getDate() - 1);
+        document.getElementById('fecha_termino').value = termino.toISOString().split('T')[0];
+        const reajuste = new Date(inicio);
+        reajuste.setMonth(inicio.getMonth() + 6);
+        document.getElementById('fecha_reajuste').value = reajuste.toISOString().split('T')[0];
         generar();
-    </script>
+    }
+
+    function generar() {
+        const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
+        const raw = (id) => document.getElementById(id).value || '';
+        const dateFmt = (id) => {
+            const val = document.getElementById(id).value;
+            if(!val) return '';
+            const [y, m, d] = val.split('-');
+            return `${d}/${m}/${y}`;
+        };
+
+        const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
+        const fechaInVal = document.getElementById('fecha_inicio').value;
+        const nGarantia = parseFloat(document.getElementById('meses_garantia').value) || 1;
+
+        const letrasRenta = numeroALetras(renta);
+        document.getElementById('monto_letras').value = letrasRenta;
+
+        let proporcional = 0;
+        if (fechaInVal) {
+            const dia = new Date(fechaInVal + "T12:00:00").getDate();
+            proporcional = (dia === 1) ? renta : (renta / 30) * (30 - dia + 1);
+        }
+
+        const garantia = renta * nGarantia;
+        const comisionBruta = (renta * 0.5) / 0.8475;
+
+        document.getElementById('res_proporcional').innerText = fmt(proporcional);
+        document.getElementById('res_total_inicial').innerText = fmt(proporcional + garantia);
+        document.getElementById('res_comision_total').innerText = fmt(comisionBruta);
+
+        const payload = {
+            monto_renta: renta,
+            monto_letras: letrasRenta,
+            monto_proporcional: proporcional,
+            monto_total_garantia: garantia,
+            suma_total_inicial: proporcional + garantia,
+            comision_total: comisionBruta,
+            meses_garantia: nGarantia,
+            fecha_inicio: dateFmt('fecha_inicio'),
+            fecha_termino: dateFmt('fecha_termino'),
+            fecha_reajuste: dateFmt('fecha_reajuste'),
+            ciudad: raw('ciudad'),
+            nombre_arrendador: raw('nombre_arrendador'),
+            rut_arrendador: raw('rut_arrendador'),
+            nacionalidad_arrendador: raw('nacionalidad_arrendador'),
+            estado_civil_arrendador: raw('estado_civil_arrendador'),
+            profesion_arrendador: raw('profesion_arrendador'),
+            domicilio_arrendador: raw('domicilio_arrendador'),
+            nombre_arrendatario: raw('nombre_arrendatario'),
+            rut_arrendatario: raw('rut_arrendatario'),
+            nacionalidad_arrendatario: raw('nacionalidad_arrendatario'),
+            estado_civil_arrendatario: raw('estado_civil_arrendatario'),
+            profesion_arrendatario: raw('profesion_arrendatario'),
+            nombre_codeudor: raw('nombre_codeudor'),
+            rut_codeudor: raw('rut_codeudor'),
+            nacionalidad_codeudor: raw('nacionalidad_codeudor'),
+            estado_civil_codeudor: raw('estado_civil_codeudor'),
+            profesion_codeudor: raw('profesion_codeudor'),
+            domicilio_particular_codeudor: raw('domicilio_particular_codeudor'),
+            direccion_propiedad: raw('direccion_propiedad'),
+            comuna: raw('comuna'),
+            rol_propiedad: raw('rol_propiedad')
+        };
+
+        if (renta > 0 && fechaInVal) {
+            google.script.run
+                .withSuccessHandler(res => { if(res.success) console.log(res.msg); })
+                .generarYEnviarPDF(payload);
+        }
+    }
+
+    function copiarContrato() {
+        const content = document.getElementById('preview_contrato').innerText;
+        navigator.clipboard.writeText(content);
+        alert("Contrato copiado.");
+    }
+    
+    generar();
+</script>
 </body>
 </html>
