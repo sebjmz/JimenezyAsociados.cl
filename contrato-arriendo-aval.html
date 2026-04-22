@@ -23,9 +23,10 @@
             background-color: var(--bg-dark); 
             color: white; 
             min-height: 100vh;
+            margin: 0;
         }
 
-        /* Efectos de Glassmorphism */
+        /* Paneles con efecto de cristal */
         .glass-panel { 
             background: var(--panel-bg); 
             border: 1px solid var(--border-color); 
@@ -38,7 +39,7 @@
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
-        /* Estilizado de Inputs */
+        /* Diseño de campos de entrada */
         input, select, textarea { 
             background: rgba(15, 23, 42, 0.8) !important; 
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -62,7 +63,7 @@
             background: rgba(15, 23, 42, 0.4) !important;
         }
 
-        /* Etiquetas de micro-diseño */
+        /* Etiquetas técnicas */
         label { 
             font-size: 10px; 
             font-weight: 800; 
@@ -74,27 +75,10 @@
             padding-left: 4px;
         }
 
-        /* Scrollbar Personalizada */
+        /* Barra de desplazamiento */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-
-        .section-title {
-            letter-spacing: 0.1em;
-            position: relative;
-            display: inline-block;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 40px;
-            height: 2px;
-            background: var(--accent-blue);
-        }
     </style>
 </head>
 <body class="p-4 md:p-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-black">
@@ -122,13 +106,13 @@
                 <section class="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                     <h3 class="text-blue-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center">
-                        <i class="fa-solid fa- Sierrad-dollar-sign mr-2"></i> 1. Definiciones del Contrato
+                        <i class="fa-solid fa-file-invoice-dollar mr-2"></i> 1. Variables de Negocio y Fechas
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div class="md:col-span-1">
                             <label>Renta Mensual ($)</label>
-                            <input type="number" id="monto_renta" value="1000000" oninput="generarCalculos(); calcularFechas()" placeholder="Ej: 850000">
+                            <input type="number" id="monto_renta" value="1000000" oninput="generarCalculos(); calcularFechas()">
                         </div>
                         <div class="md:col-span-2">
                             <label>Renta en Letras (Automático)</label>
@@ -136,7 +120,7 @@
                         </div>
                         <div class="md:col-span-1">
                             <label>Meses de Garantía</label>
-                            <input type="number" id="meses_garantia" value="1" min="1" max="3" oninput="generarCalculos()">
+                            <input type="number" id="meses_garantia" value="1" min="1" oninput="generarCalculos()">
                         </div>
                         
                         <div class="md:col-span-1">
@@ -148,7 +132,7 @@
                             <input type="date" id="fecha_termino" readonly>
                         </div>
                         <div class="md:col-span-1">
-                            <label>Primer Reajuste (IPC)</label>
+                            <label>Primer Reajuste (6 meses)</label>
                             <input type="date" id="fecha_reajuste" readonly>
                         </div>
                         <div class="md:col-span-1">
@@ -161,13 +145,13 @@
                 <section class="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                     <h3 class="text-purple-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center">
-                        <i class="fa-solid fa-user-tie mr-2"></i> 2. Datos del Arrendador
+                        <i class="fa-solid fa-user-tie mr-2"></i> 2. Datos de la Parte Arrendadora
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-2">
                             <label>Nombre Completo</label>
-                            <input type="text" id="nombre_arrendador" placeholder="Nombre como aparece en Cédula" oninput="generarCalculos()">
+                            <input type="text" id="nombre_arrendador" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>RUT Arrendador</label>
@@ -179,15 +163,15 @@
                         </div>
                         <div>
                             <label>Estado Civil</label>
-                            <input type="text" id="estado_civil_arrendador" placeholder="Soltero, Casado, etc." oninput="generarCalculos()">
+                            <input type="text" id="estado_civil_arrendador" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>Profesión / Oficio</label>
-                            <input type="text" id="profesion_arrendador" placeholder="Ej: Ingeniero" oninput="generarCalculos()">
+                            <input type="text" id="profesion_arrendador" oninput="generarCalculos()">
                         </div>
                         <div class="md:col-span-3">
-                            <label>Domicilio (Calle, Número, Depto, Comuna)</label>
-                            <input type="text" id="domicilio_arrendador" placeholder="Av. Libertad 123, Depto 41, Viña del Mar" oninput="generarCalculos()">
+                            <label>Domicilio</label>
+                            <input type="text" id="domicilio_arrendador" oninput="generarCalculos()">
                         </div>
                     </div>
                 </section>
@@ -195,13 +179,13 @@
                 <section class="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
                     <h3 class="text-orange-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center">
-                        <i class="fa-solid fa-user mr-2"></i> 3. Datos del Arrendatario
+                        <i class="fa-solid fa-user mr-2"></i> 3. Datos de la Parte Arrendataria
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-2">
                             <label>Nombre Completo</label>
-                            <input type="text" id="nombre_arrendatario" placeholder="Nombre completo" oninput="generarCalculos()">
+                            <input type="text" id="nombre_arrendatario" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>RUT / Pasaporte</label>
@@ -221,6 +205,7 @@
                         </div>
                     </div>
                 </section>
+
                 <section class="glass-panel p-8 rounded-[2.5rem] relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-pink-500"></div>
                     <h3 class="text-pink-500 font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center">
@@ -230,27 +215,27 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-2">
                             <label>Nombre Completo</label>
-                            <input type="text" id="nombre_codeudor" placeholder="Nombre completo del aval" oninput="generar()">
+                            <input type="text" id="nombre_codeudor" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>RUT Codeudor</label>
-                            <input type="text" id="rut_codeudor" placeholder="12.345.678-9" oninput="generar()">
+                            <input type="text" id="rut_codeudor" placeholder="12.345.678-9" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>Nacionalidad</label>
-                            <input type="text" id="nacionalidad_codeudor" value="Chilena" oninput="generar()">
+                            <input type="text" id="nacionalidad_codeudor" value="Chilena" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>Estado Civil</label>
-                            <input type="text" id="estado_civil_codeudor" placeholder="Ej: Casado" oninput="generar()">
+                            <input type="text" id="estado_civil_codeudor" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>Profesión / Oficio</label>
-                            <input type="text" id="profesion_codeudor" placeholder="Ej: Contador" oninput="generar()">
+                            <input type="text" id="profesion_codeudor" oninput="generarCalculos()">
                         </div>
                         <div class="md:col-span-3">
                             <label>Domicilio Particular del Codeudor</label>
-                            <input type="text" id="domicilio_particular_codeudor" placeholder="Dirección completa del aval" oninput="generar()">
+                            <input type="text" id="domicilio_particular_codeudor" oninput="generarCalculos()">
                         </div>
                     </div>
                 </section>
@@ -264,34 +249,29 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-2">
                             <label>Dirección Propiedad Arrendada</label>
-                            <input type="text" id="direccion_propiedad" placeholder="Calle, número, departamento..." oninput="generar()">
+                            <input type="text" id="direccion_propiedad" oninput="generarCalculos()">
                         </div>
                         <div>
                             <label>Comuna</label>
-                            <input type="text" id="comuna" value="Concón" oninput="generar()">
+                            <input type="text" id="comuna" value="Concón" oninput="generarCalculos()">
                         </div>
                         <div class="md:col-span-1">
-                            <label>ROL SII de la Propiedad</label>
-                            <input type="text" id="rol_propiedad" placeholder="Ej: 1234-56" oninput="generar()">
+                            <label>ROL SII</label>
+                            <input type="text" id="rol_propiedad" placeholder="Ej: 1234-56" oninput="generarCalculos()">
                         </div>
                     </div>
                 </section>
 
                 <div class="py-10 flex justify-center">
-                    <button id="btn-enviar-pdf" onclick="enviarContratoPDF()" class="group relative bg-green-600 hover:bg-green-500 text-white px-12 py-7 rounded-[2.5rem] font-black uppercase text-[16px] tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-green-900/40 w-full active:scale-95 border-b-8 border-green-800 hover:border-green-700">
+                    <button id="btn-enviar-pdf" onclick="enviarContratoPDF()" class="group relative bg-green-600 hover:bg-green-500 text-white px-12 py-7 rounded-[2.5rem] font-black uppercase text-[16px] tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-green-900/40 w-full active:scale-95 border-b-8 border-green-800">
                         <div class="flex items-center justify-center gap-4">
                             <i class="fa-solid fa-file-signature text-3xl group-hover:scale-110 transition-transform"></i>
                             <span>Finalizar y Generar Contrato Oficial</span>
                         </div>
-                        <div class="absolute -top-3 -right-2 bg-white text-green-700 text-[11px] px-3 py-1.5 rounded-xl font-bold shadow-lg border border-green-100">
-                            VERSIÓN 2026 PRO
-                        </div>
                     </button>
                 </div>
 
-            </div> ```
-
-**Confírmame con un "Listo" para enviarte la Parte 4, que es la columna derecha de cálculos, el visor de texto y todo el motor JavaScript.**
+            </div>
             <aside class="space-y-6">
                 <div class="glass-panel p-8 rounded-[2.5rem] border-blue-500/30 text-center shadow-2xl shadow-blue-900/20">
                     <label class="text-blue-400">Total Pago Inicial</label>
@@ -306,7 +286,7 @@
                     <label class="text-purple-400">Comisión Bruta (2026)</label>
                     <div id="res_comision_total" class="text-3xl font-black text-purple-400 my-3 tracking-tighter">$0</div>
                     <p class="text-[9px] text-gray-400 font-medium leading-tight">
-                        Incluye 50% de renta + 15,25% de retención legal (Factor 0.8475)
+                        Cálculo basado en 50% de renta + 15,25% de retención legal (Factor 0.8475)
                     </p>
                 </div>
 
@@ -316,18 +296,23 @@
             </aside>
         </div> <div class="mt-16 mb-20">
             <h2 class="text-xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-3">
-                <i class="fa-solid fa-eye"></i> Vista Previa del Texto Generado
+                <i class="fa-solid fa-eye text-lg text-blue-500"></i> Vista Previa del Texto para el Contrato
             </h2>
             <div class="glass-panel p-12 md:p-20 rounded-[3rem] bg-white text-slate-900 shadow-2xl shadow-black">
-                <div id="preview_contrato" class="whitespace-pre-line leading-[1.8] max-w-4xl mx-auto font-serif text-[13px] text-justify">
-                    Complete los datos para previsualizar el contrato...
+                <div id="preview_contrato" class="whitespace-pre-line leading-[1.8] max-w-4xl mx-auto font-serif text-[13px] text-justify italic text-slate-400">
+                    El borrador se generará automáticamente al ingresar los datos...
                 </div>
             </div>
         </div>
-    </div> <script>
+    </div>
+    <script>
+        // DIRECCIÓN DEL SERVIDOR DE GOOGLE (PROYECTO JIMÉNEZ & ASOCIADOS)
         const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyesZXlNoTBzJ2r-3z97-YoRzRpbhArKnjQdapipblISkmj1ccb2bwGd3FrV-2S4vbGSg/exec";
 
-        // CONVERSIÓN DE NÚMEROS A LETRAS (CHILEAN PESOS STYLE)
+        /**
+         * FUNCIÓN: CONVERSIÓN DE NÚMEROS A PALABRAS (ESTILO LEGAL CHILE)
+         * No se han omitido unidades para asegurar contratos de montos altos.
+         */
         function numeroALetras(num) {
             const unidades = ['UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
             const decenas = ['DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
@@ -339,103 +324,138 @@
             
             function convertir(n) {
                 if (n < 10) return unidades[n - 1] || '';
-                if (n < 20) { if (n === 10) return 'DIEZ'; return especiales[n - 11] || 'DIECI' + convertir(n - 10); }
-                if (n < 100) { let d = Math.floor(n / 10); let u = n % 10; return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1]; }
-                if (n < 1000) { if (n === 100) return 'CIEN'; let c = Math.floor(n / 100); let resto = n % 100; return centenas[c - 1] + ' ' + convertir(resto); }
-                if (n < 1000000) { let mil = Math.floor(n / 1000); let resto = n % 1000; let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL'; return milTexto + ' ' + convertir(resto); }
-                if (n < 1000000000) { let millon = Math.floor(n / 1000000); let resto = n % 1000000; let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES'; return (resto > 0) ? millonTexto + ' ' + convertir(resto) : millonTexto + ' DE'; }
+                if (n < 20) { 
+                    if (n === 10) return 'DIEZ'; 
+                    if (n > 10 && n < 16) return especiales[n - 11];
+                    return 'DIECI' + convertir(n - 10); 
+                }
+                if (n < 100) { 
+                    let d = Math.floor(n / 10); 
+                    let u = n % 10; 
+                    return (u > 0) ? decenas[d - 1] + ' Y ' + convertir(u) : decenas[d - 1]; 
+                }
+                if (n < 1000) { 
+                    if (n === 100) return 'CIEN'; 
+                    let c = Math.floor(n / 100); 
+                    let resto = n % 100; 
+                    return centenas[c - 1] + ' ' + convertir(resto); 
+                }
+                if (n < 1000000) { 
+                    let mil = Math.floor(n / 1000); 
+                    let resto = n % 1000; 
+                    let milTexto = (mil === 1) ? 'MIL' : convertir(mil) + ' MIL'; 
+                    return milTexto + ' ' + convertir(resto); 
+                }
+                if (n < 1000000000) { 
+                    let millon = Math.floor(n / 1000000); 
+                    let resto = n % 1000000; 
+                    let millonTexto = (millon === 1) ? 'UN MILLÓN' : convertir(millon) + ' MILLONES'; 
+                    return (resto > 0) ? millonTexto + ' ' + convertir(resto) : millonTexto + ' DE'; 
+                }
                 return '';
             }
             return (convertir(num) + ' PESOS').replace(/\s+/g, ' ').trim();
         }
 
-        // REGLA DEL DÍA 15 (LÓGICA JIMÉNEZ & ASOCIADOS)
+        /**
+         * LÓGICA DE FECHAS: REGLA DEL DÍA 15
+         * Si inicia <= 15: Termina último día del mes 12.
+         * Si inicia > 15: Termina último día del mes 13.
+         */
         function calcularFechas() {
-            const fechaIn = document.getElementById('fecha_inicio').value;
-            if (!fechaIn) { generar(); return; }
+            const fechaInStr = document.getElementById('fecha_inicio').value;
+            if (!fechaInStr) { generarCalculos(); return; }
             
-            const partes = fechaIn.split('-');
+            const partes = fechaInStr.split('-');
             const anio = parseInt(partes[0], 10);
             const mes = parseInt(partes[1], 10) - 1; 
             const dia = parseInt(partes[2], 10);
 
             let fechaTermino;
             if (dia <= 15) {
-                fechaTermino = new Date(anio + 1, mes, 0); 
+                // Último día del mes 12 (mes actual + 12 meses, día 0 del mes siguiente)
+                fechaTermino = new Date(anio + 1, mes + 1, 0); 
             } else {
-                fechaTermino = new Date(anio + 1, mes + 1, 0);
+                // Último día del mes 13
+                fechaTermino = new Date(anio + 1, mes + 2, 0);
             }
 
-            const formatoYMD = (d) => {
+            const formatYMD = (d) => {
                 const y = d.getFullYear();
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 const day = String(d.getDate()).padStart(2, '0');
                 return `${y}-${m}-${day}`;
             };
             
-            document.getElementById('fecha_termino').value = formatoYMD(fechaTermino);
-            const reajuste = new Date(anio, mes + 6, dia);
-            document.getElementById('fecha_reajuste').value = formatoYMD(reajuste);
+            document.getElementById('fecha_termino').value = formatYMD(fechaTermino);
             
-            generar();
+            // Reajuste estándar a los 6 meses
+            const reajuste = new Date(anio, mes + 6, dia);
+            document.getElementById('fecha_reajuste').value = formatYMD(reajuste);
+            
+            generarCalculos();
         }
 
-        // MOTOR DE CÁLCULOS Y VISTA PREVIA
-        function generar() {
-            const fmt = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n));
-            const raw = (id) => {
-                const val = document.getElementById(id).value;
-                return val || `[${id.toUpperCase()}]`;
-            };
+        /**
+         * MOTOR MATEMÁTICO Y PREVISUALIZACIÓN
+         * Se encarga de los cálculos financieros y del visor de texto.
+         */
+        function generarCalculos() {
+            const f = (n) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Math.round(n || 0));
+            const getVal = (id) => document.getElementById(id).value || `[${id.toUpperCase()}]`;
             
             const renta = parseFloat(document.getElementById('monto_renta').value) || 0;
-            const fIn = document.getElementById('fecha_inicio').value;
+            const fInStr = document.getElementById('fecha_inicio').value;
             const nGar = parseFloat(document.getElementById('meses_garantia').value) || 1;
             
-            const letrasRenta = numeroALetras(renta);
-            document.getElementById('monto_letras').value = letrasRenta;
+            // 1. Renta en Letras
+            const letras = numeroALetras(renta);
+            document.getElementById('monto_letras').value = letras;
             
+            // 2. Proporcional
             let prop = 0;
-            if (fIn) {
-                const d = new Date(fIn + "T12:00:00").getDate();
+            if (fInStr) {
+                const d = new Date(fInStr + "T12:00:00").getDate();
                 prop = (d === 1) ? renta : (renta / 30) * (30 - d + 1);
             }
             
+            // 3. Totales y Comisión (Factor 0.8475 para Retención 15,25% - Año 2026)
             const gar = renta * nGar;
-            const bruto = (renta * 0.5) / 0.8475;
+            const comisionBruta = (renta * 0.5) / 0.8475;
             
-            document.getElementById('res_proporcional').innerText = fmt(prop);
-            document.getElementById('res_total_inicial').innerText = fmt(prop + gar);
-            document.getElementById('res_comision_total').innerText = fmt(bruto);
+            document.getElementById('res_proporcional').innerText = f(prop);
+            document.getElementById('res_total_inicial').innerText = f(prop + gar);
+            document.getElementById('res_comision_total').innerText = f(comisionBruta);
 
-            // TEXTO PROFESIONAL PARA EL VISOR
-            const preview = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
-            FOLIO: ${Date.now()} | CIUDAD: ${raw('ciudad')} | FECHA: ${new Date().toLocaleDateString()}
+            // 4. ACTUALIZACIÓN DEL VISOR DE TEXTO (BORRADOR)
+            const previewText = `CONTRATO DE ARRENDAMIENTO DE INMUEBLE RESIDENCIAL
+            FOLIO: ${Date.now()} | CIUDAD: ${getVal('ciudad')} | EMISIÓN: ${new Date().toLocaleDateString()}
 
-            I. LOS COMPARECIENTES
-            En la ciudad de ${raw('ciudad')}, Chile, comparecen: 
-            LA PARTE ARRENDADORA: Don/Doña ${raw('nombre_arrendador')}, de nacionalidad ${raw('nacionalidad_arrendador')}, de estado civil ${raw('estado_civil_arrendador')}, de profesión/oficio ${raw('profesion_arrendador')}, Cédula Nacional de Identidad N° ${raw('rut_arrendador')}, domiciliado/a en ${raw('domicilio_arrendador')}.
-            LA PARTE ARRENDATARIA: Don/Doña ${raw('nombre_arrendatario')}, de nacionalidad ${raw('nacionalidad_arrendatario')}, de estado civil ${raw('estado_civil_arrendatario')}, de profesión/oficio ${raw('profesion_arrendatario')}, Cédula de Identidad N° ${raw('rut_arrendatario')}, quien fija su domicilio en la propiedad objeto de este instrumento.
-            LA PARTE CODEUDORA SOLIDARIA: Don/Doña ${raw('nombre_codeudor')}, de nacionalidad ${raw('nacionalidad_codeudor')}, Cédula Nacional de Identidad N° ${raw('rut_codeudor')}, domiciliado/a en ${raw('domicilio_particular_codeudor')}.
+            I. COMPARECIENTES:
+            ARRENDADOR: Don/Doña ${getVal('nombre_arrendador')}, RUT: ${getVal('rut_arrendador')}, domiciliado en ${getVal('domicilio_arrendador')}.
+            ARRENDATARIO: Don/Doña ${getVal('nombre_arrendatario')}, RUT: ${getVal('rut_arrendatario')}, con domicilio en la propiedad arrendada.
+            CODEUDOR SOLIDARIO: Don/Doña ${getVal('nombre_codeudor')}, RUT: ${getVal('rut_codeudor')}, domiciliado en ${getVal('domicilio_particular_codeudor')}.
 
-            II. CLÁUSULAS FUNDAMENTALES
-            PRIMERO. PROPIEDAD: El inmueble ubicado en ${raw('direccion_propiedad')}, Comuna de ${raw('comuna')}, ROL SII N° ${raw('rol_propiedad')}.
+            II. OBJETO Y RENTA:
+            La propiedad ubicada en ${getVal('direccion_propiedad')}, comuna de ${getVal('comuna')}, ROL SII ${getVal('rol_propiedad')}.
+            Renta mensual pactada: ${f(renta)} (${letras}).
             
-            SEGUNDO. RENTA: Renta mensual de ${fmt(renta)} (${letrasRenta}).
-            
-            TERCERO. PAGOS INICIALES: Se percibe un mes proporcional de ${fmt(prop)} y un depósito en garantía de ${fmt(gar)} (${nGar} mes/es). Total: ${fmt(prop + gar)}.
+            III. PAGOS INICIALES:
+            Día de inicio: ${fInStr || 'No definido'}.
+            Mes Proporcional: ${f(prop)}.
+            Garantía (${nGar} mes/es): ${f(gar)}.
+            TOTAL INICIAL A PERCIBIR: ${f(prop + gar)}.
 
-            CUARTO. COMISIÓN: Se establece un honorario de corretaje bruto de ${fmt(bruto)} para cada parte contratante.`;
+            IV. CORRETAJE:
+            Honorarios profesionales de Sebastián Jiménez Meza: ${f(comisionBruta)} bruto por cada parte.`;
 
-            document.getElementById('preview_contrato').innerText = preview;
+            document.getElementById('preview_contrato').innerText = previewText;
+            document.getElementById('preview_contrato').classList.remove('text-slate-400', 'italic');
         }
 
-        function copiarContrato() {
-            const content = document.getElementById('preview_contrato').innerText;
-            navigator.clipboard.writeText(content).then(() => alert("Texto del contrato copiado al portapapeles."));
-        }
-
-        // ENVÍO FINAL A GOOGLE APPS SCRIPT
+        /**
+         * ENVÍO A GOOGLE APPS SCRIPT
+         */
         function enviarContratoPDF() {
             const btn = document.getElementById('btn-enviar-pdf');
             const statusBox = document.getElementById('status_box');
@@ -443,20 +463,20 @@
             
             btn.disabled = true;
             statusBox.classList.remove('hidden');
-            statusMsg.innerText = "⚡ PROCESANDO CONTRATO EN SERVIDOR...";
-            statusMsg.className = "text-yellow-500 text-center font-black uppercase tracking-wider";
+            statusMsg.innerText = "⏳ GENERANDO PDF Y ENVIANDO CORREO...";
+            statusMsg.className = "text-yellow-500 text-center font-black uppercase";
 
-            const val = (id) => document.getElementById(id).value;
-            const dateFmt = (id) => {
-                const v = val(id);
-                if(!v) return '';
-                const [y, m, d] = v.split('-');
+            const v = (id) => document.getElementById(id).value;
+            const fmtDate = (id) => {
+                const val = v(id);
+                if(!val) return '';
+                const [y, m, d] = val.split('-');
                 return `${d}/${m}/${y}`;
             };
 
-            const renta = parseFloat(val('monto_renta')) || 0;
-            const nGar = parseFloat(val('meses_garantia')) || 1;
-            const fIn = val('fecha_inicio');
+            const renta = parseFloat(v('monto_renta')) || 0;
+            const nGar = parseFloat(v('meses_garantia')) || 1;
+            const fIn = v('fecha_inicio');
             let prop = 0;
             if (fIn) {
                 const d = new Date(fIn + "T12:00:00").getDate();
@@ -465,58 +485,57 @@
 
             const payload = {
                 monto_renta: renta,
-                monto_letras: val('monto_letras'),
+                monto_letras: v('monto_letras'),
                 monto_proporcional: prop,
                 monto_total_garantia: renta * nGar,
                 suma_total_inicial: prop + (renta * nGar),
                 comision_total: (renta * 0.5) / 0.8475,
                 meses_garantia: nGar,
-                fecha_inicio: dateFmt('fecha_inicio'),
-                fecha_termino: dateFmt('fecha_termino'),
-                fecha_reajuste: dateFmt('fecha_reajuste'),
-                ciudad: val('ciudad'),
-                nombre_arrendador: val('nombre_arrendador'),
-                rut_arrendador: val('rut_arrendador'),
-                nacionalidad_arrendador: val('nacionalidad_arrendador'),
-                estado_civil_arrendador: val('estado_civil_arrendador'),
-                profesion_arrendador: val('profesion_arrendador'),
-                domicilio_arrendador: val('domicilio_arrendador'),
-                nombre_arrendatario: val('nombre_arrendatario'),
-                rut_arrendatario: val('rut_arrendatario'),
-                nacionalidad_arrendatario: val('nacionalidad_arrendatario'),
-                estado_civil_arrendatario: val('estado_civil_arrendatario'),
-                profesion_arrendatario: val('profesion_arrendatario'),
-                nombre_codeudor: val('nombre_codeudor'),
-                rut_codeudor: val('rut_codeudor'),
-                nacionalidad_codeudor: val('nacionalidad_codeudor'),
-                estado_civil_codeudor: val('estado_civil_codeudor'),
-                profesion_codeudor: val('profesion_codeudor'),
-                domicilio_particular_codeudor: val('domicilio_particular_codeudor'),
-                direccion_propiedad: val('direccion_propiedad'),
-                comuna: val('comuna'),
-                rol_propiedad: val('rol_propiedad')
+                fecha_inicio: fmtDate('fecha_inicio'),
+                fecha_termino: fmtDate('fecha_termino'),
+                fecha_reajuste: fmtDate('fecha_reajuste'),
+                ciudad: v('ciudad'),
+                nombre_arrendador: v('nombre_arrendador'),
+                rut_arrendador: v('rut_arrendador'),
+                nacionalidad_arrendador: v('nacionalidad_arrendador'),
+                estado_civil_arrendador: v('estado_civil_arrendador'),
+                profesion_arrendador: v('profesion_arrendador'),
+                domicilio_arrendador: v('domicilio_arrendador'),
+                nombre_arrendatario: v('nombre_arrendatario'),
+                rut_arrendatario: v('rut_arrendatario'),
+                nacionalidad_arrendatario: v('nacionalidad_arrendatario'),
+                estado_civil_arrendatario: v('estado_civil_arrendatario'),
+                profesion_arrendatario: v('profesion_arrendatario'),
+                nombre_codeudor: v('nombre_codeudor'),
+                rut_codeudor: v('rut_codeudor'),
+                nacionalidad_codeudor: v('nacionalidad_codeudor'),
+                estado_civil_codeudor: v('estado_civil_codeudor'),
+                profesion_codeudor: v('profesion_codeudor'),
+                domicilio_particular_codeudor: v('domicilio_particular_codeudor'),
+                direccion_propiedad: v('direccion_propiedad'),
+                comuna: v('comuna'),
+                rol_propiedad: v('rol_propiedad')
             };
 
             fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
-            .then(data => {
-                statusMsg.innerText = "✅ CONTRATO ENVIADO CON ÉXITO";
-                statusMsg.className = "text-green-500 text-center font-black uppercase tracking-wider";
-                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> DOCUMENTO GENERADO';
+            .then(() => {
+                statusMsg.innerText = "✅ ¡CONTRATO ENVIADO EXITOSAMENTE!";
+                statusMsg.className = "text-green-500 text-center font-black uppercase";
                 setTimeout(() => {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Generar y Enviar Contrato PDF';
                     statusBox.classList.add('hidden');
-                }, 4000);
+                }, 5000);
             })
             .catch(() => {
-                statusMsg.innerText = "📩 PETICIÓN EN COLA. REVISA TU CORREO.";
-                statusMsg.className = "text-blue-500 text-center font-black uppercase tracking-wider";
+                statusMsg.innerText = "📩 PROCESO INICIADO. REVISA TU BANDEJA.";
+                statusMsg.className = "text-blue-500 text-center font-black uppercase";
                 btn.disabled = false;
             });
         }
         
-        generar(); // Inicialización
+        // Ejecución inicial para cargar datos por defecto
+        generarCalculos();
     </script>
 </body>
 </html>
