@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Intranet | Jiménez & Asociados</title>
-    <script src="https://cdn.tailwindcss.com">
-        window.loadLeaderboard = loadLeaderboard;
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDK -->
@@ -592,7 +590,7 @@
 <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // 1. CONFIGURACIÓN OFICIAL
     const firebaseConfig = {
@@ -630,7 +628,7 @@
         if(isAcademia) {
             btnAcad.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
             btnGest.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
-            if (typeof loadLeaderboard === 'function') loadLeaderboard(); 
+            if (typeof window.loadLeaderboard === 'function') window.loadLeaderboard(); 
         } else {
             btnGest.className = "bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition shadow-lg";
             btnAcad.className = "text-gray-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition";
@@ -694,8 +692,9 @@
                     if(item.visitas) progress += 20;
                     if(item.statusFinal === 'Pagado') progress = 100;
 
-                    let badgeColor = item.comision.includes('20%') ? "bg-blue-600/20 text-blue-400 border-blue-500/30" : 
-                                    (item.comision.includes('7%') ? "bg-purple-600/20 text-purple-400 border-purple-500/30" : "bg-pink-600/20 text-pink-400 border-pink-500/30");
+                    const comision = item.comision || "20% (Propio)";
+                    let badgeColor = comision.includes('20%') ? "bg-blue-600/20 text-blue-400 border-blue-500/30" :
+                                    (comision.includes('7%') ? "bg-purple-600/20 text-purple-400 border-purple-500/30" : "bg-pink-600/20 text-pink-400 border-pink-500/30");
 
                     html += `
                         <tr class="hover:bg-white/5 transition border-b border-white/5 group">
@@ -708,7 +707,7 @@
                                 <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
                             </td>
                             <td class="px-8 py-6 text-center">
-                                <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${item.comision}</span>
+                                <span class="text-[10px] font-black px-3 py-1.5 rounded-lg border ${badgeColor}">${comision}</span>
                             </td>
                             <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contactado ? 'fa-circle-check text-green-500' : 'fa-clock text-gray-800'} text-xl"></i></td>
                             <td class="px-8 py-6 text-center"><i class="fa-solid ${item.contrato ? 'fa-file-signature text-blue-500' : 'fa-file text-gray-900'} text-xl"></i></td>
@@ -819,8 +818,30 @@
             
             initDashboard(user.uid, user.email);
             initLiveFeed();
+            showVigencia(user.uid);
         }
     });
+
+    async function showVigencia(uid) {
+        const card = document.getElementById('status-card');
+        if (!card) return;
+        try {
+            const snap = await getDoc(doc(db, 'artifacts', appId, 'users', uid, 'profile', 'data'));
+            if (!snap.exists()) return;
+            const data = snap.data();
+            const base = data.lastSuccessAt || data.lastActivityAt || data.createdAt;
+            if (!base || !base.toDate) return;
+            const dias = Math.floor((Date.now() - base.toDate().getTime()) / 86400000);
+            const quedan = 30 - dias;
+            document.getElementById('days-count').innerText = quedan;
+            document.getElementById('timer-status').innerText = quedan > 0
+                ? "Reloj activo. Una firma lo reinicia a 30 días."
+                : "Plazo vencido. El admin puede depurar esta cuenta.";
+            card.classList.remove('hidden');
+        } catch (err) {
+            console.error("Vigencia:", err);
+        }
+    }
 
     async function initLiveFeed() {
         const q = query(collectionGroup(db, 'referidos'), orderBy('createdAt', 'desc'), limit(5));
