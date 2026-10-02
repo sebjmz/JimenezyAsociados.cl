@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email == "sebjmz@gmail.com";
+    }
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    match /artifacts/jimenez-portal-oficial/users/{uid}/profile/{docId} {
+      allow read: if signedIn();
+      allow create: if isOwner(uid) && request.resource.data.email == request.auth.token.email;
+      allow update: if isAdmin() || (isOwner(uid) && request.resource.data.email == resource.data.email);
+      allow delete: if isAdmin();
+    }
+
+    match /artifacts/jimenez-portal-oficial/users/{uid}/referidos/{docId} {
+      allow read: if signedIn();
+      allow create: if isOwner(uid)
+        && request.resource.data.partnerEmail == request.auth.token.email
+        && request.resource.data.contactado == false
+        && request.resource.data.statusFinal == "Validando";
+      allow update, delete: if isAdmin();
+    }
+
+    match /artifacts/jimenez-portal-oficial/public/{docId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+    }
+  }
+}
