@@ -10,7 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -66,7 +66,7 @@
                 const data = docSnap.data();
                 if (!docSnap.ref.path.includes(appId)) continue;
 
-                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy);
+                const baseFecha = data.lastSuccessAt ? data.lastSuccessAt.toDate() : (data.lastActivityAt ? data.lastActivityAt.toDate() : (data.createdAt ? data.createdAt.toDate() : hoy));
                 const diasInactivo = Math.floor((hoy - baseFecha) / (1000 * 60 * 60 * 24));
 
                 if (diasInactivo >= 30) {
@@ -345,8 +345,8 @@
         window.deletePartner = async (path) => {
             if (confirm("¿Eliminar socio?")) {
                 try { 
-                    await deleteDoc(doc(db, path)); 
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) });
+                    await deleteDoc(doc(db, path));
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'estadisticas'), { totalSocios: increment(-1) }, { merge: true });
                 } catch (e) { alert("Error: " + e.message); }
             }
         };

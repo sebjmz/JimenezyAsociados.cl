@@ -10,7 +10,7 @@
     <script type="module">
         // 1. IMPORTAMOS TODO LO NECESARIO EN UN SOLO BLOQUE (Añadimos signOut)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -47,7 +47,7 @@
         // --- LÓGICA DE INICIO DE SESIÓN ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const pass = document.getElementById('pass').value;
             const btn = document.getElementById('btn-entrar');
 
@@ -57,17 +57,18 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
+                await user.reload();
 
-                // ==========================================
-                // ESCUDO DE VERIFICACIÓN DE CORREO
-                // ==========================================
-                // Si el usuario NO ha verificado su correo y NO es el administrador
-                if (!user.emailVerified && user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-                    await signOut(auth); // Lo cerramos inmediatamente por seguridad
-                    alert("⚠️ ACCESO DENEGADO: Aún no has verificado tu cuenta.\n\nPor favor, revisa tu correo electrónico (y tu carpeta de Spam), abre el correo de Jiménez & Asociados y haz clic en el enlace para activar tu acceso.");
+                if (!user.emailVerified && (user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                    const reenviar = confirm("Aún no verificas el correo. Revisa Spam.\n\n¿Reenviar el enlace de activación?");
+                    if (reenviar) {
+                        await sendEmailVerification(user);
+                        alert("Enlace reenviado. Ábrelo y vuelve a entrar.");
+                    }
+                    await signOut(auth);
                     btn.innerText = "ENTRAR AL PORTAL";
                     btn.disabled = false;
-                    return; // Cortamos el código aquí para que no pase a la Intranet
+                    return;
                 }
 
                 // Si pasa el escudo, lo mandamos a su panel
@@ -78,7 +79,7 @@
                     window.location.href = 'intranet.html';
                 }
             } catch (error) {
-                alert("Error: Correo o contraseña incorrectos.");
+                alert("No se pudo entrar: " + (error.code || error.message));
                 btn.innerText = "ENTRAR AL PORTAL";
                 btn.disabled = false;
             }

@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Intranet | Jiménez & Asociados</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+        window.loadLeaderboard = loadLeaderboard;
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDK -->
@@ -31,6 +33,7 @@
         const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
         window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL };
+        window.loadLeaderboard = loadLeaderboard;
         // Cambiar entre pestañas de Intranet
         window.switchIntranetTab = (tab) => {
     const isAcademia = tab === 'academia';
@@ -587,9 +590,9 @@
         </div>
     </div>
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // 1. CONFIGURACIÓN OFICIAL
     const firebaseConfig = {
@@ -601,13 +604,13 @@
         appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const appId = 'jimenez-portal-oficial';
     const ADMIN_EMAIL = "sebjmz@gmail.com"; 
 
-    window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL, orderBy, limit };
+    window.fb = { auth, db, appId, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, signOut, ADMIN_EMAIL, orderBy, limit, updateDoc };
 
     // 2. FUNCIONES DE INTERFAZ (UI)
     window.handleLogout = () => {
@@ -761,10 +764,13 @@
                 await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'), {
                     name, phone, service, tipo, comuna, urgencia, owner,
                     nota: nota || "Sin notas",
-                    partnerEmail: user.email,
+                    partnerEmail: (user.email || '').toLowerCase(),
                     contactado: false, contrato: false, visitas: false,
                     statusFinal: 'Validando',
                     createdAt: serverTimestamp()
+                });
+                await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
+                    lastActivityAt: serverTimestamp()
                 });
 
                 const adminPhone = "56951134778"; 
@@ -798,7 +804,9 @@
 
     // 6. AUTENTICACIÓN Y CARGA INICIAL
     onAuthStateChanged(auth, (user) => {
-        if (!user) {
+        const admin = (user?.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (!user || (!user.emailVerified && !admin)) {
+            if (user) signOut(auth);
             window.location.href = 'ingresopartner.html';
         } else {
             const partnerName = user.displayName || user.email.split('@')[0];
