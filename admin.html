@@ -10,7 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collectionGroup, query, onSnapshot, doc, updateDoc, deleteDoc, increment, collection, getDocs, serverTimestamp, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -228,7 +228,26 @@
             const containerMobile = document.getElementById('admin-partners-cards');
             const q = query(collection(db, 'artifacts', appId, 'public'));
             
-            onSnapshot(q, (snapshot) => {
+            onSnapshot(q, async (snapshot) => {
+                try {
+                    const viejos = await getDocs(query(collectionGroup(db, 'profile')));
+                    for (const docSnap of viejos.docs) {
+                        if (!docSnap.ref.path.includes(appId)) continue;
+                        const data = docSnap.data();
+                        const uid = docSnap.ref.parent.parent.id;
+                        if (!data.email) continue;
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'socio_' + uid), {
+                            rol: 'socio',
+                            uid,
+                            name: data.name || 'Socio',
+                            email: String(data.email).toLowerCase(),
+                            sponsorEmail: data.sponsorEmail || '',
+                            createdAt: data.createdAt || serverTimestamp()
+                        }, { merge: true });
+                    }
+                } catch (err) {
+                    console.error('Rescate socios:', err);
+                }
                 let htmlDesktop = "";
                 let htmlMobile = "";
                 let count = 0, nuevos = 0;
@@ -301,7 +320,7 @@
                         </div>`;
                 });
 
-                container.innerHTML = htmlDesktop || '<tr><td colspan="4" class="p-10 text-center text-gray-600">Sin socios.</td></tr>';
+                container.innerHTML = htmlDesktop || '<tr><td colspan="4" class="p-10 text-center text-gray-600">Sin socios publicados. Si ya se registraron, recarga en 10 segundos.</td></tr>';
                 containerMobile.innerHTML = htmlMobile || '<div class="p-10 text-center text-gray-600">Sin socios registrados.</div>';
                 
                 document.getElementById('stat-partners-total').innerText = count;
@@ -406,6 +425,7 @@
                 document.getElementById('admin-content').classList.remove('hidden');
                 // 3. Cargar los datos de los clientes
                 loadAllLeads();
+                loadAllPartners();
             } else {
                 // Si no es el admin, lo patea al login
                 window.location.href = 'ingresopartner.html';
