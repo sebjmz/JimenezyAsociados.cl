@@ -109,6 +109,21 @@
                 // NOTA: Usamos "user" que es la variable que creaste arriba
                 await window.fbReg.sendEmailVerification(user);                
                 
+                fetch("https://formsubmit.co/ajax/sebjmz@gmail.com", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    body: JSON.stringify({
+                        _subject: "Nuevo socio J&A",
+                        _template: "table",
+                        tipo: "Nuevo socio",
+                        nombre: name,
+                        correo: email,
+                        sponsor: sponsor
+                    })
+                }).catch(() => {});
+                const aviso = encodeURIComponent(`Nuevo socio J&A\nNombre: ${name}\nCorreo: ${email}\nSponsor: ${sponsor}`);
+                window.open(`https://wa.me/56951134778?text=${aviso}`, "_blank");
+
                 alert("¡Cuenta creada exitosamente! Hemos enviado un enlace de verificación a tu correo. Debes hacer clic en él antes de poder iniciar sesión.");
                 
                 // Opcional: Redirigirlo a la pantalla de login para que ingrese cuando verifique

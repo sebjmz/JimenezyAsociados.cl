@@ -32,6 +32,7 @@
         // BOT 1: LIMPIEZA DE NEGOCIOS (LEADS)
         // ==========================================
         async function ejecutarLimpiezaMaestra(snapshot) {
+            return;
             let borrados = 0;
             const hoy = new Date();
             for (const docSnap of snapshot.docs) {
@@ -60,6 +61,7 @@
         // BOT 2: LIMPIEZA DE PARTNERS (30 DÍAS)
         // ==========================================
         async function limpiarPartnersInactivos(snapshot) {
+            return;
             const hoy = new Date();
             let eliminados = 0;
             for (const docSnap of snapshot.docs) {
@@ -93,7 +95,7 @@
             const q = query(collectionGroup(db, 'referidos'));
             
             onSnapshot(q, (snapshot) => {
-                ejecutarLimpiezaMaestra(snapshot);
+                // limpieza automatica desactivada: el admin borra manual
                 let htmlDesktop = "";
                 let htmlMobile = "";
                 let total = 0, pending = 0, done = 0;
@@ -227,7 +229,7 @@
             const q = query(collectionGroup(db, 'profile'));
             
             onSnapshot(q, (snapshot) => {
-                limpiarPartnersInactivos(snapshot);
+                // limpieza automatica desactivada: el admin borra manual
                 let htmlDesktop = "";
                 let htmlMobile = "";
                 let count = 0, nuevos = 0;
@@ -587,7 +589,7 @@
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Garantía Solidaria (Plantilla 1)</p>
             </div>
 
-            <div onclick="window.location.href='admin-contratos-simple.html'" class="group bg-slate-900/50 border border-white/10 p-8 rounded-[2.5rem] hover:border-pink-500 transition-all duration-500 cursor-pointer text-center relative overflow-hidden">
+            <div onclick="window.location.href='contrato-arriendo-aval.html'" class="group bg-slate-900/50 border border-white/10 p-8 rounded-[2.5rem] hover:border-pink-500 transition-all duration-500 cursor-pointer text-center relative overflow-hidden">
                 <div class="absolute -right-10 -top-10 w-32 h-32 bg-pink-600/10 rounded-full group-hover:scale-150 transition-transform"></div>
                 <i class="fa-solid fa-user-check text-4xl text-pink-500 mb-4"></i>
                 <h3 class="text-lg font-black uppercase italic text-white mb-2">Sin Codeudor</h3>

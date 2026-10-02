@@ -486,7 +486,7 @@
                         <p class="text-[11px] text-gray-400 mt-2 font-medium italic">Respaldo oficial: Comprobante de transferencia bancaria (Datos sensibles ocultos).</p>
                     </div>
 
-                    <div class="flex-none bg-black/40 border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 hover:bg-white/10 transition transform hover:scale-105 duration-500 cursor-pointer shadow-2xl" onclick="window.open('img/Gmail - Aviso de Transferencia de Fondos.pdf')">
+                    <div class="flex-none bg-black/40 border border-white/5 p-6 rounded-[2rem] flex items-center gap-6 hover:bg-white/10 transition transform hover:scale-105 duration-500 cursor-pointer shadow-2xl" onclick="window.showMsg('Los comprobantes no se publican. Pídelo por WhatsApp a la oficina.')">
                         
                         <div class="w-24 h-24 bg-green-500/20 rounded-2xl flex items-center justify-center">
                             <i class="fa-solid fa-file-pdf text-green-500 text-4xl"></i>
@@ -776,9 +776,25 @@
                 const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name} (${owner})\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
                 const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageText)}`;
                 
+                fetch("https://formsubmit.co/ajax/sebjmz@gmail.com", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    body: JSON.stringify({
+                        _subject: "Nueva gestión J&A",
+                        _template: "table",
+                        tipo: "Nueva gestión",
+                        partner: partnerName,
+                        cliente: name,
+                        telefono: phone,
+                        servicio: service + " de " + tipo,
+                        comuna: comuna,
+                        urgencia: urgencia,
+                        nota: nota || "Sin notas"
+                    })
+                }).catch(() => {});
                 window.closeModal();
                 formAdd.reset();
-                window.showMsg("¡Dato registrado!");
+                window.showMsg("¡Dato registrado! Se avisó a la oficina.");
                 setTimeout(() => { window.open(whatsappUrl, '_blank'); }, 1000);
             } catch (err) { alert("Error al registrar: " + err.message); }
         });
@@ -835,8 +851,8 @@
             const quedan = 30 - dias;
             document.getElementById('days-count').innerText = quedan;
             document.getElementById('timer-status').innerText = quedan > 0
-                ? "Reloj activo. Una firma lo reinicia a 30 días."
-                : "Plazo vencido. El admin puede depurar esta cuenta.";
+                ? "Referencia de actividad. Nada se borra solo."
+                : "Sin firma reciente. El registro se mantiene hasta que el admin lo borre.";
             card.classList.remove('hidden');
         } catch (err) {
             console.error("Vigencia:", err);
