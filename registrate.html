@@ -109,11 +109,29 @@
                 window.location.href = 'ingresopartner.html';
 
             } catch (error) {
-                console.error(error);
-                alert("Error al registrar: " + error.message);
-                btn.innerText = "CREAR MI CUENTA";
-                btn.disabled = false;
-            }
+    console.error(error);
+    if (error.code === 'auth/email-already-in-use') {
+        const enviarRecuperacion = confirm(
+            "Este correo ya está registrado en el sistema.\n\n" +
+            "¿Deseas que te enviemos un correo ahora mismo para restablecer tu contraseña?"
+        );
+        if (enviarRecuperacion) {
+            import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js").then(async ({ sendPasswordResetEmail }) => {
+                try {
+                    await sendPasswordResetEmail(window.fbReg.auth, email);
+                    alert("¡Correo enviado! Revisa tu bandeja de entrada (y Spam) para crear tu nueva contraseña.");
+                    window.location.href = 'ingresopartner.html';
+                } catch (e) {
+                    alert("Error al enviar el enlace de recuperación: " + e.message);
+                }
+            });
+        }
+    } else {
+        alert("Error al registrar: " + error.message);
+    }
+    btn.innerText = "CREAR MI CUENTA";
+    btn.disabled = false;
+}
         });
         // AUTO-RELLENADO DEL SPONSOR
 window.addEventListener('load', () => {
