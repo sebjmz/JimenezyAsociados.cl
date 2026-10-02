@@ -590,7 +590,7 @@
 <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // 1. CONFIGURACIÓN OFICIAL
     const firebaseConfig = {
@@ -656,21 +656,26 @@
         try {
             container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
 
-            const profilesSnap = await getDocs(collectionGroup(db, 'profile'));
+            const profilesSnap = await getDocs(collection(db, 'artifacts', appId, 'public'));
             let redL1 = [], redL2 = [], emailsL1 = [];
-            
+            const socios = [];
             profilesSnap.forEach(docSnap => {
                 const data = docSnap.data();
+                if (!(docSnap.id.startsWith('socio_') || data.rol === 'socio')) return;
+                data._uid = data.uid || docSnap.id.replace('socio_', '');
+                socios.push(data);
+            });
+
+            socios.forEach(data => {
                 if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
-                    redL1.push(docSnap.ref.parent.parent.id); 
-                    if(data.email) emailsL1.push(data.email.toLowerCase());
+                    redL1.push(data._uid);
+                    if (data.email) emailsL1.push(data.email.toLowerCase());
                 }
             });
-            
-            profilesSnap.forEach(docSnap => {
-                const data = docSnap.data();
+
+            socios.forEach(data => {
                 if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
-                    redL2.push(docSnap.ref.parent.parent.id);
+                    redL2.push(data._uid);
                 }
             });
 
@@ -832,11 +837,26 @@
             idBox.querySelector('span').innerText = myPartnerID;
             idBox.classList.remove('opacity-0');
             
+            publicarSocio(user);
             initDashboard(user.uid, user.email);
             initLiveFeed();
             showVigencia(user.uid);
         }
     });
+
+    async function publicarSocio(user) {
+        try {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'socio_' + user.uid), {
+                rol: 'socio',
+                uid: user.uid,
+                name: user.displayName || (user.email || '').split('@')[0],
+                email: (user.email || '').toLowerCase(),
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+        } catch (err) {
+            console.error('Publicar socio:', err);
+        }
+    }
 
     async function showVigencia(uid) {
         const card = document.getElementById('status-card');

@@ -226,20 +226,19 @@
        function loadAllPartners() {
             const container = document.getElementById('admin-partners-body');
             const containerMobile = document.getElementById('admin-partners-cards');
-            const q = query(collectionGroup(db, 'profile'));
+            const q = query(collection(db, 'artifacts', appId, 'public'));
             
             onSnapshot(q, (snapshot) => {
-                // limpieza automatica desactivada: el admin borra manual
                 let htmlDesktop = "";
                 let htmlMobile = "";
                 let count = 0, nuevos = 0;
                 let sponsors = new Set();
                 const hoy = new Date();
 
-                // 1. Extraer y filtrar los datos
                 let docsArray = [];
                 snapshot.forEach(docSnap => {
-                    if (docSnap.ref.path.includes(appId)) docsArray.push(docSnap);
+                    const data = docSnap.data();
+                    if (docSnap.id.startsWith('socio_') || data.rol === 'socio') docsArray.push(docSnap);
                 });
 
                 // 2. Ordenar cronológicamente (Más reciente primero)
@@ -308,6 +307,8 @@
                 document.getElementById('stat-partners-total').innerText = count;
                 document.getElementById('stat-partners-nuevos').innerText = nuevos;
                 document.getElementById('stat-partners-sponsors').innerText = sponsors.size;
+            }, (err) => {
+                container.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-400">No se pudo cargar socios: ' + err.code + '</td></tr>';
             });
         }
         window.updateStatus = async (path, field, value) => {

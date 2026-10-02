@@ -100,6 +100,18 @@
                     lastActivityAt: window.fbReg.serverTimestamp()
                 });
                 await window.fbReg.setDoc(
+                    window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'public', 'socio_' + user.uid),
+                    {
+                        rol: 'socio',
+                        uid: user.uid,
+                        name: name,
+                        email: email,
+                        sponsorEmail: sponsor,
+                        createdAt: window.fbReg.serverTimestamp()
+                    },
+                    { merge: true }
+                );
+                await window.fbReg.setDoc(
                     window.fbReg.doc(window.fbReg.db, 'artifacts', window.fbReg.appId, 'public', 'estadisticas'),
                     { totalSocios: window.fbReg.increment(1) },
                     { merge: true }
