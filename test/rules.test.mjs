@@ -35,15 +35,6 @@ await t('bob NO edita su referido', assertFails(updateDoc(doc(bob,`${A}/users/bo
 await t('partner NO lista toda la colección public', assertFails(getDocs(collection(alice,`${A}/public`))));
 await t('partner NO lee socio_bob (email/sponsor)', assertFails(getDoc(doc(alice,`${A}/public/socio_bob`))));
 await t('partner lee su socio_', assertSucceeds(getDoc(doc(bob,`${A}/public/socio_bob`))));
-await t('admin publica ranking', assertSucceeds(setDoc(doc(admin,`${A}/public/ranking`),{gestores:[{id:'JA-BOB',count:2}],reclutadores:[],feed:[{tipo:'Casa'}]})));
-await t('admin publica red_bob', assertSucceeds(setDoc(doc(admin,`${A}/public/red_bob`),{items:[{partnerId:'JA-ALICE',tipo:'Casa',nivel:'L1'}]})));
-await t('ranking/feed: partner lee ranking', assertSucceeds(getDoc(doc(alice,`${A}/public/ranking`))));
-await t('ranking: partner lee estadisticas', assertSucceeds(getDoc(doc(alice,`${A}/public/estadisticas`))));
-await t('ranking: partner NO escribe ranking', assertFails(setDoc(doc(alice,`${A}/public/ranking`),{gestores:[{id:'JA-ALICE',count:99}]})));
-await t('ranking: anónimo NO lee ranking', assertFails(getDoc(doc(anon,`${A}/public/ranking`))));
-await t('red: bob lee su red_bob', assertSucceeds(getDoc(doc(bob,`${A}/public/red_bob`))));
-await t('red: alice NO lee red_bob', assertFails(getDoc(doc(alice,`${A}/public/red_bob`))));
-await t('red: bob NO escribe red_bob', assertFails(setDoc(doc(bob,`${A}/public/red_bob`),{items:[]})));
 await t('feed: partner NO consulta referidos ajenos (collectionGroup ordenado)', assertFails(getDocs(collectionGroup(alice,'referidos'))));
 await t('anónimo NO lee public', assertFails(getDocs(collection(anon,`${A}/public`))));
 await t('admin collectionGroup profile', assertSucceeds(getDocs(collectionGroup(admin,'profile'))));

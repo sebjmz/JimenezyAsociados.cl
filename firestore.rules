@@ -1,37 +1,40 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-    // Admin: se valida en el servidor (reglas), no en el JS del navegador.
-    // Acepta un custom claim admin=true (recomendado a futuro) o el email del dueño.
+    function signedIn() { return request.auth != null; }
+    // Admin validado en servidor: custom claim admin=true o email del dueño.
     function isAdmin() {
       return signedIn() && (
         request.auth.token.get('admin', false) == true ||
-        request.auth.token.get('email', '') == "sebjmz@gmail.com"
-      );
+        request.auth.token.get('email', '') == "sebjmz@gmail.com");
     }
-    function isOwner(uid) {
-      return signedIn() && request.auth.uid == uid;
-    }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
     function onlyChanges(keys) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
     }
+    function scorePath(uid) { return /databases/$(database)/documents/artifacts/jimenez-portal-oficial/scores/$(uid); }
+    function refPath(uid, refId) { return /databases/$(database)/documents/artifacts/jimenez-portal-oficial/users/$(uid)/referidos/$(refId); }
+    function sponsorOf(uid) {
+      return exists(scorePath(uid)) ? get(scorePath(uid)).data.get('sponsorUid', '') : '';
+    }
+    function plusOne(field) {
+      return onlyChanges([field])
+        && request.resource.data[field] == resource.data.get(field, 0) + 1;
+    }
+    function myEmailHash() {
+      return hashing.sha256(request.auth.token.email.lower()).toHexString().lower();
+    }
 
-    // ---- Perfiles de partners: solo dueño o admin ----
+    // ---- Datos privados de cada partner: solo dueño o admin ----
     match /artifacts/jimenez-portal-oficial/users/{uid}/profile/{docId} {
       allow read: if isOwner(uid) || isAdmin();
       allow create: if isAdmin() || (isOwner(uid)
         && request.resource.data.email == request.auth.token.email);
-      // El partner no puede cambiar su email ni su sponsor.
       allow update: if isAdmin() || (isOwner(uid)
         && request.resource.data.email == resource.data.email
         && request.resource.data.get('sponsorEmail', '') == resource.data.get('sponsorEmail', ''));
       allow delete: if isAdmin();
     }
-
-    // ---- Referidos: solo dueño o admin ----
     match /artifacts/jimenez-portal-oficial/users/{uid}/referidos/{docId} {
       allow read: if isOwner(uid) || isAdmin();
       allow create: if isAdmin() || (isOwner(uid)
@@ -40,25 +43,82 @@ service cloud.firestore {
         && request.resource.data.statusFinal == "Validando");
       allow update, delete: if isAdmin();
     }
+    match /{path=**}/profile/{docId} { allow read: if isAdmin(); }
+    match /{path=**}/referidos/{docId} { allow read: if isAdmin(); }
 
-    // ---- Consultas collectionGroup (panel admin): solo admin ----
-    match /{path=**}/profile/{docId} {
-      allow read: if isAdmin();
+    // ---- Puntajes públicos (solo apodo JA-XXXXX, uid y contadores; sin email) ----
+    match /artifacts/jimenez-portal-oficial/scores/{uid} {
+      allow read: if signedIn();
+      allow delete: if isAdmin();
+      // Alta: una sola vez, por el propio partner, todo en 0. El sponsor debe existir.
+      allow create: if isAdmin() || (isOwner(uid)
+        && request.resource.data.keys().hasOnly(['pid', 'sponsorUid', 'leads', 'firmas', 'activos', 'l1', 'l2', 'l3', 'lastRef', 'createdAt'])
+        && request.resource.data.leads == 0 && request.resource.data.firmas == 0
+        && request.resource.data.activos == 0 && request.resource.data.l1 == 0
+        && request.resource.data.l2 == 0 && request.resource.data.l3 == 0
+        && (request.resource.data.sponsorUid == ''
+            || (request.resource.data.sponsorUid != uid && exists(scorePath(request.resource.data.sponsorUid)))));
+      allow update: if isAdmin()
+        // +1 lead propio: solo junto con la creación del referido lastRef (mismo batch).
+        || (isOwner(uid)
+            && onlyChanges(['leads', 'lastRef'])
+            && request.resource.data.leads == resource.data.leads + 1
+            && !exists(refPath(uid, request.resource.data.lastRef))
+            && existsAfter(refPath(uid, request.resource.data.lastRef)))
+        // +1 en L1/L2/L3 del upline: solo cuando se crea (en este batch) el score del nuevo partner.
+        || (signedIn() && request.auth.uid != uid
+            && !exists(scorePath(request.auth.uid))
+            && existsAfter(scorePath(request.auth.uid))
+            && (
+              (plusOne('l1') && getAfter(scorePath(request.auth.uid)).data.sponsorUid == uid)
+              || (plusOne('l2') && sponsorOf(getAfter(scorePath(request.auth.uid)).data.sponsorUid) == uid)
+              || (plusOne('l3') && sponsorOf(sponsorOf(getAfter(scorePath(request.auth.uid)).data.sponsorUid)) == uid)
+            ));
     }
-    match /{path=**}/referidos/{docId} {
-      allow read: if isAdmin();
+
+    // ---- Índice para resolver el email del sponsor sin exponer emails (sha256) ----
+    match /artifacts/jimenez-portal-oficial/invites/{hash} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow write: if isAdmin() || (signedIn()
+        && hash == myEmailHash()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid);
+    }
+
+    // ---- Feed en vivo: solo tipo de propiedad + fecha ----
+    match /artifacts/jimenez-portal-oficial/feed/{refId} {
+      allow read: if signedIn();
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(['tipo', 'createdAt'])
+        && request.resource.data.tipo is string && request.resource.data.tipo.size() <= 40
+        && request.resource.data.createdAt == request.time
+        && !exists(refPath(request.auth.uid, refId))
+        && existsAfter(refPath(request.auth.uid, refId)));
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- Gestiones de la red: copia sin nombre/teléfono, visible para dueño, L1-sponsor y L2-sponsor ----
+    match /artifacts/jimenez-portal-oficial/red/{ownerUid}/items/{refId} {
+      allow read: if isAdmin() || isOwner(ownerUid)
+        || (signedIn() && sponsorOf(ownerUid) == request.auth.uid)
+        || (signedIn() && sponsorOf(ownerUid) != '' && sponsorOf(sponsorOf(ownerUid)) == request.auth.uid);
+      allow create: if isAdmin() || (isOwner(ownerUid)
+        && request.resource.data.keys().hasOnly(['pid', 'tipo', 'service', 'contactado', 'contrato', 'visitas', 'statusFinal', 'createdAt'])
+        && request.resource.data.contactado == false && request.resource.data.contrato == false
+        && request.resource.data.visitas == false && request.resource.data.statusFinal == 'Validando'
+        && !exists(refPath(ownerUid, refId))
+        && existsAfter(refPath(ownerUid, refId)));
+      allow update, delete: if isAdmin();
     }
 
     // ---- Colección "public" ----
     match /artifacts/jimenez-portal-oficial/public/{docId} {
-      // Admin lee todo. Partners: solo documentos agregados sin datos personales
-      // (ranking, estadisticas) y SU propia ficha socio_<uid> / red_<uid>.
       allow read: if isAdmin()
-        || (signedIn() && docId in ['ranking', 'estadisticas'])
-        || (signedIn() && (docId == 'socio_' + request.auth.uid || docId == 'red_' + request.auth.uid));
+        || (signedIn() && docId == 'estadisticas')
+        || (signedIn() && docId == 'socio_' + request.auth.uid);
       allow write: if isAdmin();
     }
-    // Excepción 1: cada partner publica SOLO su propia ficha socio_<uid>, sin rol ni uid ajenos.
     match /artifacts/jimenez-portal-oficial/public/{socioId} {
       allow create, update: if signedIn()
         && socioId == 'socio_' + request.auth.uid
@@ -68,14 +128,11 @@ service cloud.firestore {
         && (resource == null
             || request.resource.data.get('sponsorEmail', '') == resource.data.get('sponsorEmail', ''));
     }
-    // Excepción 2: el registro suma +1 al contador de socios.
     match /artifacts/jimenez-portal-oficial/public/estadisticas {
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['totalSocios'])
         && request.resource.data.totalSocios == 1;
-      allow update: if signedIn()
-        && onlyChanges(['totalSocios'])
-        && request.resource.data.totalSocios == resource.data.get('totalSocios', 0) + 1;
+      allow update: if signedIn() && plusOne('totalSocios');
     }
   }
 }

@@ -91,62 +91,75 @@
 
 
         // ==========================================
-        // AGREGADOS PARA PARTNERS (sin datos personales)
-        // public/ranking: apodos JA-XXXXX + conteos + feed (solo tipo de propiedad)
-        // public/red_<uid>: estado de las gestiones de su red L1/L2, sin nombre ni teléfono
+        // PUNTAJES AUTOMÁTICOS (sin datos personales)
+        // Al marcar/desmarcar "contrato" se actualizan en el momento: firmas del partner y,
+        // con su primera firma, "activos" de su sponsor. Cada cambio de estado se copia a red/<uid>/items.
         // ==========================================
         const pid = (uid) => "JA-" + uid.substring(uid.length - 5).toUpperCase();
-        let agregadosTimer = null;
-        function publicarAgregados(referidosDocs) {
-            clearTimeout(agregadosTimer);
-            agregadosTimer = setTimeout(async () => {
-                try {
-                    const perfiles = await getDocs(query(collectionGroup(db, 'profile')));
-                    const emailToUid = {}, sponsorOf = {};
-                    let adminUid = "";
-                    perfiles.forEach(d => {
-                        if (!d.ref.path.includes(appId)) return;
-                        const uid = d.ref.parent.parent.id, data = d.data();
-                        const email = (data.email || '').toLowerCase();
-                        if (email === ADMIN_EMAIL.toLowerCase()) { adminUid = uid; return; }
-                        if (email) emailToUid[email] = uid;
-                        if (data.sponsorEmail) sponsorOf[uid] = data.sponsorEmail.toLowerCase();
-                    });
-                    const sponsorUid = (uid) => emailToUid[sponsorOf[uid]] || null;
-
-                    const gestores = {}, productivos = new Set(), redes = {};
-                    referidosDocs.forEach(d => {
-                        const data = d.data(), owner = d.ref.parent.parent.id;
-                        if (data.contrato === true) {
-                            productivos.add(owner);
-                            if (owner !== adminUid) gestores[owner] = (gestores[owner] || 0) + 1;
-                        }
-                        const item = {
-                            partnerId: pid(owner), tipo: data.tipo || 'Propiedad', service: data.service || 'Venta',
-                            contactado: !!data.contactado, contrato: !!data.contrato, visitas: !!data.visitas,
-                            statusFinal: data.statusFinal || 'Validando', createdAt: data.createdAt || null
-                        };
-                        const l1 = sponsorUid(owner), l2 = l1 ? sponsorUid(l1) : null;
-                        if (l1 && l1 !== adminUid) (redes[l1] = redes[l1] || []).push({ ...item, nivel: 'L1' });
-                        if (l2 && l2 !== adminUid) (redes[l2] = redes[l2] || []).push({ ...item, nivel: 'L2' });
-                    });
-                    const reclutadores = {};
-                    productivos.forEach(uid => {
-                        const s = sponsorUid(uid);
-                        if (s && s !== adminUid) reclutadores[s] = (reclutadores[s] || 0) + 1;
-                    });
-                    const toList = (o) => Object.entries(o).map(([uid, count]) => ({ id: pid(uid), count })).sort((a, b) => b.count - a.count);
-                    const feed = referidosDocs.slice(0, 5).map(d => ({ tipo: d.data().tipo || 'Propiedad' }));
-
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'ranking'),
-                        { gestores: toList(gestores), reclutadores: toList(reclutadores), feed, updatedAt: serverTimestamp() });
-                    const todos = new Set([...Object.keys(redes), ...Object.keys(emailToUid).map(e => emailToUid[e])]);
-                    for (const uid of todos) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'red_' + uid), { items: redes[uid] || [], updatedAt: serverTimestamp() });
-                    }
-                } catch (err) { console.error('Agregados:', err); }
-            }, 1500);
+        const scoreRef = (uid) => doc(db, 'artifacts', appId, 'scores', uid);
+        async function ajustarFirmas(ownerUid, delta) {
+            const snap = await getDoc(scoreRef(ownerUid));
+            if (!snap.exists()) return;
+            const antes = snap.data().firmas || 0;
+            const despues = Math.max(0, antes + delta);
+            await updateDoc(scoreRef(ownerUid), { firmas: despues });
+            const sponsorUid = snap.data().sponsorUid;
+            if (sponsorUid && ((antes === 0 && despues > 0) || (antes > 0 && despues === 0))) {
+                const sp = await getDoc(scoreRef(sponsorUid));
+                if (sp.exists()) await updateDoc(scoreRef(sponsorUid), { activos: Math.max(0, (sp.data().activos || 0) + (despues > 0 ? 1 : -1)) });
+            }
         }
+
+        // Migración única: crea los puntajes y copias públicas para partners y gestiones que ya existían.
+        const sha256hex = async (txt) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt))))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+        window.recalcularPuntajes = async () => {
+            if (!confirm('¿Recalcular puntajes y red desde cero? (migración única)')) return;
+            try {
+                const perfiles = await getDocs(query(collectionGroup(db, 'profile')));
+                const refs = await getDocs(query(collectionGroup(db, 'referidos')));
+                const emailToUid = {}, sponsorEmailOf = {};
+                perfiles.forEach(d => {
+                    if (!d.ref.path.includes(appId)) return;
+                    const uid = d.ref.parent.parent.id, e = (d.data().email || '').toLowerCase();
+                    if (!e || e === ADMIN_EMAIL.toLowerCase()) return;
+                    emailToUid[e] = uid; sponsorEmailOf[uid] = (d.data().sponsorEmail || '').toLowerCase();
+                });
+                const sc = {};
+                for (const [e, uid] of Object.entries(emailToUid)) {
+                    const sp = emailToUid[sponsorEmailOf[uid]] || '';
+                    sc[uid] = { pid: pid(uid), sponsorUid: sp === uid ? '' : sp, leads: 0, firmas: 0, activos: 0, l1: 0, l2: 0, l3: 0, lastRef: '' };
+                }
+                const up = (uid) => (sc[uid] ? sc[uid].sponsorUid : '');
+                Object.keys(sc).forEach(uid => {
+                    let u = up(uid);
+                    for (const n of ['l1', 'l2', 'l3']) { if (!u || !sc[u]) break; sc[u][n]++; u = up(u); }
+                });
+                const feedDocs = [];
+                for (const d of refs.docs) {
+                    if (!d.ref.path.includes(appId)) continue;
+                    const owner = d.ref.parent.parent.id, data = d.data();
+                    if (sc[owner]) { sc[owner].leads++; if (data.contrato === true) sc[owner].firmas++; }
+                    await setDoc(doc(db, 'artifacts', appId, 'red', owner, 'items', d.id), {
+                        pid: pid(owner), tipo: data.tipo || 'Propiedad', service: data.service || 'Venta',
+                        contactado: !!data.contactado, contrato: !!data.contrato, visitas: !!data.visitas,
+                        statusFinal: data.statusFinal || 'Validando', createdAt: data.createdAt || serverTimestamp()
+                    });
+                    feedDocs.push({ id: d.id, tipo: data.tipo || 'Propiedad', createdAt: data.createdAt });
+                }
+                Object.keys(sc).forEach(uid => { const s = up(uid); if (s && sc[s] && sc[uid].firmas > 0) sc[s].activos++; });
+                for (const [uid, data] of Object.entries(sc)) {
+                    await setDoc(scoreRef(uid), { ...data, createdAt: serverTimestamp() });
+                    const e = Object.keys(emailToUid).find(k => emailToUid[k] === uid);
+                    await setDoc(doc(db, 'artifacts', appId, 'invites', await sha256hex(e)), { uid });
+                }
+                feedDocs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                for (const f of feedDocs.slice(0, 20)) {
+                    await setDoc(doc(db, 'artifacts', appId, 'feed', f.id), { tipo: String(f.tipo).substring(0, 40), createdAt: f.createdAt || serverTimestamp() });
+                }
+                showAdminMsg('Puntajes recalculados: ' + Object.keys(sc).length + ' partners.');
+            } catch (err) { alert('Error al recalcular: ' + err.message); }
+        };
 
         // --- CARGA DE NEGOCIOS ---
         function loadAllLeads() {
@@ -172,8 +185,6 @@
                     const dateB = b.data().createdAt ? b.data().createdAt.toDate().getTime() : 0;
                     return dateB - dateA;
                 });
-
-                publicarAgregados(docsArray);
 
                 // 3. Dibujar la tabla en el orden correcto
                 docsArray.forEach(docSnap => {
@@ -394,7 +405,14 @@
         }
         window.updateStatus = async (path, field, value) => {
             try { 
+                const antes = (await getDoc(doc(db, path))).data() || {};
                 await updateDoc(doc(db, path), { [field]: value }); 
+                const parts = path.split('/'); // artifacts/<app>/users/<uid>/referidos/<id>
+                const ownerUid = parts[3], refId = parts[5];
+                if (['contactado', 'contrato', 'visitas', 'statusFinal'].includes(field)) {
+                    await setDoc(doc(db, 'artifacts', appId, 'red', ownerUid, 'items', refId), { [field]: value }, { merge: true });
+                }
+                if (field === 'contrato' && !!antes.contrato !== !!value) await ajustarFirmas(ownerUid, value ? 1 : -1);
                 
                 // Si el admin marca "Firma de contrato"
                 if (field === 'contrato' && value === true) {
@@ -419,7 +437,12 @@
         window.deleteLead = async (path) => {
             if (confirm("¿ELIMINAR PERMANENTEMENTE? Esta acción borrará el dato de la base de datos y no se puede deshacer.")) {
                 try { 
+                    const antes = (await getDoc(doc(db, path))).data() || {};
                     await deleteDoc(doc(db, path)); 
+                    const parts = path.split('/');
+                    await deleteDoc(doc(db, 'artifacts', appId, 'red', parts[3], 'items', parts[5]));
+                    await deleteDoc(doc(db, 'artifacts', appId, 'feed', parts[5]));
+                    if (antes.contrato === true) await ajustarFirmas(parts[3], -1);
                     showAdminMsg("REGISTRO ELIMINADO TOTALMENTE");
                 } catch (e) { 
                     alert("Error al eliminar: " + e.message); 
@@ -531,6 +554,7 @@
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black">
+    <button onclick="window.recalcularPuntajes()" title="Solo una vez, para migrar datos antiguos" class="fixed bottom-4 left-4 z-50 bg-white/5 hover:bg-blue-600 border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white px-4 py-2 rounded-xl">Recalcular puntajes (migración)</button>
 
     <div id="loading-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center text-center">
         <div>
