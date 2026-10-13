@@ -1,4 +1,4 @@
-Oct 13, 2026 7:20:46 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+Oct 13, 2026 7:49:07 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
 INFO: Started WebSocket server on ws://127.0.0.1:9150
 
 API endpoint: http://127.0.0.1:8080
@@ -16,25 +16,25 @@ If you are running a Firestore in Datastore Mode project, run:
 Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
 Dev App Server is now running.
 
-Oct 13, 2026 7:20:46 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:07 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Oct 13, 2026 7:20:46 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:07 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:47 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:08 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:09 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'create' @ L132, false for 'update' @ L120, false for 'update' @ L123, evaluation error at L135:24 for 'update' @ L135, false for 'update' @ L120, false for 'update' @ L123, false for 'update' @ L135
+false for 'create' @ L121, false for 'create' @ L124, false for 'create' @ L133, false for 'update' @ L121, false for 'update' @ L124, evaluation error at L136:24 for 'update' @ L136, false for 'update' @ L121, false for 'update' @ L124, false for 'update' @ L136
 com.google.cloud.datastore.core.exception.DatastoreException: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'create' @ L132, false for 'update' @ L120, false for 'update' @ L123, evaluation error at L135:24 for 'update' @ L135, false for 'update' @ L120, false for 'update' @ L123, false for 'update' @ L135
+false for 'create' @ L121, false for 'create' @ L124, false for 'create' @ L133, false for 'update' @ L121, false for 'update' @ L124, evaluation error at L136:24 for 'update' @ L136, false for 'update' @ L121, false for 'update' @ L124, false for 'update' @ L136
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
@@ -65,11 +65,11 @@ Multiple projectIds are not recommended in single project mode. Requested projec
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, false for 'create' @ L124, false for 'update' @ L121, false for 'update' @ L124
 com.google.cloud.datastore.core.exception.DatastoreException: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, false for 'create' @ L124, false for 'update' @ L121, false for 'update' @ L124
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
@@ -98,11 +98,11 @@ false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120,
 
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, false for 'create' @ L124, false for 'update' @ L121, false for 'update' @ L124
 com.google.cloud.datastore.core.exception.DatastoreException: 
-false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, false for 'create' @ L124, false for 'update' @ L121, false for 'update' @ L124
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
@@ -131,11 +131,11 @@ false for 'create' @ L120, false for 'create' @ L123, false for 'update' @ L120,
 
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-false for 'create' @ L120, evaluation error at L123:32 for 'create' @ L123, false for 'update' @ L120, evaluation error at L123:32 for 'update' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, evaluation error at L124:32 for 'create' @ L124, false for 'update' @ L121, evaluation error at L124:32 for 'update' @ L124, false for 'update' @ L121, false for 'update' @ L124
 com.google.cloud.datastore.core.exception.DatastoreException: 
-false for 'create' @ L120, evaluation error at L123:32 for 'create' @ L123, false for 'update' @ L120, evaluation error at L123:32 for 'update' @ L123, false for 'update' @ L120, false for 'update' @ L123
+false for 'create' @ L121, evaluation error at L124:32 for 'create' @ L124, false for 'update' @ L121, evaluation error at L124:32 for 'update' @ L124, false for 'update' @ L121, false for 'update' @ L124
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
@@ -166,7 +166,7 @@ Multiple projectIds are not recommended in single project mode. Requested projec
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L33:24 for 'update' @ L33, false for 'update' @ L33
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -199,7 +199,7 @@ evaluation error at L33:24 for 'update' @ L33, false for 'update' @ L33
 
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:48 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:09 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 false for 'update' @ L44
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -236,11 +236,11 @@ Multiple projectIds are not recommended in single project mode. Requested projec
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Multiple projectIds are not recommended in single project mode. Requested project ID demo-jya, but the emulator is configured for demo-auto. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
-Oct 13, 2026 7:20:49 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:10 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Oct 13, 2026 7:20:49 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Oct 13, 2026 7:49:10 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Oct 13, 2026 7:20:49 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:10 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 false for 'create' @ L83, false for 'update' @ L83
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -271,7 +271,7 @@ false for 'create' @ L83, false for 'update' @ L83
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:10 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'update' @ L61, evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -302,7 +302,7 @@ evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'u
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:10 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'update' @ L61, false for 'create' @ L54
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -333,7 +333,7 @@ evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'u
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'update' @ L61, false for 'create' @ L54
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -364,7 +364,7 @@ evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'u
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -395,7 +395,7 @@ evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'update' @ L61, evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -426,7 +426,7 @@ evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'u
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'update' @ L61, evaluation error at L61:24 for 'update' @ L61, false for 'create' @ L54, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -457,7 +457,7 @@ evaluation error at L54:24 for 'create' @ L54, evaluation error at L61:24 for 'u
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -488,7 +488,7 @@ evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
 evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -519,11 +519,11 @@ evaluation error at L61:24 for 'update' @ L61, false for 'update' @ L61
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L98, false for 'create' @ L92
+evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L99, false for 'create' @ L92
 com.google.cloud.datastore.core.exception.DatastoreException: 
-evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L98, false for 'create' @ L92
+evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L99, false for 'create' @ L92
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
@@ -550,11 +550,42 @@ evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L98, false f
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
 	at java.base/java.lang.Thread.run(Unknown Source)
 
-Oct 13, 2026 7:20:50 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 WARNING: Operation failed: 
-false for 'update' @ L112
+false for 'create' @ L40, false for 'update' @ L44, evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L99, false for 'create' @ L92
 com.google.cloud.datastore.core.exception.DatastoreException: 
-false for 'update' @ L112
+false for 'create' @ L40, false for 'update' @ L44, evaluation error at L92:24 for 'create' @ L92, false for 'update' @ L99, false for 'create' @ L92
+	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
+	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
+	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)
+	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.checkCommit(DefaultEmulatorRulesAuthorizer.java:113)
+	at com.google.cloud.datastore.emulator.impl.firestore.FirestoreEmulatorHelper.commitHelper(FirestoreEmulatorHelper.java:407)
+	at com.google.cloud.datastore.emulator.impl.firestore.FirestoreEmulatorHelper.internalCommit(FirestoreEmulatorHelper.java:348)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1.internalCommit(CloudFirestoreV1.java:1336)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1.write(CloudFirestoreV1.java:1321)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1WriteStream.handleRequest(CloudFirestoreV1WriteStream.java:222)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1WriteStream.write(CloudFirestoreV1WriteStream.java:144)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1WriteStream.onNext(CloudFirestoreV1WriteStream.java:99)
+	at com.google.cloud.datastore.emulator.impl.firestore.CloudFirestoreV1WriteStream.onNext(CloudFirestoreV1WriteStream.java:27)
+	at io.grpc.stub.ServerCalls$StreamingServerCallHandler$StreamingServerCallListener.onMessage(ServerCalls.java:262)
+	at io.grpc.ForwardingServerCallListener.onMessage(ForwardingServerCallListener.java:33)
+	at io.grpc.Contexts$ContextualizedServerCallListener.onMessage(Contexts.java:76)
+	at io.grpc.ForwardingServerCallListener.onMessage(ForwardingServerCallListener.java:33)
+	at io.grpc.Contexts$ContextualizedServerCallListener.onMessage(Contexts.java:76)
+	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.messagesAvailableInternal(ServerCallImpl.java:334)
+	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.messagesAvailable(ServerCallImpl.java:319)
+	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1MessagesAvailable.runInContext(ServerImpl.java:852)
+	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+
+Oct 13, 2026 7:49:11 PM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+WARNING: Operation failed: 
+false for 'update' @ L113
+com.google.cloud.datastore.core.exception.DatastoreException: 
+false for 'update' @ L113
 	at com.google.cloud.datastore.core.exception.DatastoreException$Builder.build(DatastoreException.java:152)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.verboseError(DefaultEmulatorRulesAuthorizer.java:349)
 	at com.google.cloud.datastore.emulator.impl.rules.DefaultEmulatorRulesAuthorizer.withVerboseErrors(DefaultEmulatorRulesAuthorizer.java:326)

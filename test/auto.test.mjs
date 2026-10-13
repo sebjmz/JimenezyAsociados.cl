@@ -18,7 +18,7 @@ async function alta(db,uid,sp){ await setDoc(doc(db,`${A}/invites/${h(uid+'@x.cl
 async function referir(db,uid,id,tipo='Casa'){ const b=writeBatch(db);
   b.set(doc(db,`${A}/users/${uid}/referidos/${id}`),{name:'Cliente Privado',phone:'+56911',tipo,partnerEmail:uid+'@x.cl',contactado:false,contrato:false,visitas:false,statusFinal:'Validando',createdAt:serverTimestamp()});
   b.set(doc(db,`${A}/red/${uid}/items/${id}`),{pid:'JA-X',tipo,service:'Venta',contactado:false,contrato:false,visitas:false,statusFinal:'Validando',createdAt:serverTimestamp()});
-  b.set(doc(db,`${A}/feed/${id}`),{tipo,createdAt:serverTimestamp()});
+  b.set(doc(db,`${A}/feed/${id}`),{tipo,service:'Venta',createdAt:serverTimestamp()});
   b.update(doc(db,`${A}/scores/${uid}`),{leads:increment(1),lastRef:id}); await b.commit(); }
 const sc=async u=>(await getDoc(doc(admin,`${A}/scores/${u}`))).data();
 
@@ -42,6 +42,9 @@ await t('lead +1 automático', (async()=>{if((await sc('dan')).leads!==1)throw n
 await t('NO lead +1 sin referido nuevo', assertFails(updateDoc(doc(dan,`${A}/scores/dan`),{leads:increment(1),lastRef:'r1'})));
 await t('NO autoasignarse firmas', assertFails(updateDoc(doc(dan,`${A}/scores/dan`),{firmas:increment(1)})));
 await t('NO feed falso sin referido', assertFails(setDoc(doc(dan,`${A}/feed/zzz`),{tipo:'Hack',createdAt:serverTimestamp()})));
+await t('feed guarda servicio', (async()=>{const d=(await getDoc(doc(eve,`${A}/feed/r1`))).data(); if(d.service!=='Venta'||d.tipo!=='Casa')throw new Error(JSON.stringify(d));})());
+await t('NO feed con servicio inválido', assertFails((async()=>{const b=writeBatch(dan);b.set(doc(dan,`${A}/users/dan/referidos/r9`),{name:'x',partnerEmail:'dan@x.cl',contactado:false,contrato:false,visitas:false,statusFinal:'Validando'});b.set(doc(dan,`${A}/feed/r9`),{tipo:'Casa',service:'<script>',createdAt:serverTimestamp()});await b.commit();})()));
+await t('feed antiguo sin servicio sigue válido', assertSucceeds((async()=>{const b=writeBatch(dan);b.set(doc(dan,`${A}/users/dan/referidos/r8`),{name:'x',partnerEmail:'dan@x.cl',contactado:false,contrato:false,visitas:false,statusFinal:'Validando'});b.set(doc(dan,`${A}/feed/r8`),{tipo:'Casa',createdAt:serverTimestamp()});await b.commit();})()));
 await t('ranking: cualquier partner lee scores', assertSucceeds(getDocs(collection(eve,`${A}/scores`))));
 await t('feed: partner lee últimos 5', assertSucceeds(getDocs(query(collection(eve,`${A}/feed`),orderBy('createdAt','desc'),limit(5)))));
 await t('red: cam (L1 de dan) lee items de dan', assertSucceeds(getDocs(collection(cam,`${A}/red/dan/items`))));

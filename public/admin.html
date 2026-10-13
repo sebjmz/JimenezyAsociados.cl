@@ -145,7 +145,7 @@
                         contactado: !!data.contactado, contrato: !!data.contrato, visitas: !!data.visitas,
                         statusFinal: data.statusFinal || 'Validando', createdAt: data.createdAt || serverTimestamp()
                     });
-                    feedDocs.push({ id: d.id, tipo: data.tipo || 'Propiedad', createdAt: data.createdAt });
+                    feedDocs.push({ id: d.id, tipo: data.tipo || 'Propiedad', service: data.service || '', createdAt: data.createdAt });
                 }
                 Object.keys(sc).forEach(uid => { const s = up(uid); if (s && sc[s] && sc[uid].firmas > 0) sc[s].activos++; });
                 for (const [uid, data] of Object.entries(sc)) {
@@ -155,7 +155,7 @@
                 }
                 feedDocs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 for (const f of feedDocs.slice(0, 20)) {
-                    await setDoc(doc(db, 'artifacts', appId, 'feed', f.id), { tipo: String(f.tipo).substring(0, 40), createdAt: f.createdAt || serverTimestamp() });
+                    await setDoc(doc(db, 'artifacts', appId, 'feed', f.id), { tipo: String(f.tipo).substring(0, 40), service: String(f.service).substring(0, 20), createdAt: f.createdAt || serverTimestamp() });
                 }
                 showAdminMsg('Puntajes recalculados: ' + Object.keys(sc).length + ' partners.');
             } catch (err) { alert('Error al recalcular: ' + err.message); }
