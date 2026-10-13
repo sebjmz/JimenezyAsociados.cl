@@ -911,7 +911,7 @@
         return m === 1 ? 'hace 1 mes' : `hace ${m} meses`;
     };
     const escapar = (t) => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const VELOCIDAD_PX_S = 60;
+    const VELOCIDAD_PX_S = 48;
     const inicioTicker = performance.now();
     async function initLiveFeed() {
         const q = query(collection(db, 'artifacts', appId, 'feed'), orderBy('createdAt', 'desc'), limit(5));
