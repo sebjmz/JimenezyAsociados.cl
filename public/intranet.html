@@ -186,11 +186,15 @@
         /* Animación del Ticker En Vivo */
         .ticker-wrap { width: 100%; overflow: hidden; }
         .ticker-move {
-            display: inline-block;
+            display: flex;
+            width: max-content;
             white-space: nowrap;
-            animation: ticker-animation 25s linear infinite;
+            will-change: transform;
+            animation: ticker-animation 30s linear infinite;
         }
-        .ticker-move:hover { animation-play-state: paused; }
+        .ticker-half { display: flex; flex-shrink: 0; }
+        .ticker-item { display: flex; align-items: center; gap: 0.75rem; padding-right: 3rem; flex-shrink: 0; }
+        .ticker-wrap:hover .ticker-move { animation-play-state: paused; }
         @keyframes ticker-animation {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -238,8 +242,8 @@
                 <span class="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] whitespace-nowrap shrink-0">
                     <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span> ACTIVIDAD GLOBAL:
                 </span>
-                <div class="ticker-wrap">
-                    <div id="live-ticker" class="ticker-move flex gap-12 italic">
+                <div class="ticker-wrap min-w-0 flex-1">
+                    <div id="live-ticker" class="ticker-move italic">
                         </div>
                 </div>
             </div>
@@ -907,6 +911,8 @@
         return m === 1 ? 'hace 1 mes' : `hace ${m} meses`;
     };
     const escapar = (t) => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const VELOCIDAD_PX_S = 60;
+    const inicioTicker = performance.now();
     async function initLiveFeed() {
         const q = query(collection(db, 'artifacts', appId, 'feed'), orderBy('createdAt', 'desc'), limit(5));
         let ultimos = [];
@@ -916,17 +922,29 @@
             document.getElementById('live-feed-container').classList.remove('hidden');
             const items = ultimos.map(data => {
                 const serv = data.service ? ' en ' + String(data.service).toLowerCase() : '';
-                return `<div class="flex items-center gap-3 whitespace-nowrap"><span class="text-[11px] font-black text-white uppercase">${escapar((data.tipo || 'Propiedad') + serv)}</span><span class="text-[10px] text-gray-500 font-bold">· ${tiempoRelativo(data.createdAt)}</span><span class="mx-6 text-white/10">|</span></div>`;
+                return `<div class="ticker-item"><span class="text-[11px] font-black text-white uppercase">${escapar((data.tipo || 'Propiedad') + serv)}</span><span class="text-[10px] text-gray-500 font-bold">· ${tiempoRelativo(data.createdAt)}</span><span class="text-white/10 pl-6">|</span></div>`;
             }).join('');
-            // La cinta se duplica para el desplazamiento continuo solo si hay varias entradas
-            // (con 1-2 entradas se veía repetido: "Departamento / Departamento").
-            ticker.innerHTML = ultimos.length >= 3 ? items + items : items;
+            // Marquesina continua: cada mitad repite las entradas reales hasta superar el ancho visible;
+            // la pista tiene 2 mitades idénticas y se desplaza -50% en bucle (sin hueco ni reinicio vacío).
+            const wrap = ticker.parentElement;
+            ticker.innerHTML = `<div class="ticker-half">${items}</div>`;
+            const unidad = ticker.firstElementChild.scrollWidth || 1;
+            const reps = Math.max(1, Math.ceil((wrap.clientWidth || window.innerWidth) / unidad) + 1);
+            const mitad = `<div class="ticker-half" aria-hidden="false">${items.repeat(reps)}</div>`;
+            ticker.innerHTML = mitad + mitad.replace('aria-hidden="false"', 'aria-hidden="true"');
+            // Velocidad constante (px/s) y continuidad: se conserva la fase al re-pintar.
+            const anchoMitad = ticker.firstElementChild.scrollWidth;
+            const dur = Math.max(1, anchoMitad / VELOCIDAD_PX_S);
+            const fase = ((performance.now() - inicioTicker) / 1000) % dur;
+            ticker.style.animationDuration = dur + 's';
+            ticker.style.animationDelay = (-fase) + 's';
         };
         onSnapshot(q, (snapshot) => {
             ultimos = snapshot.docs.map(d => d.data({ serverTimestamps: 'estimate' }));
             pintar();
         });
         setInterval(pintar, 60000);
+        let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(pintar, 250); });
     }
 
     window.copyInviteLink = () => {
