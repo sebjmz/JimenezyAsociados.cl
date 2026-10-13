@@ -41,12 +41,15 @@
     <!-- Buscador y Filtros -->
     <section class="max-w-7xl mx-auto px-6 mb-12">
         <div class="glass-card p-6 rounded-3xl">
-            <div class="grid md:grid-cols-4 gap-4">
+            <div class="grid md:grid-cols-5 gap-4">
                 <input id="search" type="text" placeholder="Buscar por título, comuna o dirección..." class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500">
                 <select id="filterTipo" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
                     <option value="">Todos los tipos</option>
                     <option value="Venta">Venta</option>
                     <option value="Arriendo">Arriendo</option>
+                </select>
+                <select id="filterPrecio" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="">Cualquier precio</option>
                 </select>
                 <select id="filterPropiedad" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
                     <option value="">Tipo de propiedad</option>
@@ -140,11 +143,60 @@
             });
         }
 
+        function actualizarFiltroPrecio() {
+            const tipo = document.getElementById('filterTipo').value;
+            const selectPrecio = document.getElementById('filterPrecio');
+            selectPrecio.innerHTML = '<option value="">Cualquier precio</option>';
+
+            if (tipo === 'Venta') {
+                const rangos = [
+                    {label: 'Bajo 3.000 UF', max: 3000},
+                    {label: 'Hasta 4.000 UF', max: 4000},
+                    {label: 'Hasta 5.000 UF', max: 5000},
+                    {label: 'Hasta 6.000 UF', max: 6000},
+                    {label: 'Hasta 7.000 UF', max: 7000},
+                    {label: 'Hasta 8.000 UF', max: 8000},
+                    {label: 'Hasta 9.000 UF', max: 9000},
+                    {label: 'Hasta 10.000 UF', max: 10000},
+                    {label: 'Hasta 12.000 UF', max: 12000},
+                    {label: 'Hasta 14.000 UF', max: 14000},
+                    {label: 'Hasta 16.000 UF', max: 16000}
+                ];
+                rangos.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.max;
+                    opt.textContent = r.label;
+                    selectPrecio.appendChild(opt);
+                });
+            } else if (tipo === 'Arriendo') {
+                const rangos = [
+                    {label: 'Hasta $400.000', max: 400000},
+                    {label: 'Hasta $500.000', max: 500000},
+                    {label: 'Hasta $600.000', max: 600000},
+                    {label: 'Hasta $700.000', max: 700000},
+                    {label: 'Hasta $800.000', max: 800000},
+                    {label: 'Hasta $900.000', max: 900000},
+                    {label: 'Hasta $1.000.000', max: 1000000},
+                    {label: 'Hasta $1.200.000', max: 1200000},
+                    {label: 'Hasta $1.500.000', max: 1500000},
+                    {label: 'Hasta $2.000.000', max: 2000000},
+                    {label: 'Hasta $2.500.000', max: 2500000}
+                ];
+                rangos.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.max;
+                    opt.textContent = r.label;
+                    selectPrecio.appendChild(opt);
+                });
+            }
+        }
+
         function filtrar() {
             const search = document.getElementById('search').value.toLowerCase();
             const tipo = document.getElementById('filterTipo').value;
             const tipoProp = document.getElementById('filterPropiedad').value;
             const comuna = document.getElementById('filterComuna').value;
+            const maxPrecio = document.getElementById('filterPrecio').value ? Number(document.getElementById('filterPrecio').value) : null;
 
             const filtradas = propiedades.filter(p => {
                 const matchSearch = !search || 
@@ -154,14 +206,19 @@
                 const matchTipo = !tipo || p.tipo === tipo;
                 const matchTipoProp = !tipoProp || p.tipoPropiedad === tipoProp;
                 const matchComuna = !comuna || p.comuna === comuna;
-                return matchSearch && matchTipo && matchTipoProp && matchComuna;
+                const matchPrecio = !maxPrecio || (p.precioNumerico && p.precioNumerico <= maxPrecio);
+                return matchSearch && matchTipo && matchTipoProp && matchComuna && matchPrecio;
             });
 
             renderPropiedades(filtradas);
         }
 
         document.getElementById('search').addEventListener('input', filtrar);
-        document.getElementById('filterTipo').addEventListener('change', filtrar);
+        document.getElementById('filterTipo').addEventListener('change', () => {
+            actualizarFiltroPrecio();
+            filtrar();
+        });
+        document.getElementById('filterPrecio').addEventListener('change', filtrar);
         document.getElementById('filterPropiedad').addEventListener('change', filtrar);
         document.getElementById('filterComuna').addEventListener('change', filtrar);
 
