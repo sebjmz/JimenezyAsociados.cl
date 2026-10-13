@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Mi Intranet | Jiménez & Asociados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +12,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURACIÓN OFICIAL
         const firebaseConfig = {
@@ -70,53 +71,15 @@
             const myPartnerID = "JA-" + currentUid.substring(currentUid.length - 5).toUpperCase();
 
             try {
-                const profilesSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'profile'));
-                const referidosSnap = await window.fb.getDocs(window.fb.collectionGroup(window.fb.db, 'referidos'));
-                
-                let userNames = {}; 
-                let emailToId = {};
-                let userSponsors = {}; 
-                let productivePartners = new Set(); 
-                let adminUid = ""; 
-                
-                let recruiterStats = {}; 
-                let gestorStats = {};    
-
-                profilesSnap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const uid = docSnap.ref.parent.parent.id;
-                    const email = data.email ? data.email.toLowerCase() : "";
-                    if (email === window.fb.ADMIN_EMAIL.toLowerCase()) { adminUid = uid; return; }
-
-                    const pID = "JA-" + uid.substring(uid.length - 5).toUpperCase();
-                    userNames[uid] = pID;
-                    if(email) emailToId[email] = pID;
-                    if (data.sponsorEmail) userSponsors[uid] = data.sponsorEmail.toLowerCase();
+                // Ranking automático: lee los puntajes públicos artifacts/<app>/scores (apodo + contadores, sin email).
+                const scoresSnap = await getDocs(collection(db, 'artifacts', appId, 'scores'));
+                let gestorStats = {}, recruiterStats = {};
+                scoresSnap.forEach(d => {
+                    const sc = d.data();
+                    const id = sc.pid || ("JA-" + d.id.substring(d.id.length - 5).toUpperCase());
+                    if ((sc.firmas || 0) > 0) gestorStats[id] = { id, count: sc.firmas };
+                    if ((sc.activos || 0) > 0) recruiterStats[id] = { id, count: sc.activos };
                 });
-
-                referidosSnap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (!docSnap.ref.path.includes(window.fb.appId)) return;
-                    const ownerUid = docSnap.ref.parent.parent.id;
-                    
-                    if (data.contrato === true) {
-                        productivePartners.add(ownerUid);
-                        if (ownerUid !== adminUid) {
-                            if (!gestorStats[ownerUid]) gestorStats[ownerUid] = { id: userNames[ownerUid], count: 0 };
-                            gestorStats[ownerUid].count++;
-                        }
-                    }
-                });
-
-                for (const [invitedUid, sponsorEmail] of Object.entries(userSponsors)) {
-                    if (productivePartners.has(invitedUid) && sponsorEmail !== window.fb.ADMIN_EMAIL.toLowerCase()) {
-                        if (!recruiterStats[sponsorEmail]) {
-                            const sID = emailToId[sponsorEmail] || "JA-" + sponsorEmail.split('@')[0].toUpperCase().substring(0,5);
-                            recruiterStats[sponsorEmail] = { id: sID, count: 0 };
-                        }
-                        recruiterStats[sponsorEmail].count++;
-                    }
-                }
 
                 const processRank = (statsObj, container, myContainer, label, isLeads) => {
                     const fullRank = Object.entries(statsObj)
@@ -146,7 +109,7 @@
 
                     // Tu posición personal
                     const myIndex = isLeads 
-                        ? fullRank.findIndex(item => item.uid === currentUid)
+                        ? fullRank.findIndex(item => item.id === myPartnerID)
                         : fullRank.findIndex(item => item.id === myPartnerID);
 
                     if (myIndex > 2) {
@@ -590,7 +553,7 @@
 <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, doc, collectionGroup, getDocs, orderBy, limit, updateDoc, getDoc, setDoc, where, writeBatch, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // 1. CONFIGURACIÓN OFICIAL
     const firebaseConfig = {
@@ -656,29 +619,6 @@
         try {
             container.innerHTML = '<tr><td colspan="7" class="px-8 py-20 text-center text-blue-500 font-bold italic">Mapeando tu red de afiliados...</td></tr>';
 
-            const profilesSnap = await getDocs(collection(db, 'artifacts', appId, 'public'));
-            let redL1 = [], redL2 = [], emailsL1 = [];
-            const socios = [];
-            profilesSnap.forEach(docSnap => {
-                const data = docSnap.data();
-                if (!(docSnap.id.startsWith('socio_') || data.rol === 'socio')) return;
-                data._uid = data.uid || docSnap.id.replace('socio_', '');
-                socios.push(data);
-            });
-
-            socios.forEach(data => {
-                if (data.sponsorEmail && data.sponsorEmail.toLowerCase() === userEmail.toLowerCase()) {
-                    redL1.push(data._uid);
-                    if (data.email) emailsL1.push(data.email.toLowerCase());
-                }
-            });
-
-            socios.forEach(data => {
-                if (data.sponsorEmail && emailsL1.includes(data.sponsorEmail.toLowerCase())) {
-                    redL2.push(data._uid);
-                }
-            });
-
             let todosLosReferidos = [];
 
             const pintarTabla = () => {
@@ -740,8 +680,27 @@
             };
 
             escucharColeccion(uid, '20% (Propio)');
-            redL1.forEach(l1Uid => escucharColeccion(l1Uid, '7% (L1)'));
-            redL2.forEach(l2Uid => escucharColeccion(l2Uid, '3% (L2)'));
+
+            // Gestiones de la red (L1/L2): copia sin nombre/teléfono en red/<uid>/items, escrita automáticamente
+            // por el partner al subir el dato y actualizada por el admin al cambiar el estado.
+            const escucharRed = (targetUid, tipoComision) => {
+                onSnapshot(collection(db, 'artifacts', appId, 'red', targetUid, 'items'), (snapshot) => {
+                    todosLosReferidos = todosLosReferidos.filter(ref => ref.uid !== targetUid);
+                    snapshot.forEach(d => {
+                        const it = d.data();
+                        todosLosReferidos.push({ ...it, uid: targetUid, name: 'Gestión de ' + (it.pid || 'tu red'), comision: tipoComision });
+                    });
+                    pintarTabla();
+                }, (err) => console.error('Red:', err));
+            };
+            const scoresRef = collection(db, 'artifacts', appId, 'scores');
+            const l1Snap = await getDocs(query(scoresRef, where('sponsorUid', '==', uid)));
+            const l1 = l1Snap.docs.map(d => d.id);
+            l1.forEach(x => escucharRed(x, '7% (L1)'));
+            for (let i = 0; i < l1.length; i += 30) {
+                const l2Snap = await getDocs(query(scoresRef, where('sponsorUid', 'in', l1.slice(i, i + 30))));
+                l2Snap.forEach(d => escucharRed(d.id, '3% (L2)'));
+            }
 
         } catch (err) { console.error("Error Dashboard:", err); }
     }
@@ -765,7 +724,10 @@
             const partnerName = document.getElementById('partner-display').innerText;
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'), {
+                await ensureScore(user);
+                const refRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'));
+                const batch = writeBatch(db);
+                batch.set(refRef, {
                     name, phone, service, tipo, comuna, urgencia, owner,
                     nota: nota || "Sin notas",
                     partnerEmail: (user.email || '').toLowerCase(),
@@ -773,6 +735,14 @@
                     statusFinal: 'Validando',
                     createdAt: serverTimestamp()
                 });
+                // Copias públicas sin datos personales + puntaje (validado por las reglas en el mismo batch).
+                batch.set(doc(db, 'artifacts', appId, 'red', user.uid, 'items', refRef.id), {
+                    pid: pidOf(user.uid), tipo, service, contactado: false, contrato: false, visitas: false,
+                    statusFinal: 'Validando', createdAt: serverTimestamp()
+                });
+                batch.set(doc(db, 'artifacts', appId, 'feed', refRef.id), { tipo: String(tipo).substring(0, 40), createdAt: serverTimestamp() });
+                if (!isAdminUser(user)) batch.update(doc(db, 'artifacts', appId, 'scores', user.uid), { leads: increment(1), lastRef: refRef.id });
+                await batch.commit();
                 await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
                     lastActivityAt: serverTimestamp()
                 });
@@ -838,11 +808,47 @@
             idBox.classList.remove('opacity-0');
             
             publicarSocio(user);
+            ensureScore(user).catch(err => console.error('Score:', err));
             initDashboard(user.uid, user.email);
             initLiveFeed();
             showVigencia(user.uid);
         }
     });
+
+    // PUNTAJE AUTOMÁTICO: al entrar, cada partner crea UNA vez su scores/<uid> (apodo + contadores, sin email)
+    // y suma +1 a L1/L2/L3 de su línea ascendente. Las reglas validan cada +1.
+    const pidOf = (uid) => "JA-" + uid.substring(uid.length - 5).toUpperCase();
+    const isAdminUser = (user) => (user?.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const sha256hex = async (txt) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt))))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    let scoreListo = null;
+    function ensureScore(user) {
+        if (isAdminUser(user)) return Promise.resolve();
+        if (!scoreListo) scoreListo = (async () => {
+            const email = (user.email || '').toLowerCase();
+            await setDoc(doc(db, 'artifacts', appId, 'invites', await sha256hex(email)), { uid: user.uid });
+            const myRef = doc(db, 'artifacts', appId, 'scores', user.uid);
+            if ((await getDoc(myRef)).exists()) return;
+            let sponsorUid = '';
+            const prof = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'));
+            const sponsorEmail = prof.exists() ? (prof.data().sponsorEmail || '').toLowerCase() : '';
+            if (sponsorEmail && sponsorEmail !== ADMIN_EMAIL.toLowerCase() && sponsorEmail !== email) {
+                const inv = await getDoc(doc(db, 'artifacts', appId, 'invites', await sha256hex(sponsorEmail)));
+                if (inv.exists() && (await getDoc(doc(db, 'artifacts', appId, 'scores', inv.data().uid))).exists()) sponsorUid = inv.data().uid;
+            }
+            const batch = writeBatch(db);
+            batch.set(myRef, { pid: pidOf(user.uid), sponsorUid, leads: 0, firmas: 0, activos: 0, l1: 0, l2: 0, l3: 0, lastRef: '', createdAt: serverTimestamp() });
+            let up = sponsorUid;
+            for (const nivel of ['l1', 'l2', 'l3']) {
+                if (!up) break;
+                batch.update(doc(db, 'artifacts', appId, 'scores', up), { [nivel]: increment(1) });
+                const s = await getDoc(doc(db, 'artifacts', appId, 'scores', up));
+                up = s.exists() ? (s.data().sponsorUid || '') : '';
+            }
+            await batch.commit();
+        })().catch(err => { scoreListo = null; throw err; });
+        return scoreListo;
+    }
 
     async function publicarSocio(user) {
         try {
@@ -880,14 +886,14 @@
     }
 
     async function initLiveFeed() {
-        const q = query(collectionGroup(db, 'referidos'), orderBy('createdAt', 'desc'), limit(5));
+        const q = query(collection(db, 'artifacts', appId, 'feed'), orderBy('createdAt', 'desc'), limit(5));
         onSnapshot(q, (snapshot) => {
             const ticker = document.getElementById('live-ticker');
             if(!ticker || snapshot.empty) return;
             document.getElementById('live-feed-container').classList.remove('hidden');
             let feedHtml = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
+            snapshot.forEach(d => {
+                const data = d.data();
                 feedHtml += `<div class="flex items-center gap-3"><span class="text-[11px] font-black text-white uppercase">${data.tipo || 'Propiedad'}</span><span class="mx-6 text-white/10">|</span></div>`;
             });
             ticker.innerHTML = feedHtml + feedHtml;
