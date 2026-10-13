@@ -89,6 +89,65 @@
             setTimeout(() => box.style.display = 'none', 5000);
         }
 
+
+        // ==========================================
+        // AGREGADOS PARA PARTNERS (sin datos personales)
+        // public/ranking: apodos JA-XXXXX + conteos + feed (solo tipo de propiedad)
+        // public/red_<uid>: estado de las gestiones de su red L1/L2, sin nombre ni teléfono
+        // ==========================================
+        const pid = (uid) => "JA-" + uid.substring(uid.length - 5).toUpperCase();
+        let agregadosTimer = null;
+        function publicarAgregados(referidosDocs) {
+            clearTimeout(agregadosTimer);
+            agregadosTimer = setTimeout(async () => {
+                try {
+                    const perfiles = await getDocs(query(collectionGroup(db, 'profile')));
+                    const emailToUid = {}, sponsorOf = {};
+                    let adminUid = "";
+                    perfiles.forEach(d => {
+                        if (!d.ref.path.includes(appId)) return;
+                        const uid = d.ref.parent.parent.id, data = d.data();
+                        const email = (data.email || '').toLowerCase();
+                        if (email === ADMIN_EMAIL.toLowerCase()) { adminUid = uid; return; }
+                        if (email) emailToUid[email] = uid;
+                        if (data.sponsorEmail) sponsorOf[uid] = data.sponsorEmail.toLowerCase();
+                    });
+                    const sponsorUid = (uid) => emailToUid[sponsorOf[uid]] || null;
+
+                    const gestores = {}, productivos = new Set(), redes = {};
+                    referidosDocs.forEach(d => {
+                        const data = d.data(), owner = d.ref.parent.parent.id;
+                        if (data.contrato === true) {
+                            productivos.add(owner);
+                            if (owner !== adminUid) gestores[owner] = (gestores[owner] || 0) + 1;
+                        }
+                        const item = {
+                            partnerId: pid(owner), tipo: data.tipo || 'Propiedad', service: data.service || 'Venta',
+                            contactado: !!data.contactado, contrato: !!data.contrato, visitas: !!data.visitas,
+                            statusFinal: data.statusFinal || 'Validando', createdAt: data.createdAt || null
+                        };
+                        const l1 = sponsorUid(owner), l2 = l1 ? sponsorUid(l1) : null;
+                        if (l1 && l1 !== adminUid) (redes[l1] = redes[l1] || []).push({ ...item, nivel: 'L1' });
+                        if (l2 && l2 !== adminUid) (redes[l2] = redes[l2] || []).push({ ...item, nivel: 'L2' });
+                    });
+                    const reclutadores = {};
+                    productivos.forEach(uid => {
+                        const s = sponsorUid(uid);
+                        if (s && s !== adminUid) reclutadores[s] = (reclutadores[s] || 0) + 1;
+                    });
+                    const toList = (o) => Object.entries(o).map(([uid, count]) => ({ id: pid(uid), count })).sort((a, b) => b.count - a.count);
+                    const feed = referidosDocs.slice(0, 5).map(d => ({ tipo: d.data().tipo || 'Propiedad' }));
+
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'ranking'),
+                        { gestores: toList(gestores), reclutadores: toList(reclutadores), feed, updatedAt: serverTimestamp() });
+                    const todos = new Set([...Object.keys(redes), ...Object.keys(emailToUid).map(e => emailToUid[e])]);
+                    for (const uid of todos) {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'red_' + uid), { items: redes[uid] || [], updatedAt: serverTimestamp() });
+                    }
+                } catch (err) { console.error('Agregados:', err); }
+            }, 1500);
+        }
+
         // --- CARGA DE NEGOCIOS ---
         function loadAllLeads() {
             const container = document.getElementById('admin-table-body');
@@ -113,6 +172,8 @@
                     const dateB = b.data().createdAt ? b.data().createdAt.toDate().getTime() : 0;
                     return dateB - dateA;
                 });
+
+                publicarAgregados(docsArray);
 
                 // 3. Dibujar la tabla en el orden correcto
                 docsArray.forEach(docSnap => {

@@ -51,8 +51,11 @@ service cloud.firestore {
 
     // ---- Colección "public" ----
     match /artifacts/jimenez-portal-oficial/public/{docId} {
-      // Lectura para partners logueados (lo usa el mapa de red de la intranet).
-      allow read: if signedIn();
+      // Admin lee todo. Partners: solo documentos agregados sin datos personales
+      // (ranking, estadisticas) y SU propia ficha socio_<uid> / red_<uid>.
+      allow read: if isAdmin()
+        || (signedIn() && docId in ['ranking', 'estadisticas'])
+        || (signedIn() && (docId == 'socio_' + request.auth.uid || docId == 'red_' + request.auth.uid));
       allow write: if isAdmin();
     }
     // Excepción 1: cada partner publica SOLO su propia ficha socio_<uid>, sin rol ni uid ajenos.
