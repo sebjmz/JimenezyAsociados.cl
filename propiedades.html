@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propiedades | Jiménez & Asociados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #ffffff; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
+        .glass-card:hover { background: rgba(255, 255, 255, 0.07); transform: translateY(-5px); border-color: rgba(59, 130, 246, 0.5); }
+        .gradient-text { background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-[15px] md:text-2xl font-extrabold tracking-tighter cursor-pointer whitespace-nowrap">
+                JIMÉNEZ<span class="text-blue-500">&</span>ASOCIADOS
+            </a>
+            <div class="hidden md:flex space-x-8 text-sm font-medium uppercase tracking-widest text-white/70">
+                <a href="index.html" class="hover:text-blue-400 transition">Inicio</a>
+                <a href="propiedades.html" class="hover:text-blue-400 transition text-white">Propiedades</a>
+                <a href="autos-oportunidad.html" class="hover:text-blue-400 transition">Autos</a>
+            </div>
+            <a href="ingresopartner.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 rounded-full text-[10px] md:text-xs font-black transition uppercase tracking-tighter">
+                ACCESO PARTNERS
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="pt-32 pb-12 px-6 text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Nuestras <span class="gradient-text">Propiedades</span></h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">Encuentra tu próximo hogar o inversión. Venta y arriendo con gestión transparente.</p>
+    </header>
+
+    <!-- Buscador y Filtros -->
+    <section class="max-w-7xl mx-auto px-6 mb-12">
+        <div class="glass-card p-6 rounded-3xl">
+            <div class="grid md:grid-cols-4 gap-4">
+                <input id="search" type="text" placeholder="Buscar por título, comuna o dirección..." class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500">
+                <select id="filterTipo" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="">Todos los tipos</option>
+                    <option value="Venta">Venta</option>
+                    <option value="Arriendo">Arriendo</option>
+                </select>
+                <select id="filterPropiedad" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="">Tipo de propiedad</option>
+                    <option value="Departamento">Departamento</option>
+                    <option value="Casa">Casa</option>
+                    <option value="Oficina">Oficina</option>
+                    <option value="Local">Local</option>
+                </select>
+                <select id="filterComuna" class="bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="">Todas las comunas</option>
+                    <option value="Viña del Mar">Viña del Mar</option>
+                    <option value="Villa Alemana">Villa Alemana</option>
+                    <option value="Valparaíso">Valparaíso</option>
+                    <option value="Santiago">Santiago</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listado -->
+    <section class="max-w-7xl mx-auto px-6 pb-24">
+        <div id="propiedades-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards se insertan aquí -->
+        </div>
+        <div id="no-results" class="hidden text-center py-20 text-gray-400">
+            <i class="fa-solid fa-search text-4xl mb-4"></i>
+            <p>No se encontraron propiedades con esos filtros.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10 bg-black">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+            <div>© 2026 JIMÉNEZ & ASOCIADOS. Todos los derechos reservados.</div>
+            <div class="flex space-x-6 uppercase tracking-widest font-bold">
+                <a href="https://wa.me/56951134778" class="text-green-500 hover:text-green-400">WhatsApp</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let propiedades = [];
+
+        async function cargarPropiedades() {
+            try {
+                const res = await fetch('data/propiedades.json');
+                const data = await res.json();
+                propiedades = data.propiedades || [];
+                renderPropiedades(propiedades);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('propiedades-grid').innerHTML = '<p class="text-center text-gray-400 col-span-3">Error cargando propiedades. Revisa data/propiedades.json</p>';
+            }
+        }
+
+        function renderPropiedades(lista) {
+            const grid = document.getElementById('propiedades-grid');
+            const noResults = document.getElementById('no-results');
+            grid.innerHTML = '';
+
+            if (lista.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            }
+            noResults.classList.add('hidden');
+
+            lista.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-3xl overflow-hidden';
+                card.innerHTML = `
+                    <div class="relative h-56">
+                        <img src="${p.imagen || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'}" alt="${p.titulo}" class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">${p.tipo}</div>
+                        ${p.destacada ? '<div class="absolute top-4 right-4 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full">Destacada</div>' : ''}
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">${p.titulo}</h3>
+                        <p class="text-gray-400 text-sm mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${p.direccion}, ${p.comuna}</p>
+                        <div class="flex justify-between text-sm text-gray-300 mb-4">
+                            <span><i class="fa-solid fa-bed mr-1"></i> ${p.dormitorios || '-'} dorm</span>
+                            <span><i class="fa-solid fa-bath mr-1"></i> ${p.banos || '-'} baños</span>
+                            <span><i class="fa-solid fa-ruler-combined mr-1"></i> ${p.m2 || '-'} m²</span>
+                        </div>
+                        <div class="text-2xl font-bold text-blue-400 mb-4">${p.precio}</div>
+                        <a href="https://wa.me/${p.contacto || '56951134778'}?text=Hola, me interesa la propiedad: ${encodeURIComponent(p.titulo)} (ID ${p.id})" target="_blank" class="block w-full text-center bg-white text-black py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                            Contactar / Ver más
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filtrar() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const tipo = document.getElementById('filterTipo').value;
+            const tipoProp = document.getElementById('filterPropiedad').value;
+            const comuna = document.getElementById('filterComuna').value;
+
+            const filtradas = propiedades.filter(p => {
+                const matchSearch = !search || 
+                    (p.titulo && p.titulo.toLowerCase().includes(search)) ||
+                    (p.comuna && p.comuna.toLowerCase().includes(search)) ||
+                    (p.direccion && p.direccion.toLowerCase().includes(search));
+                const matchTipo = !tipo || p.tipo === tipo;
+                const matchTipoProp = !tipoProp || p.tipoPropiedad === tipoProp;
+                const matchComuna = !comuna || p.comuna === comuna;
+                return matchSearch && matchTipo && matchTipoProp && matchComuna;
+            });
+
+            renderPropiedades(filtradas);
+        }
+
+        document.getElementById('search').addEventListener('input', filtrar);
+        document.getElementById('filterTipo').addEventListener('change', filtrar);
+        document.getElementById('filterPropiedad').addEventListener('change', filtrar);
+        document.getElementById('filterComuna').addEventListener('change', filtrar);
+
+        cargarPropiedades();
+    </script>
+</body>
+</html>
