@@ -724,7 +724,9 @@
             const partnerName = document.getElementById('partner-display').innerText;
 
             try {
-                await ensureScore(user);
+                // El puntaje nunca debe bloquear el registro del referido.
+                try { await ensureScore(user); } catch (err) { console.error('Score:', err); }
+                const scoreSnap = isAdminUser(user) ? null : await getDoc(doc(db, 'artifacts', appId, 'scores', user.uid)).catch(() => null);
                 const refRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'referidos'));
                 const batch = writeBatch(db);
                 batch.set(refRef, {
@@ -741,11 +743,16 @@
                     statusFinal: 'Validando', createdAt: serverTimestamp()
                 });
                 batch.set(doc(db, 'artifacts', appId, 'feed', refRef.id), { tipo: String(tipo).substring(0, 40), service: String(service).substring(0, 20), createdAt: serverTimestamp() });
-                if (!isAdminUser(user)) batch.update(doc(db, 'artifacts', appId, 'scores', user.uid), { leads: increment(1), lastRef: refRef.id });
+                if (scoreSnap && scoreSnap.exists()) batch.update(doc(db, 'artifacts', appId, 'scores', user.uid), { leads: increment(1), lastRef: refRef.id });
                 await batch.commit();
-                await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
-                    lastActivityAt: serverTimestamp()
-                });
+                // Actividad del perfil: no bloquea. Si el perfil no existe (p. ej. admin), se crea con su email.
+                const profRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+                try {
+                    // Se lee primero: un update sobre un perfil inexistente lo rechazan las reglas (no da 'not-found').
+                    const profSnap = await getDoc(profRef);
+                    if (profSnap.exists()) await updateDoc(profRef, { lastActivityAt: serverTimestamp() });
+                    else await setDoc(profRef, { email: user.email, name: user.displayName || (user.email || '').split('@')[0], lastActivityAt: serverTimestamp(), createdAt: serverTimestamp() });
+                } catch (err) { console.error('Perfil:', err); }
 
                 const adminPhone = "56951134778"; 
                 const messageText = `*NUEVA GESTIÓN J&A*\n\n*Partner:* ${partnerName}\n*Cliente:* ${name} (${owner})\n*WhatsApp:* ${phone}\n*Servicio:* ${service} de ${tipo}\n*Comuna:* ${comuna}\n*Urgencia:* ${urgencia}\n*Nota:* ${nota || 'Sin notas adicionales'}`;
@@ -841,9 +848,10 @@
             let up = sponsorUid;
             for (const nivel of ['l1', 'l2', 'l3']) {
                 if (!up) break;
-                batch.update(doc(db, 'artifacts', appId, 'scores', up), { [nivel]: increment(1) });
                 const s = await getDoc(doc(db, 'artifacts', appId, 'scores', up));
-                up = s.exists() ? (s.data().sponsorUid || '') : '';
+                if (!s.exists()) break; // upline sin puntaje: no se suma (evita fallar el batch)
+                batch.update(doc(db, 'artifacts', appId, 'scores', up), { [nivel]: increment(1) });
+                up = s.data().sponsorUid || '';
             }
             await batch.commit();
         })().catch(err => { scoreListo = null; throw err; });
