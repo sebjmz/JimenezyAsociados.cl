@@ -740,7 +740,7 @@
                     pid: pidOf(user.uid), tipo, service, contactado: false, contrato: false, visitas: false,
                     statusFinal: 'Validando', createdAt: serverTimestamp()
                 });
-                batch.set(doc(db, 'artifacts', appId, 'feed', refRef.id), { tipo: String(tipo).substring(0, 40), createdAt: serverTimestamp() });
+                batch.set(doc(db, 'artifacts', appId, 'feed', refRef.id), { tipo: String(tipo).substring(0, 40), service: String(service).substring(0, 20), createdAt: serverTimestamp() });
                 if (!isAdminUser(user)) batch.update(doc(db, 'artifacts', appId, 'scores', user.uid), { leads: increment(1), lastRef: refRef.id });
                 await batch.commit();
                 await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
@@ -885,19 +885,40 @@
         }
     }
 
+    // Feed de actividad global: "Departamento en venta · hace 2 h"
+    const tiempoRelativo = (ts) => {
+        if (!ts || !ts.toDate) return 'recién';
+        const min = Math.max(0, Math.floor((Date.now() - ts.toDate().getTime()) / 60000));
+        if (min < 1) return 'recién';
+        if (min < 60) return `hace ${min} min`;
+        const h = Math.floor(min / 60);
+        if (h < 24) return `hace ${h} h`;
+        const d = Math.floor(h / 24);
+        if (d < 30) return d === 1 ? 'hace 1 día' : `hace ${d} días`;
+        const m = Math.floor(d / 30);
+        return m === 1 ? 'hace 1 mes' : `hace ${m} meses`;
+    };
+    const escapar = (t) => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     async function initLiveFeed() {
         const q = query(collection(db, 'artifacts', appId, 'feed'), orderBy('createdAt', 'desc'), limit(5));
-        onSnapshot(q, (snapshot) => {
+        let ultimos = [];
+        const pintar = () => {
             const ticker = document.getElementById('live-ticker');
-            if(!ticker || snapshot.empty) return;
+            if (!ticker || ultimos.length === 0) return;
             document.getElementById('live-feed-container').classList.remove('hidden');
-            let feedHtml = "";
-            snapshot.forEach(d => {
-                const data = d.data();
-                feedHtml += `<div class="flex items-center gap-3"><span class="text-[11px] font-black text-white uppercase">${data.tipo || 'Propiedad'}</span><span class="mx-6 text-white/10">|</span></div>`;
-            });
-            ticker.innerHTML = feedHtml + feedHtml;
+            const items = ultimos.map(data => {
+                const serv = data.service ? ' en ' + String(data.service).toLowerCase() : '';
+                return `<div class="flex items-center gap-3 whitespace-nowrap"><span class="text-[11px] font-black text-white uppercase">${escapar((data.tipo || 'Propiedad') + serv)}</span><span class="text-[10px] text-gray-500 font-bold">· ${tiempoRelativo(data.createdAt)}</span><span class="mx-6 text-white/10">|</span></div>`;
+            }).join('');
+            // La cinta se duplica para el desplazamiento continuo solo si hay varias entradas
+            // (con 1-2 entradas se veía repetido: "Departamento / Departamento").
+            ticker.innerHTML = ultimos.length >= 3 ? items + items : items;
+        };
+        onSnapshot(q, (snapshot) => {
+            ultimos = snapshot.docs.map(d => d.data({ serverTimestamps: 'estimate' }));
+            pintar();
         });
+        setInterval(pintar, 60000);
     }
 
     window.copyInviteLink = () => {
