@@ -526,8 +526,7 @@
                 rol_propiedad: v('rol_propiedad')
             };
 
-            fetch(URL_APPS_SCRIPT, { method: 'POST', body: JSON.stringify(payload) })
-            .then(res => res.json())
+            fetch(URL_APPS_SCRIPT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
             .then(() => {
                 statusMsg.innerText = "✅ ¡CONTRATO ENVIADO EXITOSAMENTE!";
                 statusMsg.className = "text-green-500 text-center font-black uppercase";
