@@ -183,6 +183,7 @@
     
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
+        if(!base64Files['file_carnet']) { alert("Por favor, toma la foto del carnet (espera a que aparezca la vista previa)."); return; }
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         btn.disabled = true;
