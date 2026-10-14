@@ -95,6 +95,15 @@
     <!-- Listado -->
     <section class="max-w-7xl mx-auto px-6 pb-24">
         <div id="propiedades-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-3xl overflow-hidden">
+                    <div class="relative h-56"><a href="arriendo-renaca-norte.html"><img loading="lazy" decoding="async" src="img/arriendo-renaca-norte/02-thumb.webp" alt="Depto amoblado con vista al mar en Reñaca Norte" class="w-full h-full object-cover"></a>
+                        <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">Arriendo</div></div>
+                    <div class="p-6"><h3 class="text-xl font-bold mb-2"><a href="arriendo-renaca-norte.html">Depto amoblado vista al mar, Reñaca Norte</a></h3>
+                        <p class="text-gray-400 text-sm mb-3">Reñaca Norte, Av. Edmundo Eluchans (cerca de la Shell), Viña del Mar</p>
+                        <p class="text-sm text-gray-300 mb-4">2 dorm · 2 baños en suite · 64 m² + terraza 11 m² · estacionamiento y bodega</p>
+                        <div class="text-2xl font-bold text-blue-400 mb-4">$690.000/mes</div>
+                        <a href="arriendo-renaca-norte.html" class="block w-full text-center bg-white text-black py-3 rounded-xl font-bold">Ver fotos y detalles</a></div>
+                </div>
             <!-- Cards se insertan aquí -->
         </div>
         <div id="no-results" class="hidden text-center py-20 text-gray-400">
@@ -144,12 +153,12 @@
                 card.className = 'glass-card rounded-3xl overflow-hidden';
                 card.innerHTML = `
                     <div class="relative h-56">
-                        <img loading="lazy" decoding="async" src="${p.imagen || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'}" alt="${p.titulo}" class="w-full h-full object-cover">
+                        <img loading="lazy" decoding="async" src="${p.imagen || 'img/og-image.jpg'}" alt="${p.titulo}" class="w-full h-full object-cover">
                         <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">${p.tipo}</div>
                         ${p.destacada ? '<div class="absolute top-4 right-4 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full">Destacada</div>' : ''}
                     </div>
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">${p.titulo}</h3>
+                        <h3 class="text-xl font-bold mb-2">${p.url ? `<a href="${p.url}">${p.titulo}</a>` : p.titulo}</h3>
                         <p class="text-gray-400 text-sm mb-3"><i class="fa-solid fa-location-dot mr-1"></i> ${p.direccion}, ${p.comuna}</p>
                         <div class="flex justify-between text-sm text-gray-300 mb-4">
                             <span><i class="fa-solid fa-bed mr-1"></i> ${p.dormitorios || '-'} dorm</span>
@@ -157,8 +166,8 @@
                             <span><i class="fa-solid fa-ruler-combined mr-1"></i> ${p.m2 || '-'} m²</span>
                         </div>
                         <div class="text-2xl font-bold text-blue-400 mb-4">${p.precio}</div>
-                        <a href="https://wa.me/${p.contacto || '56951134778'}?text=Hola, me interesa la propiedad: ${encodeURIComponent(p.titulo)} (ID ${p.id})" target="_blank" class="block w-full text-center bg-white text-black py-3 rounded-xl font-bold hover:bg-gray-200 transition">
-                            Contactar / Ver más
+                        <a href="${p.url || `https://wa.me/${p.contacto || '56951134778'}?text=Hola, me interesa la propiedad: ${encodeURIComponent(p.titulo)} (ID ${p.id})`}" target="_blank" class="block w-full text-center bg-white text-black py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                            ${p.url ? 'Ver fotos y detalles' : 'Contactar / Ver más'}
                         </a>
                     </div>
                 `;
