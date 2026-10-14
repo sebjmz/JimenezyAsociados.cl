@@ -135,5 +135,22 @@ service cloud.firestore {
         && request.resource.data.totalSocios == 1;
       allow update: if signedIn() && plusOne('totalSocios');
     }
+
+    // ---- Leads del sitio público (tasación, popup): solo creación, sin sesión, validado ----
+    match /artifacts/jimenez-portal-oficial/leads_web/{leadId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['origen', 'nombre', 'telefono', 'email', 'datos', 'consentimiento', 'consentimientoTexto', 'pagina', 'createdAt'])
+        && request.resource.data.keys().hasAll(['origen', 'consentimiento', 'createdAt'])
+        && request.resource.data.consentimiento == true
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.origen in ['tasacion', 'popup-index']
+        && (request.resource.data.keys().hasAny(['telefono', 'email']))
+        && (!('nombre' in request.resource.data) || (request.resource.data.nombre is string && request.resource.data.nombre.size() <= 80))
+        && (!('telefono' in request.resource.data) || (request.resource.data.telefono is string && request.resource.data.telefono.size() >= 8 && request.resource.data.telefono.size() <= 20))
+        && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 120 && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')))
+        && (!('consentimientoTexto' in request.resource.data) || (request.resource.data.consentimientoTexto is string && request.resource.data.consentimientoTexto.size() <= 300))
+        && (!('pagina' in request.resource.data) || (request.resource.data.pagina is string && request.resource.data.pagina.size() <= 100))
+        && (!('datos' in request.resource.data) || (request.resource.data.datos is map && request.resource.data.datos.size() <= 20));
+    }
   }
 }

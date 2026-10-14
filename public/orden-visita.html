@@ -84,6 +84,10 @@
             <button type="button" onclick="clearSignature()" style="margin-top: 10px; background: #f4f4f4; color: #666; padding: 8px; font-size: 0.8rem; width: auto; border: 1px solid #ccc;">🧹 Limpiar Firma</button>
         </div>
 
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;margin:12px 0;cursor:pointer;text-align:left">
+            <input type="checkbox" name="consentimiento" required style="margin-top:2px;width:16px;height:16px;flex-shrink:0">
+            <span>El cliente fue informado y acepta la <a href="privacidad.html" target="_blank" style="color:inherit;text-decoration:underline">Política de Privacidad</a> de Jiménez &amp; Asociados.</span>
+        </label>
         <button type="submit" id="submitBtn" class="btn-submit">GENERAR Y FIRMAR VISITA</button>
     </form>
     <div id="status"></div>

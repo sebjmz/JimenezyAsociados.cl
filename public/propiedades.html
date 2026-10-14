@@ -4,15 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propiedades | Jiménez & Asociados</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="description" content="Propiedades en venta y arriendo gestionadas por Jiménez & Asociados en la Región de Valparaíso.">
+    <link rel="canonical" href="https://jimenezyasociados.cl/propiedades.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jiménez & Asociados">
+    <meta property="og:locale" content="es_CL">
+    <meta property="og:title" content="Propiedades | Jiménez & Asociados">
+    <meta property="og:description" content="Propiedades en venta y arriendo gestionadas por Jiménez & Asociados en la Región de Valparaíso.">
+    <meta property="og:url" content="https://jimenezyasociados.cl/propiedades.html">
+    <meta property="og:image" content="https://jimenezyasociados.cl/img/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #ffffff; }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
         .glass-card:hover { background: rgba(255, 255, 255, 0.07); transform: translateY(-5px); border-color: rgba(59, 130, 246, 0.5); }
         .gradient-text { background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap">
+    <link rel="stylesheet" href="css/tw.css">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
@@ -126,7 +141,7 @@
                 card.className = 'glass-card rounded-3xl overflow-hidden';
                 card.innerHTML = `
                     <div class="relative h-56">
-                        <img src="${p.imagen || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'}" alt="${p.titulo}" class="w-full h-full object-cover">
+                        <img loading="lazy" decoding="async" src="${p.imagen || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'}" alt="${p.titulo}" class="w-full h-full object-cover">
                         <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">${p.tipo}</div>
                         ${p.destacada ? '<div class="absolute top-4 right-4 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full">Destacada</div>' : ''}
                     </div>

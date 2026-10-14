@@ -7,11 +7,20 @@
     ],
     "headers": [
       {
-        "source": "/@(admin|intranet|contrato-arriendo-aval|orden-venta|orden-visita|ingresopartner|registrate).html",
+        "source": "/@(admin|intranet|contrato-arriendo-aval|orden-venta|orden-visita|ingresopartner|reserva-arriendo|tasacion-privada|tasacion-privada2).html",
         "headers": [
           {
             "key": "X-Robots-Tag",
             "value": "noindex, nofollow"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(css|js|jpg|jpeg|png|webp|svg)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
           }
         ]
       }
