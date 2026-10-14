@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /intranet.html
+Disallow: /ingresopartner.html
+Disallow: /contrato-arriendo-aval.html
+Disallow: /orden-venta.html
+Disallow: /orden-visita.html
+Disallow: /reserva-arriendo.html
+Disallow: /tasacion-privada.html
+Disallow: /tasacion-privada2.html
+
+Sitemap: https://jimenezyasociados.cl/sitemap.xml

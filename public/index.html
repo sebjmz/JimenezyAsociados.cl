@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jiménez & Asociados | Gestión Inmobiliaria Colaborativa</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <title>Jiménez & Asociados | Corretaje, tasación y arriendos en la Región de Valparaíso</title>
+    <meta name="description" content="Venda su propiedad con tasación gratis o arriéndela con arrendatarios pre-evaluados. Gestión inmobiliaria y Club Partners en Viña del Mar y la Región de Valparaíso.">
+    <link rel="canonical" href="https://jimenezyasociados.cl/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jiménez & Asociados">
+    <meta property="og:locale" content="es_CL">
+    <meta property="og:title" content="Jiménez & Asociados | Corretaje, tasación y arriendos en la Región de Valparaíso">
+    <meta property="og:description" content="Venda su propiedad con tasación gratis o arriéndela con arrendatarios pre-evaluados. Gestión inmobiliaria y Club Partners en Viña del Mar y la Región de Valparaíso.">
+    <meta property="og:url" content="https://jimenezyasociados.cl/">
+    <meta property="og:image" content="https://jimenezyasociados.cl/img/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "RealEstateAgent", "name": "Jiménez & Asociados", "url": "https://jimenezyasociados.cl/", "telephone": "+56951134778", "image": "https://jimenezyasociados.cl/img/og-image.jpg", "areaServed": {"@type": "AdministrativeArea", "name": "Región de Valparaíso, Chile"}, "description": "Venda su propiedad con tasación gratis o arriéndela con arrendatarios pre-evaluados. Gestión inmobiliaria y Club Partners en Viña del Mar y la Región de Valparaíso.", "sameAs": ["https://wa.me/56951134778"]}</script>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -39,6 +51,10 @@
 
         .reveal { opacity: 0; transform: translateY(30px); }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap">
+    <link rel="stylesheet" href="css/tw.css">
 </head>
     <body class="overflow-x-hidden">
         
@@ -49,10 +65,11 @@
                 JIMÉNEZ<span class="text-blue-500">&</span>ASOCIADOS
             </div>
             <div class="hidden md:flex space-x-8 text-sm font-medium uppercase tracking-widest text-white/70">
-                <a href="autos-oportunidad.html" class="hover:text-blue-400 transition text-white">Autos</a>
-                <a href="#servicios" class="hover:text-blue-400 transition text-white">Gestión</a>
+                <a href="tasacion.html" class="hover:text-blue-400 transition text-white">Tasación</a>
+                <a href="arriendos.html" class="hover:text-blue-400 transition text-white">Arriendos</a>
                 <a href="#club" class="hover:text-pink-400 transition text-white">Club Partners</a>
                 <a href="propiedades.html"  class="hover:text-purple-400 transition text-white">Propiedades</a>
+                <a href="autos-oportunidad.html" class="hover:text-blue-400 transition text-white/60">Autos</a>
             </div>
             <a href="ingresopartner.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 rounded-full text-[10px] md:text-xs font-black transition transform hover:scale-105 uppercase tracking-tighter whitespace-nowrap">
     ACCESO PARTNERS
@@ -75,22 +92,20 @@
                 Administración experta, tasaciones precisas y el club Partners más rentable del mercado.
             </p>
             <div class="flex flex-col md:flex-row justify-center gap-4">
-                <a href="#club" class="bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition">
-                    Únete al Club Partners
+                <a href="tasacion.html" class="bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-chart-line mr-2"></i>Vende tu propiedad: tasación gratis
                 </a>
-                <a href="autos-oportunidad.html" class="border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition">
-                    Autos de oportunidad
-                </a>
-                <a href="propiedades.html"  class="border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition">
-                    Ver Propiedades
+                <a href="arriendos.html" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>Arrienda con arrendatarios pre-evaluados
                 </a>
             </div>
-            
-            <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-blue-500" id="counter-colab">0</div>
-                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Comisionistas Activos</div>
-                </div>
+            <div class="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-400">
+                <a href="propiedades.html" class="hover:text-white underline-offset-4 hover:underline">Ver propiedades</a>
+                <a href="#club" class="hover:text-white underline-offset-4 hover:underline">Club Partners</a>
+                <a href="autos-oportunidad.html" class="hover:text-white underline-offset-4 hover:underline">Autos de oportunidad</a>
+            </div>
+
+            <div class="mt-20 grid grid-cols-3 gap-8">
                 <div class="text-center">
                     <div class="text-4xl font-bold text-purple-500">+100</div>
                     <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Gestiones Exitosas</div>
@@ -117,14 +132,14 @@
                     <i class="fa-solid fa-house-chimney-user text-3xl text-blue-500 mb-6"></i>
                     <h3 class="text-xl font-bold mb-4 uppercase">Administración de Arriendos</h3>
                     <p class="text-gray-400 mb-6">Nos encargamos de todo: desde la recaudación hasta la mantención, para que tú solo recibas tu renta.</p>
-                    <button onclick="contactWhatsApp('Gestión de Arriendos')" class="text-blue-500 font-bold hover:underline">Saber más →</button>
+                    <a href="arriendos.html" class="text-blue-500 font-bold hover:underline">Saber más →</a>
                 </div>
                 <!-- Serv 2 -->
                 <div class="glass-card p-8 rounded-3xl reveal">
                     <i class="fa-solid fa-chart-line text-3xl text-purple-500 mb-6"></i>
                     <h3 class="text-xl font-bold mb-4 uppercase">Tasaciones Comerciales</h3>
                     <p class="text-gray-400 mb-6">Informes técnicos precisos para conocer el valor real de mercado de cualquier propiedad.</p>
-                    <button onclick="contactWhatsApp('Tasaciones Comerciales')" class="text-purple-500 font-bold hover:underline">Solicitar Tasación →</button>
+                    <a href="tasacion.html" class="text-purple-500 font-bold hover:underline">Solicitar Tasación →</a>
                 </div>
                 <!-- Serv 3 -->
                 <div class="glass-card p-8 rounded-3xl reveal">
@@ -235,6 +250,7 @@
             <div class="flex space-x-6 uppercase tracking-widest font-bold">
                 <a href="#" class="hover:text-white transition">Instagram</a>
                 <a href="#" class="hover:text-white transition">LinkedIn</a>
+                <a href="privacidad.html" class="hover:text-white transition">Privacidad</a>
                 <a href="https://wa.me/56951134778" class="text-green-500 hover:text-green-400 transition">WhatsApp</a>
             </div>
         </div>
@@ -256,6 +272,10 @@
             <div id="form-container">
                 <form onsubmit="enviarLead(event)" class="space-y-4">
                     <input type="email" id="email-lead" placeholder="Tu correo principal..." required class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors">
+                    <label class="flex items-start gap-3 text-xs text-gray-400 text-left cursor-pointer">
+                        <input type="checkbox" id="consent-lead" required class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0">
+                        <span>Acepto la <a href="privacidad.html" target="_blank" class="underline text-gray-200">Política de Privacidad</a> y autorizo el tratamiento de mis datos para recibir el informe.</span>
+                    </label>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition transform hover:scale-105 uppercase tracking-tighter shadow-lg shadow-blue-900/40">
                         Enviar Informe
                     </button>
@@ -277,23 +297,7 @@
 
         window.onload = () => {
             document.getElementById('dynamic-title').innerHTML = titles[Math.floor(Math.random() * titles.length)];
-            animateCounter('counter-colab', 21); // Simulación de comisionistas activos
         };
-
-        // Animación de contador
-        function animateCounter(id, target) {
-            let count = 0;
-            const element = document.getElementById(id);
-            const interval = setInterval(() => {
-                count += Math.ceil(target / 50);
-                if (count >= target) {
-                    element.innerText = target;
-                    clearInterval(interval);
-                } else {
-                    element.innerText = count;
-                }
-            }, 30);
-        }
 
         // Lanzador de WhatsApp según solicitud
         function contactWhatsApp(tipo) {
@@ -322,6 +326,13 @@
         }
 
         // Animaciones al hacer scroll
+        // GSAP se carga con defer: las animaciones se inician en DOMContentLoaded.
+        // Si GSAP no carga, el contenido se muestra igual.
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.gsap || !window.ScrollTrigger) {
+                document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+                return;
+            }
         gsap.registerPlugin(ScrollTrigger);
         
         document.querySelectorAll('.reveal').forEach((el) => {
@@ -336,6 +347,7 @@
                 duration: 1,
                 ease: "power4.out"
             });
+        });
         });
         // ==========================================
 // INICIO DEL NUEVO CÓDIGO: Lógica del Modal
@@ -375,12 +387,16 @@ function cerrarModalCaptacion() {
 function enviarLead(event) {
     event.preventDefault(); 
     const email = document.getElementById('email-lead').value;
+    if (!document.getElementById('consent-lead').checked) { alert('Debe aceptar la Política de Privacidad.'); return; }
     
     // IMPORTANTE: Pega aquí la URL que copiaste de Make
     const webhookURL = "https://hook.us2.make.com/4x39blscqaux66rmmgyw9xthkra2nhu5"; 
 
-    // Enviando la información al puente (Make.com)
-    fetch(webhookURL, {
+    // 1) Registro del lead en Firestore (con consentimiento) y 2) envío al puente (Make.com)
+    const guardado = (typeof window.guardarLead === 'function')
+        ? window.guardarLead({ origen: 'popup-index', email }).catch(err => console.error('Lead no guardado:', err))
+        : Promise.resolve();
+    guardado.then(() => fetch(webhookURL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -390,7 +406,7 @@ function enviarLead(event) {
             fecha_captacion: new Date().toLocaleString(),
             origen: "Portal Web - Popup Central"
         })
-    })
+    }))
     .then(response => {
         // Una vez que Make confirma que recibió el dato, mostramos el éxito al usuario
         const formContainer = document.getElementById('form-container');
@@ -413,5 +429,6 @@ function enviarLead(event) {
 // FIN DEL NUEVO CÓDIGO: Lógica del Modal
 // ==========================================
         </script>
+    <script type="module" src="js/leads.js"></script>
     </body>
 </html>
