@@ -1,0 +1,14 @@
+/* Ajustes móviles: evita desborde horizontal del header/footer */
+.nav-in{gap:10px;min-width:0}
+.nav-in .brand{min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.nav-in .nav-cta{flex:0 0 auto}
+.foot-links{flex-wrap:wrap;justify-content:center;row-gap:10px}
+.foot-links>*{margin-left:0!important;margin-right:0!important}
+.hero-blobs{overflow:hidden}
+@media (max-width:480px){
+  .nav-in .brand{font-size:14px!important;letter-spacing:-.04em}
+  .nav-in .nav-cta{padding:7px 11px!important;font-size:10px!important;letter-spacing:0}
+  .nav-in .nav-links{gap:12px!important}
+  .foot-links{column-gap:16px!important}
+}
+html,body{overflow-x:clip} /* red de seguridad */
