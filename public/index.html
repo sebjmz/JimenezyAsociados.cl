@@ -399,26 +399,13 @@ function enviarLead(event) {
     const email = document.getElementById('email-lead').value;
     if (!document.getElementById('consent-lead').checked) { alert('Debe aceptar la Política de Privacidad.'); return; }
     
-    // IMPORTANTE: Pega aquí la URL que copiaste de Make
-    const webhookURL = "https://hook.us2.make.com/4x39blscqaux66rmmgyw9xthkra2nhu5"; 
-
-    // 1) Registro del lead en Firestore (con consentimiento) y 2) envío al puente (Make.com)
+    // Registro del lead en Firestore (con consentimiento)
     const guardado = (typeof window.guardarLead === 'function')
         ? window.guardarLead({ origen: 'popup-index', email }).catch(err => console.error('Lead no guardado:', err))
         : Promise.resolve();
-    guardado.then(() => fetch(webhookURL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            correo_cliente: email,
-            fecha_captacion: new Date().toLocaleString(),
-            origen: "Portal Web - Popup Central"
-        })
-    }))
+    guardado
     .then(response => {
-        // Una vez que Make confirma que recibió el dato, mostramos el éxito al usuario
+        // Lead registrado: mostramos el éxito al usuario
         const formContainer = document.getElementById('form-container');
         formContainer.innerHTML = `
             <div class="text-center py-4">
