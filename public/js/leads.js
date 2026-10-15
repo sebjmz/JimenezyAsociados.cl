@@ -1,6 +1,5 @@
 // Guarda un lead web en Firestore (solo creación; las reglas validan campos y consentimiento).
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+// Firebase se carga solo cuando se envía un formulario (no bloquea ni pesa en la carga inicial).
 
 const firebaseConfig = {
     apiKey: "AIzaSyArXy47I3PF38TZG5K8GHNT_NHOJL_UbhY",
@@ -10,12 +9,25 @@ const firebaseConfig = {
     messagingSenderId: "588021927873",
     appId: "1:588021927873:web:bb0b494c51e6d0a4e76940"
 };
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let _fb = null;
+function cargarFirebase() {
+    if (!_fb) _fb = Promise.all([
+        import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+    ]).then(([a, f]) => {
+        const app = a.getApps().length ? a.getApp() : a.initializeApp(firebaseConfig);
+        return { f, db: f.getFirestore(app) };
+    });
+    return _fb;
+}
+// Precarga en segundo plano cuando el usuario empieza a escribir en un formulario.
+document.addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('form')) cargarFirebase(); }, { once: true });
 
 export const TEXTO_CONSENTIMIENTO = "Acepto la Política de Privacidad y autorizo a Jiménez & Asociados a tratar mis datos para responder mi solicitud.";
 
 export async function guardarLead({ origen, nombre, telefono, email, datos }) {
+    const { f, db } = await cargarFirebase();
+    const { collection, addDoc, serverTimestamp } = f;
     const doc = {
         origen,
         consentimiento: true,

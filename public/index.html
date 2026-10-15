@@ -56,14 +56,15 @@
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap"></noscript>
     <link rel="stylesheet" href="css/tw.css">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="stylesheet" href="css/mobile-fix.css">
+    <style>.nav-in{gap:10px;min-width:0}.nav-in .brand{min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}.nav-in .nav-cta{flex:0 0 auto}.foot-links{flex-wrap:wrap;justify-content:center;row-gap:10px}.foot-links>*{margin-left:0!important;margin-right:0!important}.hero-blobs{overflow:hidden}@media (max-width:480px){.nav-in .brand{font-size:14px!important;letter-spacing:-.04em}.nav-in .nav-cta{padding:7px 11px!important;font-size:10px!important;letter-spacing:0}.nav-in .nav-links{gap:12px!important}.foot-links{column-gap:16px!important}}html,body{overflow-x:clip}</style>
+<style>footer .text-gray-500,.muted-a11y{color:#7a808c}</style>
 </head>
     <body class="overflow-x-hidden">
         
@@ -117,15 +118,15 @@
             <div class="mt-20 grid grid-cols-3 gap-8">
                 <div class="text-center">
                     <div class="text-4xl font-bold text-purple-500">+100</div>
-                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Gestiones Exitosas</div>
+                    <div class="text-gray-500 muted-a11y uppercase text-xs tracking-widest mt-2">Gestiones Exitosas</div>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl font-bold text-pink-500">24h</div>
-                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Respuesta inicial</div>
+                    <div class="text-gray-500 muted-a11y uppercase text-xs tracking-widest mt-2">Respuesta inicial</div>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl font-bold text-green-500">100%</div>
-                    <div class="text-gray-500 uppercase text-xs tracking-widest mt-2">Transparencia</div>
+                    <div class="text-gray-500 muted-a11y uppercase text-xs tracking-widest mt-2">Transparencia</div>
                 </div>
             </div>
         </div>
@@ -190,21 +191,21 @@
                     <div class="flex items-start space-x-4">
                         <div class="bg-blue-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-check"></i></div>
                         <div>
-                            <h4 class="font-bold text-xl">20% de nuestra comisión!</h4>
+                            <h3 class="font-bold text-xl">20% de nuestra comisión!</h3>
                             <p class="text-gray-400 text-sm">Por cada dato propio que cerremos.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-4">
                         <div class="bg-purple-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-users"></i></div>
                         <div>
-                            <h4 class="font-bold text-xl">Nivel Escala: 7% Extra</h4>
+                            <h3 class="font-bold text-xl">Nivel Escala: 7% Extra</h3>
                             <p class="text-gray-400 text-sm">Gana por los datos cerrados de los captadores que tú invites.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-4">
                         <div class="bg-pink-600 p-2 rounded-lg mt-1"><i class="fa-solid fa-network-wired"></i></div>
                         <div>
-                            <h4 class="font-bold text-xl">Red Residual: 3% Extra</h4>
+                            <h3 class="font-bold text-xl">Red Residual: 3% Extra</h3>
                             <p class="text-gray-400 text-sm">Comisión por los negocios de los invitados de tus invitados.</p>
                         </div>
                     </div>
@@ -268,7 +269,7 @@
     <div id="modal-captacion" class="fixed inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 bg-black/80 backdrop-blur-md">
         <div id="modal-content-box" class="glass-card transform translate-y-10 transition-transform duration-500 border border-blue-500/50 p-8 md:p-10 rounded-3xl max-w-md w-[90%] mx-auto relative shadow-[0_0_50px_rgba(59,130,246,0.15)] bg-[#0a0a0a]">
         
-                <button onclick="cerrarModalCaptacion()" class="absolute top-4 right-5 text-gray-400 hover:text-white text-2xl transition-colors">
+                <button type="button" aria-label="Cerrar" onclick="cerrarModalCaptacion()" class="absolute top-4 right-5 text-gray-400 hover:text-white text-2xl transition-colors">
                 <i class="fa-solid fa-xmark"></i>
                 </button>
         
