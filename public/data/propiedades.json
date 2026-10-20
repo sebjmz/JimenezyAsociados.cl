@@ -13,11 +13,16 @@
       "banos": 5,
       "m2": 250,
       "piscina": true,
-      "descripcion": "Casa en arriendo en Pinares de Montemar, Concón: 4 dormitorios, 5 baños, 250 m² y piscina.",
+      "descripcion": "Casa nueva estilo mediterráneo en arriendo en Pinares de Montemar, Concón: 4 dormitorios en suite, 5 baños, 250 m² útiles en terreno de 505 m², piscina temperada, quincho, family room, 2 estacionamientos y bodega.",
       "imagen": "img/arriendo-pinares-montemar/00-thumb.webp",
       "url": "arriendo-pinares-montemar.html",
       "destacada": true,
-      "contacto": "56951134778"
+      "contacto": "56951134778",
+      "estacionamiento": true,
+      "estacionamientos": 2,
+      "bodega": true,
+      "quincho": true,
+      "familyRoom": true
     },
     {
       "id": "RN-01",
