@@ -51,6 +51,13 @@
           }
         ]
       }
+    ],
+    "redirects": [
+      {
+        "source": "/vehiculos.html",
+        "destination": "/autos-oportunidad.html",
+        "type": 301
+      }
     ]
   },
   "firestore": {

@@ -11,7 +11,7 @@ D = json.load(open(R + 'data/vehiculos.json'))
 TPL = open(R + 'venta-depto-concon-3d-2b.html').read()
 CSS = TPL[TPL.index('<style>'):TPL.index('</style>') + 8]
 HEAD_ICONS = ''.join(l + '\n' for l in TPL.splitlines() if 'rel="icon"' in l or 'apple-touch-icon' in l)
-NAV = '<nav><a href="propiedades.html">Propiedades</a><a href="arriendos.html">Arriendos</a><a href="vehiculos.html">Vehículos</a></nav>'
+NAV = '<nav><a href="propiedades.html">Propiedades</a><a href="arriendos.html">Arriendos</a><a href="autos-oportunidad.html">Autos</a></nav>'
 clp = lambda n: '$' + f'{n:,}'.replace(',', '.')
 e = html.escape
 
@@ -78,7 +78,7 @@ for v in D:
   <div class="gal">
 {gal}  </div>
   <p style="margin-top:28px"><a class="wa" href="{wa}">💬 Quiero verlo · WhatsApp +56 9 5113 4778</a></p>
-  <p><a href="vehiculos.html">← Ver todos los vehículos</a></p>
+  <p><a href="autos-oportunidad.html">← Ver todos los autos</a></p>
 </main>
 {FOOT}<a class="float" href="{wa}">WhatsApp</a>
 <script src="js/lightbox.js" defer></script>
@@ -88,7 +88,8 @@ for v in D:
     open(R + s + '.html', 'w').write(head(f"{v['nombre']} en venta", desc, url, imgs[0], ld) + body)
 
 cards = ''.join(f'''<a class="card" href="{v['slug']}.html"><img src="img/{v['slug']}/00-thumb.webp" width="600" height="400" alt="{e(v['nombre'])}" loading="lazy"><div><span class="tag">Venta</span><h3 style="margin:8px 0 4px">{e(v['nombre'])}</h3><p class="loc" style="margin:0">📍 {e(v['ubicacion'])} · {f"{v['km']:,}".replace(',', '.')} km</p><p class="price" style="font-size:1.5rem;margin:6px 0 0">{clp(v['precio'])}</p></div></a>''' for v in D)
-ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Vehículos en venta", "url": SITE + "vehiculos.html"}
-open(R + 'vehiculos.html', 'w').write(head('Vehículos en venta', 'Vehículos en venta publicados por Jiménez & Asociados en la V Región. Consulta por WhatsApp.', SITE + 'vehiculos.html', SITE + f"img/{D[0]['slug']}/00.webp", ld) +
-  f'<main class="wrap"><span class="tag">Vehículos</span><h1>Vehículos en venta</h1><div class="cards">{cards}</div><p><a href="propiedades.html">← Ver propiedades</a></p></main>\n{FOOT}<a class="float" href="https://wa.me/{WA}">WhatsApp</a>\n</body>\n</html>\n')
-print('ok', [v['slug'] for v in D])
+# vehiculos.html eliminado: el listado vive en autos-oportunidad.html
+# ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Vehículos en venta", "url": SITE + "vehiculos.html"}
+# open(R + 'vehiculos.html', 'w').write(head('Vehículos en venta', 'Vehículos en venta publicados por Jiménez & Asociados en la V Región. Consulta por WhatsApp.', SITE + 'vehiculos.html', SITE + f"img/{D[0]['slug']}/00.webp", ld) +
+#   f'<main class="wrap"><span class="tag">Vehículos</span><h1>Vehículos en venta</h1><div class="cards">{cards}</div><p><a href="propiedades.html">← Ver propiedades</a></p></main>\n{FOOT}<a class="float" href="https://wa.me/{WA}">WhatsApp</a>\n</body>\n</html>\n')
+# print('ok', [v['slug'] for v in D])
