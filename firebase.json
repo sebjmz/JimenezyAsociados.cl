@@ -60,7 +60,8 @@
       }
     ],
     "predeploy": [
-      "python3 tools/build_feed_trovit.py"
+      "python3 tools/build_feed_trovit.py",
+      "python3 tools/build_sitemap.py"
     ]
   },
   "firestore": {
